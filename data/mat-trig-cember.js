@@ -41,7 +41,7 @@ KESIF.lessons["mat-trig-cember"] = {
 <svg viewBox="0 0 640 230" role="img" aria-label="Birim çemberde 30 derece ve eksi 30 derece noktaları ve eşkenar üçgen" style="width:100%;height:auto;background:var(--card2);border-radius:12px">
  <circle cx="230" cy="115" r="95" fill="none" stroke="var(--line)" stroke-width="2"/>
  <line x1="120" y1="115" x2="350" y2="115" stroke="var(--muted)" stroke-width="1"/>
- <polygon points="230,115 312.3,67.5 312.3,162.5" fill="rgba(255,200,87,.12)" stroke="var(--ink)" stroke-width="2.5"/>
+ <polygon points="230,115 312.3,67.5 312.3,162.5" fill="color-mix(in srgb, var(--accent) 14%, transparent)" stroke="var(--ink)" stroke-width="2.5"/>
  <line x1="312.3" y1="115" x2="312.3" y2="67.5" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
  <circle cx="312.3" cy="67.5" r="6" fill="var(--ink)"/><circle cx="312.3" cy="162.5" r="6" fill="var(--ink)"/>
  <text x="262" y="80" fill="var(--ink)" font-size="16">1</text><text x="262" y="158" fill="var(--ink)" font-size="16">1</text><text x="322" y="120" fill="var(--ink)" font-size="16">1</text>

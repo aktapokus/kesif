@@ -1,17 +1,24 @@
-/* Aktapokus Keşif — gece gökyüzü teması: sade ekran, büyük ve okunur metin, tek görev */
+/* Aktapokus Keşif — sakin mavi tema: sade ekran, büyük ve okunur metin, tek görev */
 :root{
-  --bg:#0F1526; --card:#182038; --card2:#1F2A48; --ink:#F1F4FF; --muted:#A5B0CF; --line:#2E3A5E;
-  --accent:#FFC857; --accent-ink:#241A00; --cyan:#6CD4FF; --good:#5FD8A0; --bad:#FF8A8A; --warn:#FFB86B;
+  --bg:#0A1022; --card:#121A33; --card2:#1A2547; --ink:#EEF3FF; --muted:#9AA8CC; --line:#2A3760;
+  --accent:#6C9BFF; --accent-ink:#0A1022; --cyan:#34E0C3; --good:#5CE08B; --bad:#FF7A8A; --warn:#C9A8FF;
   --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
   --f-display:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
   --r:18px;
 }
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
-  --bg:#F5F6FB; --card:#FFFFFF; --card2:#EEF1FA; --ink:#182038; --muted:#58648A; --line:#D4DAEC;
-  --accent:#C77700; --accent-ink:#FFFFFF; --cyan:#0A78A8; --good:#16794C; --bad:#B3302F; --warn:#A35A00}}
+  --bg:#F3F6FC; --card:#FFFFFF; --card2:#EAF0FB; --ink:#142042; --muted:#55648C; --line:#D2DBF0;
+  --accent:#2F5BD6; --accent-ink:#FFFFFF; --cyan:#0E9F88; --good:#157A47; --bad:#B42335; --warn:#6B46C1}}
 :root[data-theme="light"]{
-  --bg:#F5F6FB; --card:#FFFFFF; --card2:#EEF1FA; --ink:#182038; --muted:#58648A; --line:#D4DAEC;
-  --accent:#C77700; --accent-ink:#FFFFFF; --cyan:#0A78A8; --good:#16794C; --bad:#B3302F; --warn:#A35A00}
+  --bg:#F3F6FC; --card:#FFFFFF; --card2:#EAF0FB; --ink:#142042; --muted:#55648C; --line:#D2DBF0;
+  --accent:#2F5BD6; --accent-ink:#FFFFFF; --cyan:#0E9F88; --good:#157A47; --bad:#B42335; --warn:#6B46C1}
+/* renk paletleri (Ayarlar > Görünüm) */
+:root[data-pal="yesil"]{--accent:#4ADE80;--accent-ink:#06210f;--cyan:#7DD3FC}
+:root[data-pal="mor"]{--accent:#B79CFF;--accent-ink:#1a0b3a;--cyan:#F0A6D8}
+@media (prefers-color-scheme:light){:root[data-pal="yesil"]:not([data-theme="dark"]){--accent:#15803D;--accent-ink:#fff;--cyan:#0369A1}
+:root[data-pal="mor"]:not([data-theme="dark"]){--accent:#6D3FD1;--accent-ink:#fff;--cyan:#B02A8F}}
+:root[data-theme="light"][data-pal="yesil"]{--accent:#15803D;--accent-ink:#fff;--cyan:#0369A1}
+:root[data-theme="light"][data-pal="mor"]{--accent:#6D3FD1;--accent-ink:#fff;--cyan:#B02A8F}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 var(--f-body);min-height:100vh;display:flex;flex-direction:column}

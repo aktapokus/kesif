@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [], pickSubj: "all" });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [], pickSubj: "all", pal: "mavi" });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -721,7 +721,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
     function draw() {
       const n = +sl.value, pts = []; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + 2 * Math.PI * i / n; pts.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]); }
       const P = i => pts[i].map(v => v.toFixed(1)).join(","); let h = "";
-      const cols = ["rgba(255,200,87,.35)", "rgba(108,212,255,.30)"];
+      const cols = ["color-mix(in srgb, var(--accent) 35%, transparent)", "color-mix(in srgb, var(--cyan) 30%, transparent)"];
       if (q("#m1").checked) for (let i = 1; i < n - 1; i++) h += `<polygon points="${P(0)} ${P(i)} ${P(i + 1)}" fill="${cols[i % 2]}" stroke="none"/>`;
       if (q("#m2").checked) for (let i = 0; i < n; i++) for (let j = i + 2; j < n; j++) { if (i === 0 && j === n - 1) continue; h += `<line x1="${pts[i][0]}" y1="${pts[i][1]}" x2="${pts[j][0]}" y2="${pts[j][1]}" stroke="var(--muted)" stroke-width="1.2"/>`; }
       if (q("#m1").checked) for (let i = 2; i < n - 1; i++) h += `<line x1="${pts[0][0]}" y1="${pts[0][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" stroke="var(--accent)" stroke-width="2.5"/>`;
@@ -797,7 +797,9 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
   function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca keşif akışıdır */ }
 
   /* ---------- soru bileşenleri ---------- */
-  const solHtml = (q, open) => Array.isArray(q.solution) && q.solution.length ? `<details class="sol" ${open ? "open" : ""}><summary><b>🧩 Adım adım çözüm</b></summary><ol class="body">${q.solution.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "";
+  const THINK = ["Anla: Ne soruluyor? Neler verilmiş? Soruyu kendi cümlenle anlat.", "Planla: Buna benzer bir şey çözdün mü? Şekil ya da tablo çizebilir misin? Küçük bir örnek dene.", "Uygula: Adımları sırayla ve yazarak ilerle.", "Kontrol et: Sonuç mantıklı mı? Başka bir yoldan da bulur muydun?"];
+  const solHtml = (q, open) => (q.think ? `<p class="callout" style="margin-top:12px"><b>🧭 Nasıl düşünmeliyiz?</b> ${esc(q.think)}</p>` : "") + (Array.isArray(q.solution) && q.solution.length ? `<details class="sol" ${open ? "open" : ""}><summary><b>🧩 Adım adım çözüm</b></summary><ol class="body">${q.solution.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "");
+  const thinkGuide = () => `<details class="sol"><summary>🧭 Takıldığında kendine sor</summary><ol class="body">${THINK.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>`;
   /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
@@ -854,7 +856,7 @@ ${solHtml(q, !ok)}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</
     const norm = v => String(v).toLowerCase().replace(/\s+/g, "").replace(/\*|·|×/g, "").replace(/kök/g, "√").replace(/cm²|cm2|cm|derece|°|adet|tane/g, "").replace(/,/g, ".");
     const same = (a, b) => { const x = norm(a), y = norm(b); if (x === y) return true; const nx = parseFloat(x), ny = parseFloat(y); return !isNaN(nx) && !isNaN(ny) && /^-?[\d.]+$/.test(x) && /^-?[\d.]+$/.test(y) && Math.abs(nx - ny) < 1e-9; };
     host.innerHTML = `<span class="eyebrow">Açık uçlu soru</span><div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
-<label class="muted small" for="wk" style="display:block;margin-top:12px">Çözümünü buraya yaz (puanlamada işlem basamakları da sayılır; yalnızca bu cihazda kalır).</label><textarea id="wk" rows="5"></textarea>
+${thinkGuide()}<label class="muted small" for="wk" style="display:block;margin-top:12px">Çözümünü buraya yaz (puanlamada işlem basamakları da sayılır; yalnızca bu cihazda kalır).</label><textarea id="wk" rows="5"></textarea>
 ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="muted small" for="an${i}" style="min-width:140px">${esc(a.label)}</label><input id="an${i}" type="text" autocomplete="off" aria-label="${esc(a.label)}" style="min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"></div>`).join("")}
 <div class="helpbar" id="hb"><button class="btn" data-h="check" type="button">Kontrol et</button>${hintTxt ? '<button class="btn ghost" data-h="hint" type="button">💡 İpucu</button>' : ""}${tp ? '<button class="btn ghost" data-h="topic" type="button">📖 Konu özeti</button>' : ""}<button class="btn ghost" data-h="solve" type="button">🧩 Çözümü göster</button></div><div id="hp"></div><div id="fb"></div>`;
     const hb = host.querySelector("#hb"), hp = host.querySelector("#hp"), fb = host.querySelector("#fb"); let finished = false;
@@ -949,13 +951,16 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
 <div class="row">${[5, 10, 15, 20].map(n => `<button class="btn ${S.goal === n ? "" : "ghost"}" data-g="${n}" type="button">${n}</button>`).join("")}</div></div>
 <div class="card" style="margin-top:16px"><h3>Sınav modu</h3><p class="muted small">Açıkken her sorunun sonunda harcadığın süre görünür. Geri sayım ve baskı yok; yalnızca bilgi.</p>
 <button class="btn ${S.exam ? "" : "ghost"}" id="ex" type="button">${S.exam ? "Açık" : "Kapalı"}</button></div>
+<div class="card" style="margin-top:16px"><h3>Görünüm (renk)</h3><p class="muted small">Sana yakışan rengi seç; yalnızca bu cihazda kalır.</p><div class="row">${[["mavi", "Mavi"], ["yesil", "Yeşil"], ["mor", "Mor"]].map(x => `<button class="btn ${(S.pal || "mavi") === x[0] ? "" : "ghost"}" data-pal="${x[0]}" type="button">${x[1]}</button>`).join("")}</div></div>
 ${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p class="muted small">İlerleme ve notların bu tarayıcıda durur; giriş yaptıysan ayrıca hesabına eşitlenir. Bu düğme yalnızca bu cihazdaki verileri siler (sunucudakini yukarıdaki hesap kartından silersin):</p><button class="btn ghost" id="wipe" type="button">Tüm verileri sil</button></div>`;
     bindAccount();
+    $app.querySelectorAll("[data-pal]").forEach(b => b.onclick = () => { S.pal = b.dataset.pal; document.documentElement.setAttribute("data-pal", S.pal); save(); renderSettings(); });
     $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { S.goal = +b.dataset.g; save(); renderSettings(); });
     $app.querySelector("#ex").onclick = () => { S.exam = !S.exam; save(); renderSettings(); };
     $app.querySelector("#wipe").onclick = () => { if (confirm("Tüm ilerleme ve notlar silinsin mi?")) { S = blank(); save(); renderSettings(); } };
   }
 
+  document.documentElement.setAttribute("data-pal", S.pal || "mavi");
   buildBar(); setUser();
   if (K.sync && K.sync.user()) K.sync.pull().then(r => {
     if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); setUser(); }
