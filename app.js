@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" } });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {} });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -33,7 +33,7 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
@@ -41,6 +41,8 @@
     if (h[0] === "plan") return renderPlan();
     if (h[0] === "dersler") return renderDersler(h[1] || "s11");
     if (h[0] === "profil") return renderProfile();
+    if (h[0] === "banka") return renderBank(h[1] ? decodeURIComponent(h[1]) : "");
+    if (h[0] === "cikmis") return renderCikmis();
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -143,6 +145,7 @@
   function lessonLink(id, label) { const l = K.lessons[id]; return `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${label || (S.done[id] ? "Tekrar" : S.notes["p_" + id] ? "Devam" : "Keşfe başla")}</a>`; }
   function renderDersler(tab) {
     if (tab === "hedef") return renderGoals();
+    if (tab === "tyt" || tab === "ayt") return renderExam(tab);
     let html = `<h1>Dersler</h1>${tabsHtml(tab)}`;
     if (tab === "s11") {
       const all = s11Topics(), done = all.filter(topicDone).length, nx = s11Next();
@@ -157,18 +160,76 @@
         html += `</div></section>`;
       });
       html += `<p class="muted small">Kaynak: ${esc(K.s11.source)}. Kazanım kodları ayrıca doğrulanacak.</p>`;
-    } else {
-      const label = tab === "tyt" ? "TYT" : "AYT";
-      const ls = Object.values(K.lessons).filter(l => (K.tracks[l.id] || []).includes(tab));
-      html += `<p class="lede">${label} çalışmaların burada ayrı izlenir. Aynı keşif birden fazla sekmede çıkabilir; ilerlemen ortaktır.</p>`;
-      const subs = [...new Set(ls.map(l => l.subject))];
-      if (!subs.length) html += `<p class="callout">${label} için henüz keşif yok.</p>`;
-      subs.forEach(k => {
-        const items = ls.filter(l => l.subject === k), dn = items.filter(l => S.done[l.id]).length;
-        html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)} <span class="muted small">${dn}/${items.length} keşif</span></h2><div class="lst" style="gap:10px;margin-top:10px">${items.map(l => `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div>`).join("")}</div></section>`;
-      });
-      html += `<p class="muted small">${label} konu listesi ÖSYM kılavuzundan doğrulandığında burada tam sırayla yer alacak; şimdilik yalnızca hazır keşifler listeleniyor.</p>`;
     }
+    $app.innerHTML = html;
+  }
+
+  /* ---------- soru bankası, TYT/AYT sekmeleri, çıkmış sorular ---------- */
+  let customSet = null, customBack = "#/";
+  const qmeta = q => Object.assign({ sinav: [], zor: 1, kaynak: "özgün" }, (K.meta && K.meta[q.id]) || {});
+  const SINAV = [["all", "Hepsi"], ["s11", "11. sınıf"], ["tyt", "TYT"], ["ayt", "AYT"]];
+  const ZOR = ["", "kolay", "orta", "zor"];
+  function yksTitle(id) { if (!K.yks) return null; for (const lv of K.yks.levels) for (const ar of lv.areas) for (const t of ar.topics) if (t[0] === id) return t[1]; return null; }
+  function s11Title(id) { const t = s11Topics().find(p => p.id === id); return t ? t.title : null; }
+  function konuKey(q) { const m = qmeta(q); return m.yks ? "y:" + m.yks : m.s11 ? "s:" + m.s11 : "d:" + q.subject; }
+  function konuLabel(key) { const [k, v] = [key.slice(0, 1), key.slice(2)]; return k === "y" ? v + " " + (yksTitle(v) || "") : k === "s" ? "11. sınıf " + v + " " + (s11Title(v) || "") : (K.subjects[v] ? K.subjects[v].name : v) + " (genel)"; }
+  const BF = { sinav: "all", ders: "all", konu: "all", zor: 0 };
+  const bankMatch = q => { const m = qmeta(q); return (BF.sinav === "all" || m.sinav.includes(BF.sinav)) && (BF.ders === "all" || q.subject === BF.ders) && (BF.konu === "all" || konuKey(q) === BF.konu) && (!BF.zor || m.zor === BF.zor); };
+  const qStat = id => (S.qs && S.qs[id]) || { n: 0, ok: 0 };
+  function renderBank(param) {
+    if (param && /^[ysd]:/.test(param)) { BF.konu = param; BF.sinav = "all"; BF.ders = "all"; BF.zor = 0; }
+    const all = K.daily.slice(), list = all.filter(bankMatch);
+    const groups = {}; list.forEach(q => { (groups[konuKey(q)] = groups[konuKey(q)] || []).push(q); });
+    const konular = [...new Set(all.map(konuKey))].sort();
+    const subs = [...new Set(all.map(q => q.subject))];
+    const solved = list.filter(q => qStat(q.id).n > 0).length;
+    $app.innerHTML = `<h1>Soru bankası</h1><p class="lede">Her soru bir konuya bağlı; her soruda <b>ipucu</b>, <b>konu anlatımı</b> ve <b>adım adım çözüm</b> var. Filtreyi seç, çözmeye başla.</p>
+<div class="subj on"><div class="setrow"><span class="muted small">Sınav:</span><span class="chips" style="display:flex;gap:6px;flex-wrap:wrap">${SINAV.map(s => `<button class="btn ${BF.sinav === s[0] ? "" : "ghost"}" data-f="sinav:${s[0]}" type="button">${s[1]}</button>`).join("")}</span></div>
+<div class="setrow"><label class="muted small" for="fd">Ders</label><select id="fd"><option value="all">Hepsi</option>${subs.map(k => `<option value="${k}" ${BF.ders === k ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select>
+<label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
+<label class="muted small" for="fz">Zorluk</label><select id="fz"><option value="0">Hepsi</option>${[1, 2, 3].map(z => `<option value="${z}" ${BF.zor === z ? "selected" : ""}>${ZOR[z]}</option>`).join("")}</select></div></div>
+<div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
+${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><th>Soru</th><th>Çözülen</th><th></th></tr></thead><tbody>${Object.keys(groups).sort().map(k => `<tr><td>${esc(konuLabel(k))}</td><td class="num">${groups[k].length}</td><td class="num">${groups[k].filter(q => qStat(q.id).n > 0).length}</td><td><button class="btn ghost" data-go="${k}" type="button">Çöz</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="callout">Bu filtreyle soru yok. Soru bankası her hafta genişliyor; filtreyi gevşet.</p>`}
+<p class="muted small" style="margin-top:14px">Kaynak: tüm sorular bu proje için özgün yazılmıştır ("çıkmış soru" değildir). ÖSYM çıkmış soruları telif nedeniyle burada değil, ÖSYM'nin sayfasındadır.</p>`;
+    $app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { BF.sinav = b.dataset.f.split(":")[1]; renderBank(); });
+    $app.querySelector("#fd").onchange = e => { BF.ders = e.target.value; renderBank(); };
+    $app.querySelector("#fk").onchange = e => { BF.konu = e.target.value; renderBank(); };
+    $app.querySelector("#fz").onchange = e => { BF.zor = +e.target.value; renderBank(); };
+    const go = set => { if (!set.length) return; customSet = shuffle(set); customBack = "#/banka"; location.hash = "#/gunluk/ozel"; };
+    $app.querySelector("#bgo").onclick = () => go(list);
+    $app.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(groups[b.dataset.go]));
+  }
+  function renderCikmis() {
+    const o = K.osym;
+    $app.innerHTML = `<h1>Çıkmış sorular</h1><p class="lede">Geçmiş yılların sınav soruları çalışmanın en iyi parçalarından biri. Resmî kaynağı ÖSYM'dir.</p>
+<div class="callout"><b>Neden sorular burada değil?</b> ${esc(o.note)}</div>
+<div class="card" style="margin:16px 0"><h3>Resmî soru kitapçıkları ve cevap anahtarları</h3><p class="muted small">Her yıl için TYT, AYT ve YDT kitapçıkları ÖSYM'nin sayfasında. Bağlantılar ÖSYM sitesinden doğrulandı.</p>
+<div class="row" style="flex-wrap:wrap;gap:8px"><a class="btn" href="${o.archive.url}" target="_blank" rel="noopener">${esc(o.archive.title)} ↗</a>${o.years.map(y => `<a class="btn ghost" href="${y.url}" target="_blank" rel="noopener">${y.y} YKS ↗</a>`).join("")}</div></div>
+<div class="card"><h3>Nasıl çalışmalısın?</h3><ol class="body"><li>Önce <a href="#/banka">soru bankasından</a> konuyu çalış (ipucu, konu anlatımı ve adım adım çözümle).</li><li>Sonra ÖSYM'nin kitapçığından <b>aynı konuyu</b> arayıp çıkmış soruları çöz.</li><li>Yanlışta uygulamaya dön: ilgili konunun keşfini ve çözümlü sorularını tekrar et.</li></ol>
+<p class="muted small">Yakında: konu bazlı künye listesi ("2024 AYT Matematik, 12. soru → türev"); yalnızca soru numarası ve konu etiketi, soru metni yok.</p></div>`;
+  }
+  function renderExam(tab) {
+    const label = tab === "tyt" ? "TYT" : "AYT";
+    let html = `<h1>Dersler</h1>${tabsHtml(tab)}<p class="lede">${label} çalışmaların burada ayrı izlenir. Konu listesi MEB–ÖSYM kazanım belgesinden alınmıştır; ilerlemen diğer sekmelerle ortaktır.</p>
+<p class="callout small">Bu liste 2026 sınavının (eski program) belgesine dayanır. Maarif programıyla 2028 sınavına girecek öğrenci için ÖSYM'nin yeni belgesi yayımlanınca güncellenecek. ${label} / konu eşlemesi taslaktır.</p>`;
+    if (K.yks) {
+      html += `<h2>${label} Matematik konuları</h2>`;
+      K.yks.levels.filter(lv => K.yks[tab].includes(lv.id)).forEach(lv => {
+        html += `<details class="subj" ${lv.id === "11" || lv.id === "12" ? "open" : ""}><summary style="font:700 20px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center">${esc(lv.title)}</summary>`;
+        lv.areas.forEach(ar => {
+          html += `<h3 style="margin:14px 0 6px">${esc(ar.title)}</h3><div class="lst" style="gap:8px">`;
+          ar.topics.forEach(t => {
+            const qs = K.daily.filter(q => (qmeta(q).yks || "") === t[0]), ls = Object.keys(K.lessonYks || {}).filter(id => K.lessonYks[id].includes(t[0]) && K.lessons[id]);
+            html += `<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><span class="muted small" style="min-width:64px">${esc(t[0])}</span><span style="flex:1 1 220px">${esc(t[1])}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qs.length ? `<a class="btn ghost" href="#/banka/y:${t[0]}">Soru (${qs.length})</a>` : '<span class="muted small">soru hazırlanıyor</span>'}</div>`;
+          });
+          html += `</div>`;
+        });
+        html += `</details>`;
+      });
+    }
+    const others = Object.values(K.lessons).filter(l => (K.tracks[l.id] || []).includes(tab) && l.subject !== "mat");
+    others.forEach(l => { html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[l.subject].icon)} ${esc(K.subjects[l.subject].name)}</h2><div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div></section>`; });
+    html += `<p class="muted small" style="margin-top:14px">Diğer dersler (Türkçe, sosyal, fen) için de aynı biçimde resmî konu listesi eklenecek. <a href="#/cikmis">Çıkmış sorular →</a></p>`;
     $app.innerHTML = html;
   }
 
@@ -564,7 +625,7 @@ ${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.ex
   }
   function startDaily() {
     const onlyReview = location.hash.indexOf("tekrar") > -1;
-    const set = pickDaily(onlyReview);
+    const wasCustom = !!customSet, set = customSet || pickDaily(onlyReview), back = customBack; customSet = null; customBack = "#/";
     renderHome();
     if (!set.length) { $app.insertAdjacentHTML("afterbegin", `<p class="callout">Tekrar kutusu boş. Harika.</p>`); return; }
     document.body.style.overflow = "hidden";
@@ -574,14 +635,15 @@ ${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.ex
       if (i >= set.length) {
         const r = dayRec();
         fs.innerHTML = `<div class="inner"><h1>Bugünkü tur bitti ✦</h1><p class="lede">${set.length} sorudan ${ok} tanesini ilk denemede doğru yaptın. Yanlışlar cezasız: tekrar kutusunda ikinci şansı bekliyor.</p>
-<p>Bugün toplam ${r.n}/${S.goal} soru.</p><p><a class="btn" href="#/">Ana sayfaya dön</a></p></div>`; return;
+<p>Bugün toplam ${r.n}/${S.goal} soru.</p><p><a class="btn" href="${wasCustom ? back : "#/"}">${wasCustom ? "Soru bankasına dön" : "Ana sayfaya dön"}</a></p></div>`; return;
       }
       const q = set[i];
       fs.innerHTML = `<div class="inner"><button class="btn ghost close tts" type="button" id="cl">Kapat ✕</button>
 <div class="steps"><div class="meta"><span>${esc(K.subjects[q.subject].name)}</span><span>${i + 1}/${set.length}</span></div><div class="bar"><i style="width:${Math.round(i / set.length * 100)}%"></i></div></div><div id="qh"></div><div class="row" id="qn" style="margin-top:12px"></div></div>`;
-      fs.querySelector("#cl").onclick = () => { location.hash = "#/"; };
+      fs.querySelector("#cl").onclick = () => { location.hash = wasCustom ? back : "#/"; };
       question(fs.querySelector("#qh"), q, good => {
         const r = dayRec(); r.n++; if (good) { r.ok++; ok++; S.review = S.review.filter(x => x !== q.id); } else if (!S.review.includes(q.id)) S.review.push(q.id);
+        const qq = (S.qs[q.id] = S.qs[q.id] || { n: 0, ok: 0 }); qq.n++; if (good) qq.ok++;
         save();
         const qn = fs.querySelector("#qn"); qn.innerHTML = `<button class="btn" id="go" type="button">${i + 1 < set.length ? "Sonraki →" : "Bitir ✓"}</button>`;
         qn.querySelector("#go").onclick = () => { i++; step(); fs.scrollTop = 0; };

@@ -46,6 +46,8 @@
     o.sel = (a || {}).sel || (b || {}).sel || null;
     o.subjGoal = Object.assign({}, (b || {}).subjGoal, (a || {}).subjGoal);
     o.goalDone = Object.assign({}, (b || {}).goalDone, (a || {}).goalDone);
+    o.qs = {}; var qa = (a || {}).qs || {}, qb = (b || {}).qs || {};
+    Object.keys(Object.assign({}, qa, qb)).forEach(function (k) { o.qs[k] = { n: Math.max((qa[k] || {}).n || 0, (qb[k] || {}).n || 0), ok: Math.max((qa[k] || {}).ok || 0, (qb[k] || {}).ok || 0) }; });
     o.profile = { name: ((a || {}).profile || {}).name || ((b || {}).profile || {}).name || "" };
     return o;
   }
