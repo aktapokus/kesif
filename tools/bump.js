@@ -6,4 +6,5 @@ const v = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHou
 let html = fs.readFileSync(f, 'utf8');
 html = html.replace(/((?:src|href)="(?:data\/[^"?]+|[a-z]+\.(?:js|css)))(\?v=[^"]*)?"/g, `$1?v=${v}"`);
 fs.writeFileSync(f, html);
+fs.writeFileSync(path.join(__dirname, '..', 'version.txt'), v);
 console.log('Sürüm: ' + v);

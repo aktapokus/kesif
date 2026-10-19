@@ -13,6 +13,7 @@ const refs = [...html.matchAll(/(?:src|href)="([^"#:]+?)(\?v=([^"]+))?"/g)].filt
 const versions = new Set(refs.filter(m => m[3]).map(m => m[3]));
 for (const m of refs) if (!fs.existsSync(path.join(root, m[1]))) err(`index.html: dosya yok → ${m[1]}`);
 if (versions.size > 1) warn(`index.html: farklı sürüm parametreleri var (${[...versions].join(', ')}); tools/bump.js çalıştır.`);
+try { const vt = fs.readFileSync(path.join(root, 'version.txt'), 'utf8').trim(); if (versions.size === 1 && !versions.has(vt)) err(`version.txt (${vt}) index.html sürümüyle (${[...versions][0]}) aynı değil; node tools/bump.js çalıştır.`); } catch (e) { err('version.txt yok; node tools/bump.js çalıştır.'); }
 const dataFiles = refs.map(m => m[1]).filter(f => f.startsWith('data/'));
 for (const f of fs.readdirSync(path.join(root, 'data'))) if (f.endsWith('.js') && !dataFiles.includes('data/' + f)) warn(`data/${f} index.html'de yüklenmiyor`);
 for (const f of dataFiles) { try { eval(fs.readFileSync(path.join(root, f), 'utf8')); } catch (e) { err(`${f}: yüklenemedi → ${e.message}`); } }
