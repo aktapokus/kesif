@@ -32,5 +32,15 @@ KESIF.help = {
   mu9: { hint: "Noktayı y = aˣ denkleminde yerine koy: 9 = a². Taban pozitif olmalı.", topic: { lesson: "mat-ustel-log", step: 1 } },
   mu10: { hint: "logₓ 16 = 4 demek x⁴ = 16 demek. Taban pozitif ve 1'den farklı olmalı.", topic: { lesson: "mat-ustel-log", step: 6 } },
   mu11: { hint: "Taban 1'den küçükse fonksiyon artan mı azalan mı? Sıralama ne olur?", topic: { lesson: "mat-ustel-log", step: 1 } },
-  mu12: { hint: "log₂ x = 3 ⟺ 2³ = x. Üssü kendin hesapla.", topic: { lesson: "mat-ustel-log", step: 6 } }
+  mu12: { hint: "log₂ x = 3 ⟺ 2³ = x. Üssü kendin hesapla.", topic: { lesson: "mat-ustel-log", step: 6 } },
+  ms1: { hint: "İşaret yönü, mutlak değer gücü söyler. |−0,92| ne kadar?", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms2: { hint: "Nokta bulutu dağınıksa doğrusal bir eğilim var mı?", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms3: { hint: "r hangi iki sayı arasında kalır?", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms4: { hint: "x yerine 7 koy; önce çarp, sonra topla.", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms5: { hint: "x'in katsayısı, x'in 1 birimlik artışında y'nin tahmini değişimidir.", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms6: { hint: "Doğru hangi aralıktaki veriden çıkarıldı? 40 yaş o aralığın içinde mi?", topic: { lesson: "mat-iki-degisken", step: 3 } },
+  ms7: { hint: "İtfaiye aracı sayısını da hasarı da birlikte artıran üçüncü bir şey olabilir mi?", topic: { lesson: "mat-iki-degisken", step: 8 } },
+  ms8: { hint: "Eğilimden uzak bir nokta nokta bulutunu daha mı sıkı yapar, daha mı dağınık?", topic: { lesson: "mat-iki-degisken", step: 4 } },
+  ms9: { hint: "Her gözlem için iki SAYI gerektiğini düşün; renk ya da şehir sayı mı?", topic: { lesson: "mat-iki-degisken", step: 0 } },
+  ms10: { hint: "Sağa gittikçe noktalar yukarı çıkıyorsa y x ile aynı yönde mi değişiyor?", topic: { lesson: "mat-iki-degisken", step: 3 } }
 };

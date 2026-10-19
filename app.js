@@ -39,7 +39,7 @@
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "plan") return renderPlan();
-    if (h[0] === "dersler") return renderSubjects();
+    if (h[0] === "dersler") return renderDersler(h[1] || "s11");
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -60,7 +60,8 @@
     const r = dayRec(), goal = S.goal, pct = Math.min(100, Math.round(r.n / goal * 100));
     const { list, want } = todaysLessons();
     const wantNames = want.map(s => K.subjects[s].name).join(" · ");
-    const pending = list.find(l => !S.done[l.id]) || list[0];
+    let pending = list.find(l => !S.done[l.id]) || list[0];
+    const nxl = s11NextLesson(); if (nxl && list.some(l => l.id === nxl)) pending = K.lessons[nxl];
     const dayName = K.dayNames[new Date().getDay()];
     let html = `<span class="eyebrow">${dayName}</span><h1>Bugün neyi keşfedeceksin?</h1>
 <p class="lede">Ezber yok. Bugünün planı: <b>${esc(wantNames || "serbest")}</b>. Önce bir fikri anla, sonra soruyla dene.</p><div class="grid" style="margin-top:22px">`;
@@ -70,6 +71,7 @@
     html += `<article class="card"><div class="row"><div class="ring" style="--p:${pct}"><b>${r.n}/${goal}</b></div>
 <div><h3>Günlük sorular</h3><p class="muted small" style="margin:0">Hedef: ${goal} soru${r.n ? " · doğru: " + r.ok : ""}</p></div></div>
 <p style="margin-top:14px"><a class="btn ${r.n >= goal ? "ghost" : ""}" href="#/gunluk">${r.n >= goal ? "Bir tur daha" : "Soruları çöz"}</a></p></article>`;
+    if (K.s11) { const all = s11Topics(), dn = all.filter(topicDone).length, nx = s11Next(); html += `<article class="card"><h3>11. sınıf yolculuğu</h3><p class="muted small" style="margin:0 0 8px">${dn}/${all.length} konu tamam${nx ? ` · sıradaki: <b>${esc(nx.id)} ${esc(nx.title)}</b>` : ""}</p><a class="btn ghost" href="#/dersler/s11">Sırayı gör</a></article>`; }
     if (S.review.length) html += `<article class="card"><h3>Tekrar kutusu</h3><p class="muted small">Düşünceyi yeniden kurmak istediğin ${S.review.length} soru var. Cezası yok; sadece ikinci şans.</p><a class="btn ghost" href="#/gunluk/tekrar">Tekrar et</a></article>`;
     html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
     $app.innerHTML = html + "</div>";
@@ -130,10 +132,49 @@
     }
   }
 
-  /* ---------- dersler sayfası: ders seç, hedef koy ---------- */
-  function renderSubjects() {
+  /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
+  const TABS = [["s11", "11. Sınıf"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
+  const tabsHtml = cur => `<nav class="tabs" role="tablist" aria-label="Ders bölümleri">${TABS.map(t => `<a role="tab" href="#/dersler/${t[0]}" ${t[0] === cur ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
+  const s11Topics = () => K.s11 ? K.s11.themes.flatMap(t => t.topics.map(p => Object.assign({ theme: t }, p))) : [];
+  const topicDone = p => !!(p.lesson && S.done[p.lesson]);
+  function s11Next() { const t = s11Topics().find(p => !topicDone(p)); return t || null; }
+  function s11NextLesson() { const t = s11Topics().find(p => p.lesson && !S.done[p.lesson]); return t ? t.lesson : null; }
+  function lessonLink(id, label) { const l = K.lessons[id]; return `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${label || (S.done[id] ? "Tekrar" : S.notes["p_" + id] ? "Devam" : "Keşfe başla")}</a>`; }
+  function renderDersler(tab) {
+    if (tab === "hedef") return renderGoals();
+    let html = `<h1>Dersler</h1>${tabsHtml(tab)}`;
+    if (tab === "s11") {
+      const all = s11Topics(), done = all.filter(topicDone).length, nx = s11Next();
+      html += `<p class="lede">11. sınıf matematiği, resmî ders kitabındaki sırayla. Sırayla gidersen her konu bir öncekinin üstüne kurulur.</p>
+<div class="row" style="margin:6px 0 18px"><div class="minibar" aria-hidden="true"><i style="width:${all.length ? done / all.length * 100 : 0}%"></i></div><b>${done}/${all.length} konu</b></div>`;
+      K.s11.themes.forEach(th => {
+        html += `<section class="subj on"><h2 style="margin:0 0 4px">${th.n}. Tema: ${esc(th.title)}</h2><div class="lst" style="gap:10px;margin-top:10px">`;
+        th.topics.forEach(p => {
+          const isNext = nx && nx.id === p.id, has = !!p.lesson && !!K.lessons[p.lesson];
+          html += `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;${isNext ? "border-left:4px solid var(--accent);padding-left:10px" : ""}"><span style="font-weight:700;min-width:34px">${p.id}</span><span style="flex:1 1 220px">${esc(p.title)}${isNext ? ' <span class="tag">sıradaki</span>' : ""}${p.partial ? ' <span class="muted small">(bir bölümü)</span>' : ""}</span>${has ? `${S.done[p.lesson] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(p.lesson)}` : '<span class="muted small">keşif hazırlanıyor</span>'}</div>`;
+        });
+        html += `</div></section>`;
+      });
+      html += `<p class="muted small">Kaynak: ${esc(K.s11.source)}. Kazanım kodları ayrıca doğrulanacak.</p>`;
+    } else {
+      const label = tab === "tyt" ? "TYT" : "AYT";
+      const ls = Object.values(K.lessons).filter(l => (K.tracks[l.id] || []).includes(tab));
+      html += `<p class="lede">${label} çalışmaların burada ayrı izlenir. Aynı keşif birden fazla sekmede çıkabilir; ilerlemen ortaktır.</p>`;
+      const subs = [...new Set(ls.map(l => l.subject))];
+      if (!subs.length) html += `<p class="callout">${label} için henüz keşif yok.</p>`;
+      subs.forEach(k => {
+        const items = ls.filter(l => l.subject === k), dn = items.filter(l => S.done[l.id]).length;
+        html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)} <span class="muted small">${dn}/${items.length} keşif</span></h2><div class="lst" style="gap:10px;margin-top:10px">${items.map(l => `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div>`).join("")}</div></section>`;
+      });
+      html += `<p class="muted small">${label} konu listesi ÖSYM kılavuzundan doğrulandığında burada tam sırayla yer alacak; şimdilik yalnızca hazır keşifler listeleniyor.</p>`;
+    }
+    $app.innerHTML = html;
+  }
+
+  /* ---------- hedeflerim: ders seç, hedef koy ---------- */
+  function renderGoals() {
     const sel = selSet(), td = studyDay();
-    let html = `<h1>Dersler</h1><p class="lede">Çalışmak istediğin dersleri seç; her derse günlük bir süre hedefi koyabilirsin. Üstteki sayaç seçtiğin derse yazılır. Seçmediğin dersler "Bugün" önerisinde çıkmaz ama burada durur.</p>`;
+    let html = `${tabsHtml("hedef")}<p class="lede">Çalışmak istediğin dersleri seç; her derse günlük bir süre hedefi koyabilirsin. Üstteki sayaç seçtiğin derse yazılır. Seçmediğin dersler "Bugün" önerisinde çıkmaz ama burada durur.</p>`;
     for (const k in K.subjects) {
       const sb = K.subjects[k], on = sel.has(k), g = S.subjGoal[k] || 0, mins = Math.floor((td[k] || 0) / 60);
       const ls = Object.values(K.lessons).filter(l => l.subject === k);
@@ -143,9 +184,9 @@
 <span class="small">Bugün: <b>${mins} dk</b></span>${g ? `<div class="minibar" aria-hidden="true"><i style="width:${Math.min(100, mins / g * 100)}%"></i></div>${mins >= g ? "<b class='t-ok'>✓</b>" : ""}` : ""}</div>
 <div class="lst">${ls.length ? ls.map(l => `<a href="#/ders/${l.id}/0">${S.done[l.id] ? "✓ " : "› "}${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></a>`).join("") : `<span class="muted small">Bu ders için keşif hazırlanıyor.</span>`}</div></section>`;
     }
-    $app.innerHTML = html;
-    $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); renderSubjects(); });
-    $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); renderSubjects(); });
+    $app.innerHTML = `<h1>Dersler</h1>` + html;
+    $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); renderGoals(); });
+    $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); renderGoals(); });
   }
 
   /* ---------- hesap (isteğe bağlı eşitleme) ---------- */
@@ -296,6 +337,56 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
     view(); upd();
   }
 
+
+  /* ---------- saçılım grafiği keşfi: iki niceliksel değişken, eğilim doğrusu, ilişki katsayısı r ---------- */
+  function scatterLab(step, host) {
+    const c = step.cfg, W = 640, H = 360, PL = 56, PR = 20, PT = 26, PB = 52;
+    const sets = c.sets.map(s => ({ title: s.title, xt: s.xt, yt: s.yt, note: s.note, x: s.x.slice(), y: s.y.slice(), y0: s.y.slice() }));
+    let cur = 0;
+    const f = (v, d) => (+v.toFixed(d == null ? 2 : d)).toString().replace(".", ",").replace("-", "−");
+    const nice = raw => { const p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; };
+    host.innerHTML = `<p>${step.intro}</p><div class="lab">
+<div class="side row" style="margin:0 0 10px">${sets.map((s, i) => `<button class="btn ghost" data-d="${i}" type="button">${esc(s.title)}</button>`).join("")}</div>
+<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><g id="gr"></g></svg>
+<div class="row" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="ln" style="width:22px;height:22px"> Eğilim doğrusunu göster</label></div>
+${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukarı–aşağı oynat</label><input id="ol" type="range" min="0" max="100" value="50" aria-label="Son noktayı oynat">` : ""}
+<div class="readout"><span>r = <b id="rv">–</b></span><span id="rd" class="muted small"></span></div>
+<p class="small" id="eq" style="margin:4px 0"></p><p class="muted small" id="nt"></p></div>`;
+    const q = s => host.querySelector(s), ns = "http://www.w3.org/2000/svg";
+    function stats(d) {
+      const n = d.x.length, mx = d.x.reduce((a, b) => a + b, 0) / n, my = d.y.reduce((a, b) => a + b, 0) / n;
+      let sxx = 0, syy = 0, sxy = 0; for (let i = 0; i < n; i++) { sxx += (d.x[i] - mx) ** 2; syy += (d.y[i] - my) ** 2; sxy += (d.x[i] - mx) * (d.y[i] - my); }
+      const a = sxy / sxx; return { r: sxy / Math.sqrt(sxx * syy), a, b: my - a * mx };
+    }
+    function draw() {
+      const d = sets[cur], st = stats(d), g = q("#gr"), line = q("#ln").checked;
+      const ex = Math.min(...d.x), Ex = Math.max(...d.x), ey = Math.min(...d.y0), Ey = Math.max(...d.y0);
+      const xmin = ex - (Ex - ex) * 0.08, xmax = Ex + (Ex - ex) * 0.08, ymin = ey - (Ey - ey) * 0.12, ymax = Ey + (Ey - ey) * 0.12;
+      const X = v => PL + (v - xmin) / (xmax - xmin) * (W - PL - PR), Y = v => H - PB - (v - ymin) / (ymax - ymin) * (H - PB - PT);
+      let h = "";
+      const sx = nice((xmax - xmin) / 6), sy = nice((ymax - ymin) / 5);
+      for (let v = Math.ceil(xmin / sx) * sx; v <= xmax; v += sx) h += `<line stroke="var(--line)" x1="${X(v)}" y1="${PT}" x2="${X(v)}" y2="${H - PB}"/><text x="${X(v)}" y="${H - PB + 20}" text-anchor="middle" fill="var(--muted)" font-size="15">${f(v, 1)}</text>`;
+      for (let v = Math.ceil(ymin / sy) * sy; v <= ymax; v += sy) h += `<line stroke="var(--line)" x1="${PL}" y1="${Y(v)}" x2="${W - PR}" y2="${Y(v)}"/><text x="${PL - 8}" y="${Y(v) + 5}" text-anchor="end" fill="var(--muted)" font-size="15">${f(v, 1)}</text>`;
+      h += `<line class="ax" x1="${PL}" y1="${H - PB}" x2="${W - PR}" y2="${H - PB}"/><line class="ax" x1="${PL}" y1="${PT}" x2="${PL}" y2="${H - PB}"/>`;
+      h += `<text x="${(PL + W - PR) / 2}" y="${H - 8}" text-anchor="middle" fill="var(--ink)" font-size="16" font-weight="700">${esc(d.xt)} →</text><text x="${PL}" y="16" fill="var(--ink)" font-size="16" font-weight="700">↑ ${esc(d.yt)}</text>`;
+      if (line) h += `<line x1="${X(xmin)}" y1="${Y(st.a * xmin + st.b)}" x2="${X(xmax)}" y2="${Y(st.a * xmax + st.b)}" stroke="var(--good)" stroke-width="3" stroke-dasharray="7 5"/>`;
+      d.x.forEach((xv, i) => { const last = c.outlier && i === d.x.length - 1; h += `<circle cx="${X(xv)}" cy="${Y(d.y[i])}" r="${last ? 9 : 7}" fill="${last ? "var(--bad)" : "var(--accent)"}" ${last ? 'stroke="var(--ink)" stroke-width="3"' : ""}/>`; });
+      g.innerHTML = h;
+      const r = st.r, ar = Math.abs(r), s = ar < 0.2 ? "yok denecek kadar zayıf" : (ar < 0.5 ? "zayıf" : ar < 0.8 ? "orta düzeyde" : "güçlü") + (r > 0 ? ", aynı yönlü (pozitif)" : ", ters yönlü (negatif)");
+      q("#rv").textContent = f(r, 2); q("#rd").textContent = "→ doğrusal ilişki " + s;
+      q("#eq").innerHTML = line ? `Eğilim doğrusu: <b>y ≈ ${f(st.a, 2)}·x ${st.b < 0 ? "−" : "+"} ${f(Math.abs(st.b), 1)}</b> (x'in 1 birim artışında y'nin tahmini değişimi ${f(st.a, 2)})` : "";
+      q("#nt").textContent = d.note || "";
+      host.querySelectorAll("[data-d]").forEach(b => { b.style.borderColor = +b.dataset.d === cur ? "var(--accent)" : ""; });
+    }
+    host.addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (b) { cur = +b.dataset.d; sets[cur].y = sets[cur].y0.slice(); syncOl(); draw(); } });
+    q("#ln").addEventListener("change", draw);
+    const ol = q("#ol");
+    function syncOl() { if (!ol) return; const d = sets[cur], lo = Math.min(...d.y0), hi = Math.max(...d.y0), span = hi - lo; ol.value = Math.round((d.y0[d.y0.length - 1] - (lo - span * 0.6)) / (span * 2.2) * 100); }
+    syncOl();
+    if (ol) ol.addEventListener("input", () => { const d = sets[cur], lo = Math.min(...d.y0), hi = Math.max(...d.y0), span = hi - lo; d.y[d.y.length - 1] = lo - span * 0.6 + (+ol.value / 100) * span * 2.2; draw(); });
+    draw();
+  }
+
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
@@ -316,6 +407,8 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; explorer(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "circle") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; circleLab(st, host.querySelector("#ex")); navBtns(true);
+    } else if (st.type === "scatter") {
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; scatterLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "expo") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; expoLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "mcq") {
@@ -338,7 +431,7 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
   /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
-    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
     return null;
   }
   function question(host, q, done, inLesson, extra) {
@@ -359,7 +452,7 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
         if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
-        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c);
+        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c);
         hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (b.dataset.h === "solve") {
         answered = true; const right = opts.find(x => x.ok);

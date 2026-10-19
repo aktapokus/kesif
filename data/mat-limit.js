@@ -1,13 +1,18 @@
 /* Matematik keşfi: Limit — "yaklaşmak" ile "ulaşmak" farkı. Özgün içerik (CC BY-NC-SA 4.0). */
 KESIF.lessons["mat-limit"] = {
   id: "mat-limit", subject: "mat", title: "Limit: yaklaşırken ne oluyor?", minutes: 25,
-  grade: "12. sınıf / AYT (11. sınıf için ön keşif) — Maarif kazanım eşlemesi doğrulanacak",
+  grade: "12. sınıf / AYT konusu (MEB 11. sınıf matematik kitabında yok; ön keşif) — Maarif kazanım eşlemesi doğrulanacak",
   hook: "Hız kamerası 'tam şu anki' hızı nasıl bilir?",
   steps: [
     { type: "text", title: "Hız kamerası sana neyi saklıyor?",
       say: "Bir araç, t saniyede t kare metre yol alıyor. Üçüncü saniyedeki hızı bulmak istiyoruz. Hız, yol bölü süredir. Ama tam üçüncü saniye bir andır; süre sıfır, yol sıfır. Sıfır bölü sıfır nasıl hesaplanır? Hız kameraları iki ölçüm arasındaki süreyi küçülterek bu sorunu çözer.",
-      html: `<p class="big">Bir araç, <span class="math">t</span> saniyede <span class="math">t²</span> metre yol alıyor.</p>
-<p>3. saniyedeki <b>tam o anki hızı</b> bilmek istiyoruz. Hız = yol ÷ süre. Ama "tam o an" bir <i>an</i>dır: geçen süre 0, alınan yol 0.</p>
+      html: `<p class="big">Bir araç duruyor ve hareket ediyor: başladığından <span class="math">t</span> saniye sonra toplam <span class="math">t²</span> metre yol yapmış oluyor.</p>
+<table class="tbl" style="max-width:520px"><thead><tr><th>Geçen süre t (sn)</th><th>Toplam yol (m)</th></tr></thead><tbody><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>4</td></tr><tr><td>3</td><td>9</td></tr><tr><td>4</td><td>16</td></tr></tbody></table>
+<p><b>Hız nedir?</b> Birim sürede alınan yol: <span class="math">hız = alınan yol ÷ geçen süre</span>. Örneğin 3. saniyeden 4. saniyeye: yol 16 − 9 = <b>7 m</b>, süre <b>1 sn</b> → ortalama hız <b>7 m/s</b>.</p>
+<p><b>Bu hesabı harflerle yazalım.</b> 3. saniyeden <i>h</i> saniye sonrasına bakıyoruz (h = ölçüm aralığı). Alınan yol = (3+h. saniyedeki toplam yol) − (3. saniyedeki toplam yol); geçen süre = h. Toplam yola <span class="math">s(t)</span> dersek:</p>
+<p class="big math">ortalama hız = (s(3+h) − s(3)) ÷ h</p>
+<p class="muted small">Yeni bir kural değil; "alınan yol ÷ geçen süre"nin harfli yazılışı. h = 1 için (16 − 9) ÷ 1 = 7.</p>
+<p>Ama bizim istediğimiz <b>tam o anki hız</b>. "Tam o an" bir <i>an</i>dır: geçen süre 0, alınan yol da 0.</p>
 <p class="callout">0 ÷ 0 hesaplanamaz. Peki yol kenarındaki hız kamerası neden yine de bir hız söyleyebiliyor?</p>
 <svg viewBox="0 0 640 150" role="img" aria-label="Yolda iki noktada araç: 3. saniye ve 3 artı h saniye" style="width:100%;height:auto;background:var(--card2);border-radius:12px">
  <line x1="20" y1="100" x2="620" y2="100" stroke="var(--muted)" stroke-width="3"/>

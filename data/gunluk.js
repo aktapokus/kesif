@@ -222,5 +222,76 @@ KESIF.daily = [
       { t: "6", why: "2 · 3 yapılmış; üs alma çarpma değildir." },
       { t: "9", why: "3² hesaplanmış; taban 2, üs 3." },
       { t: "3/2", why: "Bölme yapılmış; logaritma bölmez." }
-    ], explain: "logₐ x = k ⟺ x = aᵏ." }
+    ], explain: "logₐ x = k ⟺ x = aᵏ." },
+  /* --- 11. sınıf, 1. Tema: iki niceliksel değişkenli veriler (mat-iki-degisken) --- */
+  { id: "ms1", subject: "mat", q: "İki değişken için doğrusal ilişki katsayısı r = −0,92 bulunmuş. Hangisi doğrudur?",
+    opts: [
+      { t: "Güçlü, ters yönlü (negatif) bir doğrusal ilişki vardır.", ok: true, why: "|r| = 0,92 değeri 1'e yakın: güçlü. İşaret eksi: biri artarken diğeri azalıyor." },
+      { t: "İlişki zayıftır çünkü r negatiftir.", why: "Gücü işaret değil, mutlak değer belirler. −0,92 de +0,92 kadar güçlüdür." },
+      { t: "x bir birim arttığında y %92 azalır.", why: "r bir yüzde ya da eğim değildir; ilişkinin gücünü ve yönünü özetler." },
+      { t: "x, y'nin azalmasının nedenidir.", why: "Güçlü ilişki sebebi kanıtlamaz; ortak bir üçüncü etken olabilir." }
+    ], explain: "İşaret yön, mutlak değer güç." },
+  { id: "ms2", subject: "mat", q: "Bir saçılım grafiğinde noktalar dağınık, belirgin bir yön yok. r yaklaşık kaç olur?",
+    opts: [
+      { t: "0'a yakın", ok: true, why: "Belirgin doğrusal eğilim yoksa r sıfıra yakındır." },
+      { t: "1'e yakın", why: "r ≈ 1 noktaların yükselen bir doğrunun çevresinde sıkışık olmasıdır." },
+      { t: "−1'e yakın", why: "r ≈ −1 inen bir doğru boyunca sıkışık noktalardır." },
+      { t: "2", why: "r hiçbir zaman −1'den küçük, 1'den büyük olamaz." }
+    ], explain: "r ∈ [−1, 1]; dağınık bulut → 0'a yakın." },
+  { id: "ms3", subject: "mat", q: "Aşağıdakilerden hangisi bir doğrusal ilişki katsayısı (r) olamaz?",
+    opts: [
+      { t: "1,3", ok: true, why: "r her zaman −1 ile 1 arasındadır; 1,3 bu aralığın dışında." },
+      { t: "−0,4", why: "−1 ile 1 arasında, olabilir." },
+      { t: "0", why: "Doğrusal ilişki yok demek; olabilir." },
+      { t: "−1", why: "Kusursuz ters yönlü doğrusal ilişkide r = −1." }
+    ], explain: "−1 ≤ r ≤ 1." },
+  { id: "ms4", subject: "mat", q: "Bir eğilim doğrusu y = 2x + 10 ise x = 7 için tahmin edilen y kaçtır?",
+    opts: [
+      { t: "24", ok: true, why: "y = 2·7 + 10 = 14 + 10 = 24." },
+      { t: "14", why: "2·7 = 14'ü bulup +10'u unutmuşsun." },
+      { t: "17", why: "x + 10 yapılmış; x'in katsayısı 2." },
+      { t: "34", why: "2·7 + 20 gibi bir hata; sabit terim 10." }
+    ], explain: "Tahmin: x'i denklemde yerine koy." },
+  { id: "ms5", subject: "mat", q: "Eğilim doğrusu y = 3x + 12 ise x bir birim arttığında y'nin tahmini değişimi kaçtır?",
+    opts: [
+      { t: "3 artar", ok: true, why: "x'in katsayısı eğimdir: x 1 artınca y yaklaşık 3 artar." },
+      { t: "12 artar", why: "12, x = 0 iken tahmin edilen değerdir (kesişim); değişim miktarı değil." },
+      { t: "15 artar", why: "3 + 12 toplanmış; eğim ve kesişim ayrı kavramlar." },
+      { t: "36 artar", why: "3·12 çarpılmış; ilgisiz bir işlem." }
+    ], explain: "y = a·x + b'de a: x'teki 1 birimlik artışın y'deki karşılığı." },
+  { id: "ms6", subject: "mat", q: "5–10 yaş arası çocukların boy–yaş verisinden çıkarılan doğruyla 40 yaşındaki birinin boyunu tahmin etmek neden sakıncalıdır?",
+    opts: [
+      { t: "Doğru yalnızca verinin aralığında güvenilirdir; büyüme sonsuza dek doğrusal sürmez", ok: true, why: "Veri aralığının çok dışına çıkmak (dış tahmin) anlamsız sonuçlar verir: boy sürekli artmaz." },
+      { t: "Doğru yanlış hesaplanmıştır", why: "Doğru aralığında iyi olabilir; sorun aralığın dışında kullanılması." },
+      { t: "40 sayısı çift olduğu için", why: "Sayının çift ya da tek olmasının bir önemi yok." },
+      { t: "Boy ve yaş arasında ilişki olmadığı için", why: "5–10 yaş aralığında güçlü ilişki var; sorun kapsam." }
+    ], explain: "Tahminlerde veri aralığının içinde kal." },
+  { id: "ms7", subject: "mat", q: "Bir şehirde itfaiye aracı sayısı ile yangın hasarı birlikte artıyor. En makul açıklama hangisidir?",
+    opts: [
+      { t: "Yangının büyüklüğü hem gönderilen araç sayısını hem hasarı artırıyor olabilir", ok: true, why: "Ortak neden: büyük yangınlarda hem çok araç gelir hem hasar büyük olur." },
+      { t: "İtfaiye araçları hasara neden oluyor", why: "Birlikte artmak sebep olmak demek değildir; mantıklı bir mekanizma yok." },
+      { t: "Hasar arttığı için yangın çıkıyor", why: "Hasar yangından sonra oluşur; neden-sonuç ters kurulmuş." },
+      { t: "İkisi arasında hiçbir ilişki yoktur", why: "Birlikte artıyorlar; ilişki var, yalnızca doğrudan sebep değil." }
+    ], explain: "Karıştırıcı (ortak) değişken: iki değişkeni birlikte etkileyen üçüncü etken." },
+  { id: "ms8", subject: "mat", q: "Doğrusal bir eğilim gösteren verilere eğilimden çok uzakta tek bir nokta eklenirse |r| genelde ne olur?",
+    opts: [
+      { t: "Azalır", ok: true, why: "Uzak nokta bulutu dağıtır; doğrusal ilişki daha zayıf görünür, |r| düşer." },
+      { t: "Artar", why: "Eğilimden uzak bir nokta doğrusallığı güçlendirmez." },
+      { t: "Hiç değişmez", why: "Tek bir uç nokta bile r'yi belirgin biçimde değiştirebilir (kaydırıcıda denedin)." },
+      { t: "Her zaman 0 olur", why: "Etkisi güçlü olabilir ama r otomatik olarak 0 olmaz." }
+    ], explain: "r aykırı değerlere duyarlıdır." },
+  { id: "ms9", subject: "mat", q: "Hangisi iki niceliksel değişkenli veriye örnektir?",
+    opts: [
+      { t: "Her öğrencinin boy ve kilosu", ok: true, why: "Her gözlem için iki sayı (boy, kilo): iki niceliksel değişken." },
+      { t: "Öğrencilerin en sevdiği renk", why: "Renk niteliksel (kategorik) bir değişken." },
+      { t: "Öğrencilerin doğum şehri", why: "Şehir niteliksel bir değişken; ayrıca tek değişken." },
+      { t: "Sınıf listesindeki sıra numaraları", why: "Tek bir değişken ve ölçme değil sıralama." }
+    ], explain: "İki sayısal özellik, aynı gözlem." },
+  { id: "ms10", subject: "mat", q: "Bir saçılım grafiğinde noktalar soldan sağa yükseliyor. Bu ilişki için ne denir?",
+    opts: [
+      { t: "Pozitif (aynı yönlü) ilişki", ok: true, why: "x arttıkça y de artma eğiliminde." },
+      { t: "Negatif (ters yönlü) ilişki", why: "Negatif ilişkide noktalar sağa gittikçe aşağı iner." },
+      { t: "İlişki yoktur", why: "Belirgin yükselen bir desen var." },
+      { t: "x, y'nin nedenidir", why: "Yükselen desen sebebi kanıtlamaz." }
+    ], explain: "Yön: yükselen → pozitif, inen → negatif." }
 ];
