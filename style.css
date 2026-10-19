@@ -155,3 +155,5 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .chip.on{background:var(--card);border-color:var(--good)}
 .chip.cur{outline:3px solid var(--accent)}
 .opt.sel{border-color:var(--accent);background:var(--card2)}
+
+.errbox{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}

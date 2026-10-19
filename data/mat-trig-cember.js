@@ -1,7 +1,7 @@
 /* Matematik keşfi: Birim çember — sinüs ve kosinüs bir "yükseklik" ve bir "yatay uzaklık"tır. Özgün içerik (CC BY-NC-SA 4.0). */
 KESIF.lessons["mat-trig-cember"] = {
   id: "mat-trig-cember", subject: "mat", title: "Dönme dolap: sinüs ve kosinüs nereden çıkıyor?", minutes: 25,
-  grade: "11. sınıf — MEB Maarif programında 11. sınıf 'Nicelikler ve Değişimler' teması; kazanım kodu ve metni resmî programdan doğrulanacak",
+  grade: "11. sınıf — 3. Tema, 3.1 Trigonometrik fonksiyonlar ve nitel özellikleri (MAT.11.3.1; MEB ODSGM dağılım tablosu). Bu keşif konunun birim çember bölümünü kapsar.",
   hook: "Dönme dolapta kabinin yerden yüksekliği nasıl bir desen çizer?",
   steps: [
     { type: "text", title: "Dönme dolabın tepesindeki kabin",

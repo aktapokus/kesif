@@ -158,7 +158,7 @@ KESIF.daily = [
       { t: "−3", ok: true, why: "2⁻³ = 1/8." },
       { t: "3", why: "2³ = 8, 1/8 değil. 1/8 için negatif üs gerekir." },
       { t: "−8", why: "8 sonucun paydası; üs 3'tür (negatif)." },
-      { t: "1/3", why: "3, üsün büyüklüğü; işaret ve yön karışmış. 2^(1/3) ≈ 1,26; 1/8 değil." }
+      { t: "1/3", why: "2^(1/3) ≈ 1,26; 1/8 değil. Üssün işareti negatif olmalı ve büyüklüğü 3: 2⁻³ = 1/8." }
     ], explain: "1'den küçük pozitif sayıların logaritması (a > 1) negatiftir." },
   { id: "mu4", subject: "mat", q: "log₄ 2 kaçtır?",
     opts: [

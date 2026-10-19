@@ -91,7 +91,7 @@
     [["2", "3² = 9; 1/9 için üs negatif."], ["−3", "3⁻³ = 1/27."], ["1/2", "3^(1/2) = √3."]],
     "f⁻¹(b) = a ⟺ f(a) = b. 3 üzeri kaç 1/9 eder?", ["f⁻¹(1/9) = a demek 3ᵃ = 1/9.", "1/9 = 3⁻².", "a = −2."], "f(a) = b ⟺ f⁻¹(b) = a.");
   Q("te2", "4.2", 2, "f(x) = 2ˣ + 1 ise f⁻¹(9) kaçtır?", "3", "f⁻¹(9) = a ⟺ f(a) = 9: 2ᵃ + 1 = 9 → 2ᵃ = 8 → a = 3.",
-    [["8", "9 − 1 = 8, ama bu üs değil; 2ᵃ = 8 → a = 3."], ["4", "9 ÷ 2 − ... gibi bir hata; 2ᵃ = 8."], ["2", "2² = 4; 8 için üs 3."]],
+    [["8", "9 − 1 = 8, ama bu üs değil; 2ᵃ = 8 → a = 3."], ["4", "2⁴ = 16; 2ᵃ = 8 için üs 3 olmalı."], ["2", "2² = 4; 8 için üs 3."]],
     "f⁻¹(9) = a demek f(a) = 9.", ["f(a) = 9 → 2ᵃ + 1 = 9.", "2ᵃ = 8 = 2³.", "a = 3."], "Ters fonksiyonu çözmek yerine denklemi kur.");
 
   /* ---------- 4.3 Logaritmik fonksiyonlar ve nitel özellikleri ---------- */

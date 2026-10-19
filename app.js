@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [], pickSubj: "all", pal: "mavi" });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [], pickSubj: "all", pal: "mavi", errs: {} });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -475,6 +475,7 @@ ${q.type === "open" ? `<p class="small">Kısa cevap: ${e.auto ? '<b class="t-ok"
 <article class="card"><h3>Çalışma süresi</h3><p class="stat">${mins(totSec)} dk</p><p class="muted small" style="margin:0">Bu hafta: ${mins(week)} dk · Seri: <b>${streak()} gün</b></p></article>
 <article class="card"><h3>Keşifler</h3><p class="stat">${Object.keys(S.done).length}</p><p class="muted small" style="margin:0">tamamlanan keşif · 11. sınıf: ${dn}/${all.length} konu</p></article>
 <article class="card"><h3>Sorular</h3><p class="stat">${qok}/${qn}</p><p class="muted small" style="margin:0">ilk denemede doğru / çözülen · tekrar kutusunda ${S.review.length}</p></article></div>
+${(() => { const E = S.errs || {}, tot = Object.values(E).reduce((a, b) => a + b, 0); if (!tot) return `<div class="card" style="margin-top:16px"><h3>Hata türlerin</h3><p class="muted small">Yanlış yaptığında "Düşünce nerede kaydı?" düğmelerinden birini seç; burada hangi tür hatayı sık yaptığını göreceksin. Hatanın türünü bilmek, onu düzeltmenin ilk adımıdır.</p></div>`; const top = Object.keys(E).sort((a, b) => E[b] - E[a])[0]; return `<div class="card" style="margin-top:16px"><h3>Hata türlerin</h3>${Object.keys(ERR).map(k => `<div class="row" style="align-items:center;gap:10px;margin:6px 0"><span style="min-width:200px">${ERR[k][0]}</span><div class="minibar"><i style="width:${Math.round((E[k] || 0) / tot * 100)}%"></i></div><b>${E[k] || 0}</b></div>`).join("")}<p class="callout small">En sık: <b>${ERR[top][0]}</b>. ${ERR[top][1]}</p></div>`; })()}
 <div class="card" style="margin-top:16px"><h3>Görünen ad</h3><p class="muted small">İstersen takma ad yaz; başkaları görmez, yalnızca bu ekranda ve üst çubukta görünür.</p><div class="row"><input id="pn" type="text" maxlength="30" value="${esc((S.profile && S.profile.name) || "")}" placeholder="adın" style="flex:1 1 200px;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"><button class="btn" id="pns" type="button">Kaydet</button></div><p class="small" id="pnm" role="status"></p></div>
 <div class="card" style="margin-top:16px"><h3>Hesap</h3><div class="row"><a class="btn ghost" href="#/ayarlar">Ayarlar</a><button class="btn ghost" id="so" type="button">Çıkış yap</button><button class="btn ghost" id="sd" type="button">Sunucudaki verilerimi sil</button></div></div>`;
     $app.querySelector("#pns").onclick = () => { S.profile = { name: $app.querySelector("#pn").value.trim().slice(0, 30) }; save(); setUser(); $app.querySelector("#pnm").textContent = "Kaydedildi."; };
@@ -750,6 +751,44 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
     host.addEventListener("input", upd); upd();
   }
 
+  /* ---------- üstel / logaritma keşfi: taban kaydırıcısı, isteğe bağlı ayna (y = x) ---------- */
+  function expoLab(step, host) {
+    const c = step.cfg, W = 540, H = 480, xmin = -3, xmax = 6, ymin = -3, ymax = 5, u = W / (xmax - xmin);
+    const X = x => (x - xmin) * u, Y = y => H - (y - ymin) * u;
+    const f = v => (+v.toFixed(3)).toString().replace(".", ",").replace("-", "−");
+    host.innerHTML = `<p>${step.intro}</p><div class="lab"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><defs><clipPath id="cp"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>
+<g stroke="var(--line)" stroke-width="1">${[-2, -1, 1, 2, 3, 4, 5].map(i => `<line x1="${X(i)}" y1="0" x2="${X(i)}" y2="${H}"/>`).join("")}${[-2, -1, 1, 2, 3, 4].map(i => `<line x1="0" y1="${Y(i)}" x2="${W}" y2="${Y(i)}"/>`).join("")}</g>
+<line class="ax" x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(0)}"/><line class="ax" x1="${X(0)}" y1="0" x2="${X(0)}" y2="${H}"/>
+${c.inverse ? `<line x1="${X(ymin)}" y1="${Y(ymin)}" x2="${X(ymax)}" y2="${Y(ymax)}" stroke="var(--muted)" stroke-dasharray="6 6" stroke-width="2"/><text x="${X(3.6)}" y="${Y(4.1)}" fill="var(--muted)" font-size="15">y = x</text>` : ""}
+<g clip-path="url(#cp)"><path id="pe" fill="none" stroke="var(--accent)" stroke-width="4"/>${c.inverse ? `<path id="pl" fill="none" stroke="var(--cyan)" stroke-width="4"/>` : ""}</g>
+<circle cx="${X(0)}" cy="${Y(1)}" r="7" fill="var(--accent)"/><text x="${X(0) + 10}" y="${Y(1) - 8}" fill="var(--accent)" font-size="15">(0, 1)</text>
+${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text x="${X(1) + 8}" y="${Y(0) + 20}" fill="var(--cyan)" font-size="15">(1, 0)</text>` : ""}</svg>
+<div class="side row" style="margin:10px 0">${(c.snaps || []).map(a => `<button class="btn ghost" data-a="${a}" type="button">taban ${String(a).replace(".", ",")}</button>`).join("")}</div>
+<label for="sl" class="muted small">Taban a</label><input id="sl" type="range" min="0.2" max="4" step="0.1" value="${c.start || 2}" aria-label="Taban">
+<div class="readout"><span>a = <b id="av">–</b></span><span id="note" class="muted small"></span></div>
+<table><thead><tr><th>x</th>${[-2, -1, 0, 1, 2, 3].map(x => `<th>${f(x)}</th>`).join("")}</tr></thead><tbody><tr><td class="muted">a<sup>x</sup></td>${[-2, -1, 0, 1, 2, 3].map(x => `<td data-x="${x}"></td>`).join("")}</tr></tbody></table></div>`;
+    const q = s => host.querySelector(s), sl = q("#sl");
+    function upd() {
+      const a = +sl.value; let de = "", dl = "";
+      for (let x = -3; x <= 6.001; x += 0.05) { const y = Math.pow(a, x); if (isFinite(y) && Math.abs(y) < 60) { de += (de && de.slice(-1) !== "M" ? "L" : "M") + X(x).toFixed(1) + " " + Y(y).toFixed(1); dl += (dl && dl.slice(-1) !== "M" ? "L" : "M") + X(y).toFixed(1) + " " + Y(x).toFixed(1); } }
+      q("#pe").setAttribute("d", de); if (c.inverse) q("#pl").setAttribute("d", dl);
+      q("#av").textContent = f(a).replace("−", "-");
+      host.querySelectorAll("td[data-x]").forEach(td => td.textContent = f(Math.pow(a, +td.dataset.x)));
+      q("#note").textContent = Math.abs(a - 1) < 1e-9 ? "a = 1: eğri düz bir çizgi, logaritma tanımsız (taban 1 olamaz)." : a > 1 ? "a > 1: x arttıkça yükseliyor." : "0 < a < 1: x arttıkça alçalıyor.";
+    }
+    sl.addEventListener("input", upd);
+    host.querySelector(".side").addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) { sl.value = b.dataset.a; upd(); } });
+    upd();
+  }
+
+
+  /* ---------- etkileşimli adım kaydı: yeni bir laboratuvar türü YALNIZCA buraya eklenir ---------- */
+  const LABS = { explorer: explorer, circle: circleLab, expo: expoLab, scatter: scatterLab, bar: barLab, polygon: polygonLab, sim: simLab };
+  function mountStep(st, c) {
+    if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
+    else if (LABS[st.type]) LABS[st.type](st, c);
+  }
+
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
@@ -766,20 +805,8 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
     };
     if (st.type === "text") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div class="body" style="margin-top:12px">${st.html}</div>`; navBtns(true);
-    } else if (st.type === "explorer") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; explorer(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "circle") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; circleLab(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "sim") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; simLab(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "polygon") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; polygonLab(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "bar") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; barLab(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "scatter") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; scatterLab(st, host.querySelector("#ex")); navBtns(true);
-    } else if (st.type === "expo") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; expoLab(st, host.querySelector("#ex")); navBtns(true);
+    } else if (LABS[st.type]) {
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; LABS[st.type](st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "mcq") {
       navBtns(false); question(host, st, ok => { dayRecordLesson(st, ok); navBtns(true); }, true, { L, i });
     } else if (st.type === "tap") {
@@ -797,6 +824,16 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
   function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca keşif akışıdır */ }
 
   /* ---------- soru bileşenleri ---------- */
+  /* Öğrenmeyi öğrenmek: yanlıştan sonra öğrenci hatasının TÜRÜNÜ seçer; profilde hangi tür hatayı sık yaptığı görünür. */
+  const ERR = { okuma: ["Soruyu yanlış okudum", "Soruyu yavaş oku; neyin istendiğinin altını çiz ve kendi cümlenle tekrar et."], kavram: ["Kavramı bilmiyordum", "Konu anlatımına dön; kavramı kendi cümlenle yaz ve bir örnek üret."], islem: ["İşlem hatası yaptım", "İşlemleri alt alta, adım adım yaz; sonucu yerine koyarak kontrol et."], acele: ["Acele ettim / dikkatsizlik", "İşaretlemeden önce 5 saniye dur: 'Bu cevap mantıklı mı?' diye sor."] };
+  const errChips = id => `<div class="errbox" data-q="${esc(id)}"><span class="muted small">Düşünce nerede kaydı? (Kendine not al)</span><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">${Object.keys(ERR).map(k => `<button class="btn ghost" data-err="${k}" type="button">${ERR[k][0]}</button>`).join("")}</div><p class="small errtip" role="status"></p></div>`;
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-err]"); if (!b) return;
+    const box = b.closest(".errbox"), k = b.dataset.err;
+    S.errs = S.errs || {}; S.errs[k] = (S.errs[k] || 0) + 1; save();
+    box.querySelectorAll("[data-err]").forEach(x => { x.disabled = true; x.classList.toggle("ghost", x !== b); });
+    box.querySelector(".errtip").textContent = "Not alındı. İpucu: " + ERR[k][1];
+  });
   const THINK = ["Anla: Ne soruluyor? Neler verilmiş? Soruyu kendi cümlenle anlat.", "Planla: Buna benzer bir şey çözdün mü? Şekil ya da tablo çizebilir misin? Küçük bir örnek dene.", "Uygula: Adımları sırayla ve yazarak ilerle.", "Kontrol et: Sonuç mantıklı mı? Başka bir yoldan da bulur muydun?"];
   const solHtml = (q, open) => (q.think ? `<p class="callout" style="margin-top:12px"><b>🧭 Nasıl düşünmeliyiz?</b> ${esc(q.think)}</p>` : "") + (Array.isArray(q.solution) && q.solution.length ? `<details class="sol" ${open ? "open" : ""}><summary><b>🧩 Adım adım çözüm</b></summary><ol class="body">${q.solution.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "");
   const thinkGuide = () => `<details class="sol"><summary>🧭 Takıldığında kendine sor</summary><ol class="body">${THINK.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>`;
@@ -804,7 +841,7 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
     const mt = K.meta && K.meta[q.id]; if (mt && mt.s11 && K.topicNotes && K.topicNotes[mt.s11]) return { note: K.topicNotes[mt.s11], title: "11. sınıf " + mt.s11 + " " + (s11Title(mt.s11) || "") };
-    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar", "polygon", "sim"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (extra.L.steps[j].type === "text" || LABS[extra.L.steps[j].type]) return { L: extra.L, i: j };
     return null;
   }
   function question(host, q, done, inLesson, extra) {
@@ -826,8 +863,7 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
       else if (b.dataset.h === "topic") {
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
-        if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
-        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); else if (st.type === "sim") simLab(st, c);
+        mountStep(st, c);
         hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (b.dataset.h === "solve") {
         answered = true; const right = opts.find(x => x.ok);
@@ -844,7 +880,7 @@ ${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="mute
       if (!ok) b.classList.add("no");
       const right = opts.find(x => x.ok);
       host.querySelector("#fb").innerHTML = `<div class="fb">${ok ? `<b class="t-ok">Doğru.</b> ` : `<b class="t-no">Düşünce burada kaymış olabilir:</b> `}${esc(o.why)}${ok ? "" : `<br><br><b>Doğru yol:</b> ${esc(right.t)} — ${esc(right.why)}`}
-${solHtml(q, !ok)}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
+${solHtml(q, !ok)}${ok ? "" : errChips(q.id || "")}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
       done(ok);
     });
   }
@@ -864,7 +900,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
       finished = true; hb.style.display = "none"; hp.innerHTML = "";
       const rows = ans.length ? `<ul class="body">${ans.map((a, i) => `<li>${esc(a.label)}: ${vals && vals[i] !== undefined && vals[i] !== null ? (same(vals[i], a.v) || (a.accept || []).some(x => same(vals[i], x)) ? `<b class="t-ok">${esc(vals[i])} ✓</b>` : `<b class="t-no">${esc(vals[i] || "(boş)")}</b> → doğrusu <b>${esc(a.v)}</b>`) : `doğrusu <b>${esc(a.v)}</b>`}</li>`).join("")}</ul>` : "";
       const rub = Array.isArray(q.rubric) && q.rubric.length ? `<div class="rub"><b>Puanlama anahtarı</b> <span class="muted small">(işaretle: çözümünde var mı?)</span>${q.rubric.map((r, i) => `<label style="display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:6px 0"><input type="checkbox" data-r="${r[0]}" style="width:22px;height:22px;flex:none"><span>${esc(r[1])} <b>(${r[0]} p)</b></span></label>`).join("")}<p><b id="rsc">0</b> / ${q.rubric.reduce((a, r) => a + r[0], 0)} puan</p></div>` : "";
-      fb.innerHTML = `<div class="fb"><b>${ok === true ? '<span class="t-ok">Kısa cevabın doğru.</span>' : ok === false ? '<span class="t-no">Kısa cevabın tutmadı.</span>' : "Çözüm"}</b>${rows}${solHtml(q, true)}${rub}${q.explain ? `<p class="muted">${esc(q.explain)}</p>` : ""}</div>`;
+      fb.innerHTML = `<div class="fb"><b>${ok === true ? '<span class="t-ok">Kısa cevabın doğru.</span>' : ok === false ? '<span class="t-no">Kısa cevabın tutmadı.</span>' : "Çözüm"}</b>${rows}${solHtml(q, true)}${ok === false ? errChips(q.id) : ""}${rub}${q.explain ? `<p class="muted">${esc(q.explain)}</p>` : ""}</div>`;
       fb.querySelectorAll("[data-r]").forEach(c => c.onchange = () => { fb.querySelector("#rsc").textContent = [...fb.querySelectorAll("[data-r]:checked")].reduce((a, x) => a + (+x.dataset.r), 0); });
       done(ok === true);
     }
@@ -872,7 +908,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
       const b = e.target.closest("[data-h]"); if (!b || finished) return;
       if (b.dataset.h === "hint") hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`;
       else if (b.dataset.h === "topic" && tp.note) hp.innerHTML = `<div class="fb topic"><b>📖 Konu özeti</b> <span class="muted small">(${esc(tp.title)})</span><div class="body" style="margin-top:10px">${tp.note}</div></div>`;
-      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); else if (st.type === "sim") simLab(st, c); }
+      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; mountStep(st, c); }
       else if (b.dataset.h === "solve") finish(null, null);
       else if (b.dataset.h === "check") {
         if (!ans.length) { finish(null, null); return; }

@@ -55,7 +55,7 @@ KESIF.lessons["mat-cokgen"] = {
     { type: "reflect", q: "Peki ya neden? Her dışbükey çokgende dış açılar toplamı neden hep 360°'dir? (Çokgenin çevresinde bir tur yürüdüğünü düşün.)",
       hint: "Örnek düşünce: Çokgenin çevresinde bir tur yürürken her köşede dış açı kadar dönersin; başladığın yöne geri döndüğünde toplam dönüşün tam bir tur, yani 360° olur. Kenar sayısı ne olursa olsun bu değişmez." },
     { type: "reflect", q: "Gerçek hayatta (mimari, doğa, mühendislik) çokgenlerin kullanıldığı bir örnek yaz. Neden o çokgen seçilmiş olabilir?",
-      hint: "Örnek düşünce: Bal peteği altıgendir; altıgenler boşluk bırakmadan yan yana dizilir (düzlemi örter) ve çevre başına en çok alanı verir. Dörtgenler ve üçgenler de köprü ve çatılarda sağlamlık için kullanılır (üçgen biçimini bozmaz)." },
+      hint: "Örnek düşünce: Bal peteği altıgendir; düzlemi boşluk bırakmadan örtebilen düzgün çokgenler (eşkenar üçgen, kare, düzgün altıgen) arasında aynı alanı en az çevreyle (yani en az balmumuyla) kaplayan altıgendir. Dörtgenler ve üçgenler de köprü ve çatılarda sağlamlık için kullanılır (üçgen biçimini bozmaz)." },
     { type: "text", title: "Bugünün özeti",
       say: "Bugünkü keşif tamamlandı. İç açılar toplamı n eksi iki çarpı yüz seksen. Dış açılar toplamı üç yüz altmış. Köşegen sayısı n çarpı n eksi üç bölü iki.",
       html: `<ul class="body"><li>Bir köşeden <b>n − 3 köşegen</b>, <b>n − 2 üçgen</b>.</li><li>İç açılar toplamı <b>(n − 2) · 180°</b>; dış açılar toplamı <b>360°</b>.</li><li>Düzgün çokgende iç açı (n − 2) · 180° ÷ n, dış açı 360° ÷ n.</li><li>Köşegen sayısı <b>n(n − 3) ÷ 2</b>.</li><li>Kare ⊂ dikdörtgen ⊂ paralelkenar; kare ⊂ eşkenar dörtgen ⊂ paralelkenar.</li></ul>

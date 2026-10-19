@@ -22,7 +22,7 @@
     [["Zarf", "Zarf eylemi niteler; burada isim niteleniyor."], ["İsim", "\"Yazı\" isim; \"güzel\" onu niteliyor."], ["Zamir", "İsmin yerini tutmuyor."]],
     "\"Güzel\" neyi niteliyor: ismi mi eylemi mi?", ["\"Güzel\" kelimesi \"yazı\" adını niteler.", "Adı niteleyen sözcük sıfattır."], "İsmi niteleyen sıfat; eylemi niteleyen zarf.");
   Q("tk4", "tur", DG, TYT, 2, "\"Güzel konuştu.\" cümlesindeki \"güzel\" sözcüğü hangi türdendir?", "Zarf", "\"Güzel\", \"konuştu\" eylemini niteliyor; eylemi niteleyen sözcük zarftır.",
-    [["Sıfat", "Sıfat ismi niteler; burada isim yok, eylem niteleniyor."], ["İsim", "İsim olsaydı ek alırdı; burada eylemin nasıl yapıldığı anlatılıyor."], ["Edat", "Edat tek başına anlam taşımaz; \"güzel\" anlamlıdır."]],
+    [["Sıfat", "Sıfat ismi niteler; burada isim yok, eylem niteleniyor."], ["İsim", "İsim bir varlığı ya da kavramı karşılar; burada \"güzel\" eylemin nasıl yapıldığını anlatıyor."], ["Edat", "Edat tek başına anlam taşımaz; \"güzel\" anlamlıdır."]],
     "\"Nasıl konuştu?\" sorusunun cevabı.", ["\"Nasıl konuştu?\" → güzel.", "Eylemi niteleyen sözcük zarftır."], "Aynı sözcük cümledeki göreviyle tür değiştirir.");
   Q("tk5", "tur", DG, TYT, 1, "\"Kitap + ı → kitabı\" sözcüğünde hangi ses olayı vardır?", "Ünsüz yumuşaması", "Sert ünsüz \"p\", ünlüyle başlayan ek alınca yumuşak \"b\"ye dönüşmüştür.",
     [["Ünlü düşmesi", "Bir ünlü düşmemiş."], ["Ünsüz benzeşmesi", "Ünsüz benzeşmesinde ek, sert ünsüzden sonra sertleşir; burada kök ünsüzü yumuşadı."], ["Ses türemesi", "Yeni bir ses eklenmemiş."]],
