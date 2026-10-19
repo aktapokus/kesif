@@ -72,10 +72,15 @@ for (const m of reg.matchAll(/(\w+):\s*(\w+)/g)) { regTypes[m[1]] = 1; if (!app.
 if (!reg) err('app.js: LABS kaydı bulunamadı');
 for (const L of Object.values(K.lessons)) L.steps.forEach((st, i) => { if (!['text', 'mcq', 'tap', 'reflect'].includes(st.type) && !regTypes[st.type]) err(`${L.id}#${i}: "${st.type}" türü LABS kaydında yok`); });
 
+/* doğrulama damgaları */
+const dv = K.dv || {}; for (const id of Object.keys(dv)) if (!ids.has(id) && !id.startsWith('ders:')) warn(`dogrulama.js: soru yok → ${id}`);
+const unv = K.daily.filter(q => !dv[q.id]).length;
+
 /* sonuç */
 const by = {}; K.daily.forEach(q => { by[q.subject] = (by[q.subject] || 0) + 1; });
 console.log(`Sorular: ${K.daily.length} (${Object.entries(by).map(([k, v]) => k + ' ' + v).join(', ')}) · Dersler: ${Object.keys(K.lessons).length}`);
 warns.forEach(w => console.log('UYARI  ' + w));
 errors.forEach(e => console.log('HATA   ' + e));
+console.log(`Doğrulanmış (ikinci göz): ${K.daily.length - unv}/${K.daily.length} soru · ayrıntı: node tools/dogrula.js durum`);
 console.log(errors.length ? `\n${errors.length} hata, ${warns.length} uyarı.` : `\nHata yok (${warns.length} uyarı).`);
 process.exit(errors.length ? 1 : 0);

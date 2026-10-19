@@ -63,3 +63,10 @@ Adım türleri: `text`, `mcq`, `tap`, `reflect` + etkileşimli laboratuvarlar: `
 - Çevrimdışı çalışma (PWA/service worker) yok.
 - Eşitleme bütün durumu yazar; eşzamanlı iki cihazda not çakışmasında son yazan kazanır.
 - 11. sınıf dışındaki sınıflar ve matematik dışı dersler için içerik ince.
+
+## Doğrulama (ikinci göz)
+Yeni soru/ders yazıldıktan sonra Opus ile doğrulanır; yazan model kendi içeriğini onaylamış sayılmaz.
+1. `node tools/dogrula.js dis --ders tur --max 60` (ya da `--dersler`) → `docs/dogrulama/bekleyen-*.md` üretir; dosya Opus'a verilir.
+2. Opus'un JSON sonucu kaydedilir; `node tools/dogrula.js uygula sonuc.json` → onaylananlara `data/dogrulama.js` damgası, düzeltilecekler `docs/dogrulama/duzeltilecek.md`.
+3. İçerik sonradan değişirse damga düşer (içerik özeti kontrol edilir). Durum: `node tools/dogrula.js durum`.
+Ders anlatımı ilkesi: merak uyandıran kanca, basit dil, "hiç ilgim yok" diyen çocuğun da bir şey bulabileceği somut örnek; önce tahmin, sonra kural.
