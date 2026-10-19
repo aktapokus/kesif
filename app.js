@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [] });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [], pickSubj: "all" });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -39,11 +39,11 @@
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "plan") return renderPlan();
-    if (h[0] === "dersler") return renderDersler(h[1] || "s11");
+    if (h[0] === "dersler") return renderDersler(h[1] || "tum");
     if (h[0] === "profil") return renderProfile();
     if (h[0] === "banka") return renderBank(h[1] ? decodeURIComponent(h[1]) : "");
     if (h[0] === "cikmis") return renderCikmis();
-    if (h[0] === "deneme") return renderExamSetup();
+    if (h[0] === "deneme") return renderExamSetup(h[1] || "");
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -52,6 +52,7 @@
 
   /* ---------- ana sayfa ---------- */
   function todaysLessons() {
+    if (S.pickSubj && S.pickSubj !== "all" && K.subjects[S.pickSubj]) { const mine = Object.values(K.lessons).filter(l => l.subject === S.pickSubj); return { list: mine, want: [S.pickSubj] }; }
     const dow = new Date().getDay(), want = K.week[dow] || [];
     const sel = selSet(), have = Object.values(K.lessons).filter(l => sel.has(l.subject));
     let list = have.filter(l => want.includes(l.subject));
@@ -68,7 +69,8 @@
     const nxl = s11NextLesson(); if (nxl && list.some(l => l.id === nxl)) pending = K.lessons[nxl];
     const dayName = K.dayNames[new Date().getDay()];
     let html = `<span class="eyebrow">${dayName}</span><h1>Bugün neyi keşfedeceksin?</h1>
-<p class="lede">Ezber yok. Bugünün planı: <b>${esc(wantNames || "serbest")}</b>. Önce bir fikri anla, sonra soruyla dene.</p><div class="grid" style="margin-top:22px">`;
+<p class="lede">Ezber yok. ${S.pickSubj && S.pickSubj !== "all" ? "Seçtiğin ders" : "Bugünün planı"}: <b>${esc(wantNames || "serbest")}</b>. Önce bir fikri anla, sonra soruyla dene.</p>
+<div class="chips" id="pk" role="group" aria-label="Ders seç" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="btn ${!S.pickSubj || S.pickSubj === "all" ? "" : "ghost"}" data-pk="all" type="button">Haftalık plan</button>${Object.keys(K.subjects).map(k => `<button class="btn ${S.pickSubj === k ? "" : "ghost"}" data-pk="${k}" type="button">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</button>`).join("")}</div><div class="grid" style="margin-top:22px">`;
     if (pending) html += `<article class="card pick"><span class="tag">${esc(K.subjects[pending.subject].name)}</span><span class="tag">≈ ${pending.minutes} dk</span>
 <h3>${esc(pending.title)}</h3><p class="muted small">${esc(pending.hook)}</p>
 <a class="btn" href="#/ders/${pending.id}/${S.done[pending.id] ? 0 : (S.notes["p_" + pending.id] || 0)}">${S.done[pending.id] ? "Tekrar keşfet" : (S.notes["p_" + pending.id] ? "Kaldığın yerden devam" : "Keşfe başla")}</a></article>`;
@@ -78,7 +80,9 @@
     if (K.s11) { const all = s11Topics(), dn = all.filter(topicDone).length, nx = s11Next(); html += `<article class="card"><h3>11. sınıf yolculuğu</h3><p class="muted small" style="margin:0 0 8px">${dn}/${all.length} konu tamam${nx ? ` · sıradaki: <b>${esc(nx.id)} ${esc(nx.title)}</b>` : ""}</p><a class="btn ghost" href="#/dersler/s11">Sırayı gör</a></article>`; }
     if (S.review.length) html += `<article class="card"><h3>Tekrar kutusu</h3><p class="muted small">Düşünceyi yeniden kurmak istediğin ${S.review.length} soru var. Cezası yok; sadece ikinci şans.</p><a class="btn ghost" href="#/gunluk/tekrar">Tekrar et</a></article>`;
     html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
+    if (!pending) html += `<article class="card pick"><h3>${esc(K.subjects[S.pickSubj] ? K.subjects[S.pickSubj].name : "Bu ders")}</h3><p class="muted small">Bu ders için henüz keşif yok; soru bankasından çalışabilirsin.</p><a class="btn" href="#/banka/ders:${esc(S.pickSubj)}">Sorulara git</a> <a class="btn ghost" href="#/dersler/k:${esc(S.pickSubj)}">Ders sayfası</a></article>`;
     $app.innerHTML = html + "</div>";
+    $app.querySelectorAll("[data-pk]").forEach(b => b.onclick = () => { S.pickSubj = b.dataset.pk; save(); renderHome(); });
   }
 
   /* ---------- ders seçimi ve çalışma süresi ---------- */
@@ -136,8 +140,40 @@
     }
   }
 
+  /* ---------- tüm dersler: ders kartları ve ders sayfası ---------- */
+  const KZ_OF = { mat: [], tur: ["edeb"], edeb: ["edeb"], tar: ["tar", "ink"], cog: ["cog"], fel: ["fel", "man", "sos", "psi", "din"], fiz: ["fiz"], kim: ["kim"], biy: ["biy"] };
+  function renderAllSubjects() {
+    let html = `<h1>Dersler</h1>${tabsHtml("tum")}<p class="lede">Bir ders seç: keşifleri, soru bankası ve resmî konu/kazanım listesi tek yerde. (Matematik için 11. sınıf sırası ve TYT/AYT konuları ayrı sekmelerde.)</p><div class="grid">`;
+    Object.keys(K.subjects).forEach(k => {
+      const sb = K.subjects[k], ls = Object.values(K.lessons).filter(l => l.subject === k), dn = ls.filter(l => S.done[l.id]).length, nq = K.daily.filter(q => q.subject === k).length;
+      html += `<a class="card" style="text-decoration:none;color:inherit" href="#/dersler/k:${k}"><span class="tag">${esc(sb.icon)} ${esc(sb.name)}</span><h3>${ls.length} keşif · ${nq} soru</h3><p class="muted small">${dn}/${ls.length} keşif tamam · ${esc(sb.note)}</p></a>`;
+    });
+    $app.innerHTML = html + "</div>";
+  }
+  function kzHtml(key, cnt) {
+    const sub = K.kz && K.kz[key]; if (!sub) return "";
+    let h = `<details class="subj"><summary style="font:700 20px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center">${esc(sub.name)}</summary>`;
+    sub.items.forEach(i => {
+      if (i.u) h += `<h3 style="margin:14px 0 6px">${esc(i.u)}</h3>`;
+      else h += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:76px">${esc(i.c)}</span><span style="flex:1 1 240px">${esc(i.t)}</span>${cnt[key + ":" + i.c] ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("y:" + key + ":" + i.c)}">Soru (${cnt[key + ":" + i.c]})</a>` : ""}</div>`;
+    });
+    return h + `</details>`;
+  }
+  function renderSubjectPage(k) {
+    const sb = K.subjects[k]; if (!sb) return renderAllSubjects();
+    const ls = Object.values(K.lessons).filter(l => l.subject === k), nq = K.daily.filter(q => q.subject === k).length, cnt = {};
+    K.daily.forEach(q => { const m = qmeta(q); if (m.yks && m.yks.indexOf(":") > -1) cnt[m.yks] = (cnt[m.yks] || 0) + 1; });
+    let html = `<h1>${esc(sb.icon)} ${esc(sb.name)}</h1>${tabsHtml("tum")}<p class="lede">${esc(sb.note)}</p>
+<div class="row" style="gap:10px;flex-wrap:wrap;margin:10px 0"><a class="btn" href="#/banka/ders:${k}">Soru bankası (${nq})</a><a class="btn ghost" href="#/deneme/${k}">Deneme çöz</a><button class="btn ghost" id="pkb" type="button">Bugün bu dersi çalış</button>${k === "mat" ? '<a class="btn ghost" href="#/dersler/s11">11. sınıf sırası</a><a class="btn ghost" href="#/dersler/tyt">TYT konuları</a><a class="btn ghost" href="#/dersler/ayt">AYT konuları</a>' : ""}</div>
+<h2>Keşifler</h2>${ls.length ? `<div class="grid">${ls.map(l => `<a class="card" style="text-decoration:none;color:inherit" href="#/ders/${l.id}/0"><h3>${esc(l.title)}</h3><p class="muted small">${S.done[l.id] ? "✓ tamamlandı · " : ""}≈ ${l.minutes} dk</p></a>`).join("")}</div>` : `<p class="muted">Bu ders için keşif hazırlanıyor. Şimdilik soru bankasından çalışabilirsin.</p>`}`;
+    const keys = KZ_OF[k] || [];
+    if (keys.length && K.kz) html += `<h2 style="margin-top:28px">Resmî konu ve kazanım listesi</h2><p class="muted small">MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>` + keys.map(key => kzHtml(key, cnt)).join("");
+    $app.innerHTML = html;
+    $app.querySelector("#pkb").onclick = () => { S.pickSubj = k; save(); location.hash = "#/"; };
+  }
+
   /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
-  const TABS = [["s11", "11. Sınıf"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
+  const TABS = [["tum", "Tüm dersler"], ["s11", "11. Sınıf (mat.)"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
   const tabsHtml = cur => `<nav class="tabs" role="tablist" aria-label="Ders bölümleri">${TABS.map(t => `<a role="tab" href="#/dersler/${t[0]}" ${t[0] === cur ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
   const s11Topics = () => K.s11 ? K.s11.themes.flatMap(t => t.topics.map(p => Object.assign({ theme: t }, p))) : [];
   const topicDone = p => !!(p.lesson && S.done[p.lesson]);
@@ -146,6 +182,8 @@
   function lessonLink(id, label) { const l = K.lessons[id]; return `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${label || (S.done[id] ? "Tekrar" : S.notes["p_" + id] ? "Devam" : "Keşfe başla")}</a>`; }
   function renderDersler(tab) {
     if (tab === "hedef") return renderGoals();
+    if (tab === "tum") return renderAllSubjects();
+    if (tab.indexOf("k:") === 0) return renderSubjectPage(tab.slice(2));
     if (tab === "tyt" || tab === "ayt") return renderExam(tab);
     let html = `<h1>Dersler</h1>${tabsHtml(tab)}`;
     if (tab === "s11") {
@@ -216,6 +254,7 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
     const label = tab === "tyt" ? "TYT" : "AYT";
     let html = `<h1>Dersler</h1>${tabsHtml(tab)}<p class="lede">${label} çalışmaların burada ayrı izlenir. Konu listesi MEB–ÖSYM kazanım belgesinden alınmıştır; ilerlemen diğer sekmelerle ortaktır.</p>
 <p class="callout small">Bu liste 2026 sınavının (eski program) belgesine dayanır. Maarif programıyla 2028 sınavına girecek öğrenci için ÖSYM'nin yeni belgesi yayımlanınca güncellenecek. ${label} / konu eşlemesi taslaktır.</p>`;
+    html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:6px 0 14px"><span class="muted small">Derse git:</span>${Object.keys(K.subjects).map(k => `<a class="btn ghost" href="#/dersler/k:${k}">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</a>`).join("")}</div>`;
     if (K.yks) {
       html += `<h2>${label} Matematik konuları</h2>`;
       K.yks.levels.filter(lv => K.yks[tab].includes(lv.id)).forEach(lv => {
@@ -261,12 +300,14 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
   const rubMax = q => (q.rubric || []).reduce((a, r) => a + r[0], 0);
   const EXC = { sel: null, n: 10, min: 20, open: true };
   let examTimer = null;
-  function renderExamSetup() {
+  function renderExamSetup(preset) {
     const all = K.daily.slice(), counts = {}; all.forEach(q => { const k = konuKey(q); counts[k] = (counts[k] || 0) + 1; });
-    const keys = Object.keys(counts).sort(); if (!EXC.sel) EXC.sel = new Set(keys.filter(k => k.startsWith("s:")));
+    const keys = Object.keys(counts).sort(), keySubj = {}; all.forEach(q => { keySubj[konuKey(q)] = q.subject; });
+    if (preset && K.subjects[preset]) EXC.sel = new Set(keys.filter(k => keySubj[k] === preset));
+    if (!EXC.sel) EXC.sel = new Set(keys);
     const hist = (S.exams || []).slice(-6).reverse();
     $app.innerHTML = `<h1>Sınav hazırlık modu</h1><p class="lede">Konularını seç; süreli ve puanlı bir mini deneme çöz. Sorular tek tek geri bildirim vermez, sınav gibi: bitirince puanını, konu bazlı sonucunu ve çözümlerini görürsün.</p>
-<div class="subj on"><h3 style="margin:0 0 6px">1. Konular</h3><div class="row" style="gap:8px;margin-bottom:8px"><button class="btn ghost" id="xa" type="button">Hepsini seç</button><button class="btn ghost" id="xc" type="button">Temizle</button></div>
+<div class="subj on"><h3 style="margin:0 0 6px">1. Konular</h3><div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap">${Object.keys(K.subjects).filter(k => keys.some(x => keySubj[x] === k)).map(k => `<button class="btn ghost" data-sj="${k}" type="button">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</button>`).join("")}<button class="btn ghost" id="xa" type="button">Hepsini seç</button><button class="btn ghost" id="xc" type="button">Temizle</button></div>
 <div class="lst">${keys.map(k => `<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" data-k="${esc(k)}" ${EXC.sel.has(k) ? "checked" : ""} style="width:22px;height:22px"><span style="flex:1">${esc(konuLabel(k))}</span><span class="muted small">${counts[k]} soru</span></label>`).join("")}</div></div>
 <div class="subj on"><h3 style="margin:0 0 6px">2. Deneme ayarı</h3><div class="setrow"><label class="muted small" for="xn">Soru sayısı</label><select id="xn">${[5, 8, 10, 15, 20].map(n => `<option value="${n}" ${EXC.n === n ? "selected" : ""}>${n}</option>`).join("")}</select>
 <label class="muted small" for="xm">Süre (dk)</label><select id="xm">${[10, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${EXC.min === n ? "selected" : ""}>${n}</option>`).join("")}</select><label class="muted small" for="xc2">veya kendi süren</label><input id="xc2" type="number" min="1" max="180" placeholder="dk" style="width:90px"></div>
@@ -275,6 +316,7 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
 <p><button class="btn" id="xgo" type="button">Denemeyi başlat</button> <span id="xmsg" class="muted small" role="status"></span></p>
 <h2 style="margin-top:28px">Geçmiş denemelerin</h2>${hist.length ? `<div class="card"><table class="tbl"><thead><tr><th>Tarih</th><th>Puan</th><th>%</th><th>Süre</th></tr></thead><tbody>${hist.map(h => `<tr><td>${esc(new Date(h.t).toLocaleDateString("tr-TR"))}</td><td class="num">${h.score}/${h.max}</td><td class="num">%${h.pct}</td><td class="num">${fmtT(h.secs)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Henüz deneme yok.</p>`}`;
     $app.querySelectorAll("[data-k]").forEach(c => c.onchange = () => { c.checked ? EXC.sel.add(c.dataset.k) : EXC.sel.delete(c.dataset.k); });
+    $app.querySelectorAll("[data-sj]").forEach(b => b.onclick = () => { EXC.sel = new Set(keys.filter(x => keySubj[x] === b.dataset.sj)); renderExamSetup(); });
     $app.querySelector("#xa").onclick = () => { EXC.sel = new Set(keys); renderExamSetup(); };
     $app.querySelector("#xc").onclick = () => { EXC.sel = new Set(); renderExamSetup(); };
     $app.querySelector("#xn").onchange = e => { EXC.n = +e.target.value; };
@@ -823,6 +865,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
   function closeFS() { if (examTimer) { clearInterval(examTimer); examTimer = null; } if (fs) { fs.remove(); fs = null; document.body.style.overflow = ""; } }
   function pickDaily(onlyReview) {
     let pool = K.daily;
+    if (S.pickSubj && S.pickSubj !== "all") pool = pool.filter(q => q.subject === S.pickSubj);
     if (onlyReview) pool = pool.filter(q => S.review.includes(q.id));
     const weighted = shuffle(pool).sort((a, b) => (S.review.includes(b.id) ? 1 : 0) - (S.review.includes(a.id) ? 1 : 0));
     return weighted.slice(0, Math.min(S.goal, weighted.length));
