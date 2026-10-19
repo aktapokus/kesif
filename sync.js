@@ -48,6 +48,7 @@
     o.goalDone = Object.assign({}, (b || {}).goalDone, (a || {}).goalDone);
     o.qs = {}; var qa = (a || {}).qs || {}, qb = (b || {}).qs || {};
     Object.keys(Object.assign({}, qa, qb)).forEach(function (k) { o.qs[k] = { n: Math.max((qa[k] || {}).n || 0, (qb[k] || {}).n || 0), ok: Math.max((qa[k] || {}).ok || 0, (qb[k] || {}).ok || 0) }; });
+    var ea = (a || {}).exams || [], eb = (b || {}).exams || [], seen = {}; o.exams = ea.concat(eb).filter(function (x) { if (seen[x.t]) return false; seen[x.t] = 1; return true; }).sort(function (x, y) { return x.t - y.t; }).slice(-100);
     o.profile = { name: ((a || {}).profile || {}).name || ((b || {}).profile || {}).name || "" };
     return o;
   }

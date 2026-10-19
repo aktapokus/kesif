@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {} });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" }, qs: {}, exams: [] });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -33,7 +33,7 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
@@ -43,6 +43,7 @@
     if (h[0] === "profil") return renderProfile();
     if (h[0] === "banka") return renderBank(h[1] ? decodeURIComponent(h[1]) : "");
     if (h[0] === "cikmis") return renderCikmis();
+    if (h[0] === "deneme") return renderExamSetup();
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -188,7 +189,7 @@
 <div class="setrow"><label class="muted small" for="fd">Ders</label><select id="fd"><option value="all">Hepsi</option>${subs.map(k => `<option value="${k}" ${BF.ders === k ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select>
 <label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
 <label class="muted small" for="fz">Zorluk</label><select id="fz"><option value="0">Hepsi</option>${[1, 2, 3].map(z => `<option value="${z}" ${BF.zor === z ? "selected" : ""}>${ZOR[z]}</option>`).join("")}</select></div></div>
-<div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
+<div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/deneme">Deneme sınavı</a><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
 ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><th>Soru</th><th>Çözülen</th><th></th></tr></thead><tbody>${Object.keys(groups).sort().map(k => `<tr><td>${esc(konuLabel(k))}</td><td class="num">${groups[k].length}</td><td class="num">${groups[k].filter(q => qStat(q.id).n > 0).length}</td><td><button class="btn ghost" data-go="${k}" type="button">Çöz</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="callout">Bu filtreyle soru yok. Soru bankası her hafta genişliyor; filtreyi gevşet.</p>`}
 <p class="muted small" style="margin-top:14px">Kaynak: tüm sorular bu proje için özgün yazılmıştır ("çıkmış soru" değildir). ÖSYM çıkmış soruları telif nedeniyle burada değil, ÖSYM'nin sayfasındadır.</p>`;
     $app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { BF.sinav = b.dataset.f.split(":")[1]; renderBank(); });
@@ -231,6 +232,104 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
     others.forEach(l => { html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[l.subject].icon)} ${esc(K.subjects[l.subject].name)}</h2><div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div></section>`; });
     html += `<p class="muted small" style="margin-top:14px">Diğer dersler (Türkçe, sosyal, fen) için de aynı biçimde resmî konu listesi eklenecek. <a href="#/cikmis">Çıkmış sorular →</a></p>`;
     $app.innerHTML = html;
+  }
+
+  /* ---------- sınav hazırlık modu: konu seç, süreli ve puanlı mini deneme ---------- */
+  const normA = v => String(v).toLowerCase().replace(/\s+/g, "").replace(/\*|·|×/g, "").replace(/kök/g, "√").replace(/cm²|cm2|cm|derece|°|adet|tane/g, "").replace(/,/g, ".");
+  const sameA = (a, b) => { const x = normA(a), y = normA(b); if (x === y) return true; return /^-?[\d.]+$/.test(x) && /^-?[\d.]+$/.test(y) && Math.abs(parseFloat(x) - parseFloat(y)) < 1e-9; };
+  const openAuto = (q, vals) => (q.answers || []).length > 0 && q.answers.every((a, i) => sameA(vals[i] || "", a.v) || (a.accept || []).some(x => sameA(vals[i] || "", x)));
+  const rubMax = q => (q.rubric || []).reduce((a, r) => a + r[0], 0);
+  const EXC = { sel: null, n: 10, min: 20, open: true };
+  let examTimer = null;
+  function renderExamSetup() {
+    const all = K.daily.slice(), counts = {}; all.forEach(q => { const k = konuKey(q); counts[k] = (counts[k] || 0) + 1; });
+    const keys = Object.keys(counts).sort(); if (!EXC.sel) EXC.sel = new Set(keys.filter(k => k.startsWith("s:")));
+    const hist = (S.exams || []).slice(-6).reverse();
+    $app.innerHTML = `<h1>Sınav hazırlık modu</h1><p class="lede">Konularını seç; süreli ve puanlı bir mini deneme çöz. Sorular tek tek geri bildirim vermez, sınav gibi: bitirince puanını, konu bazlı sonucunu ve çözümlerini görürsün.</p>
+<div class="subj on"><h3 style="margin:0 0 6px">1. Konular</h3><div class="row" style="gap:8px;margin-bottom:8px"><button class="btn ghost" id="xa" type="button">Hepsini seç</button><button class="btn ghost" id="xc" type="button">Temizle</button></div>
+<div class="lst">${keys.map(k => `<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" data-k="${esc(k)}" ${EXC.sel.has(k) ? "checked" : ""} style="width:22px;height:22px"><span style="flex:1">${esc(konuLabel(k))}</span><span class="muted small">${counts[k]} soru</span></label>`).join("")}</div></div>
+<div class="subj on"><h3 style="margin:0 0 6px">2. Deneme ayarı</h3><div class="setrow"><label class="muted small" for="xn">Soru sayısı</label><select id="xn">${[5, 8, 10, 15, 20].map(n => `<option value="${n}" ${EXC.n === n ? "selected" : ""}>${n}</option>`).join("")}</select>
+<label class="muted small" for="xm">Süre (dk)</label><select id="xm">${[10, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${EXC.min === n ? "selected" : ""}>${n}</option>`).join("")}</select><label class="muted small" for="xc2">veya kendi süren</label><input id="xc2" type="number" min="1" max="180" placeholder="dk" style="width:90px"></div>
+<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="xo" ${EXC.open ? "checked" : ""} style="width:22px;height:22px"> Açık uçlu soruları da ekle (yaklaşık üçte biri)</label>
+<p class="muted small">Puanlama: çoktan seçmeli doğru = 1 puan, yanlış ve boş = 0 (eksi puan yok). Açık uçlu soru puanlama anahtarındaki puan kadar; kısa cevabın doğruysa sonuç puanı otomatik verilir, işlem basamaklarını kendin işaretlersin.</p></div>
+<p><button class="btn" id="xgo" type="button">Denemeyi başlat</button> <span id="xmsg" class="muted small" role="status"></span></p>
+<h2 style="margin-top:28px">Geçmiş denemelerin</h2>${hist.length ? `<div class="card"><table class="tbl"><thead><tr><th>Tarih</th><th>Puan</th><th>%</th><th>Süre</th></tr></thead><tbody>${hist.map(h => `<tr><td>${esc(new Date(h.t).toLocaleDateString("tr-TR"))}</td><td class="num">${h.score}/${h.max}</td><td class="num">%${h.pct}</td><td class="num">${fmtT(h.secs)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Henüz deneme yok.</p>`}`;
+    $app.querySelectorAll("[data-k]").forEach(c => c.onchange = () => { c.checked ? EXC.sel.add(c.dataset.k) : EXC.sel.delete(c.dataset.k); });
+    $app.querySelector("#xa").onclick = () => { EXC.sel = new Set(keys); renderExamSetup(); };
+    $app.querySelector("#xc").onclick = () => { EXC.sel = new Set(); renderExamSetup(); };
+    $app.querySelector("#xn").onchange = e => { EXC.n = +e.target.value; };
+    $app.querySelector("#xm").onchange = e => { EXC.min = +e.target.value; };
+    $app.querySelector("#xo").onchange = e => { EXC.open = e.target.checked; };
+    $app.querySelector("#xgo").onclick = () => {
+      const custom = Math.round(+$app.querySelector("#xc2").value), minutes = custom >= 1 && custom <= 180 ? custom : EXC.min;
+      const pool = K.daily.filter(q => EXC.sel.has(konuKey(q)) && (EXC.open || q.type !== "open")), msg = $app.querySelector("#xmsg");
+      if (!pool.length) { msg.textContent = "Önce en az bir konu seç."; return; }
+      const mc = shuffle(pool.filter(q => q.type !== "open")), op = shuffle(pool.filter(q => q.type === "open"));
+      const nOpen = EXC.open ? Math.min(op.length, Math.round(EXC.n / 3)) : 0, nMc = Math.min(mc.length, EXC.n - nOpen);
+      const paper = mc.slice(0, nMc).concat(op.slice(0, Math.min(op.length, EXC.n - nMc))).map(q => ({ q, opts: q.type === "open" ? null : shuffle(q.opts), sel: null, vals: [], text: "", rub: new Set() }));
+      runExam(paper, minutes);
+    };
+  }
+  function runExam(paper, minutes) {
+    closeFS(); document.body.style.overflow = "hidden";
+    fs = el("div", { class: "fs", role: "dialog", "aria-modal": "true", "aria-label": "Deneme sınavı" }); document.body.appendChild(fs);
+    const total = minutes * 60, t0 = Date.now(); let idx = 0, over = false;
+    fs.innerHTML = `<div class="inner"><div class="exbar"><b id="xt" class="xt">--:--</b><span class="muted small" id="xp"></span><button class="btn ghost" id="xq" type="button">Kapat</button><button class="btn" id="xf" type="button">Bitir</button></div><div class="xnav" id="xnv"></div><div id="xb"></div><div class="row" style="margin-top:14px"><button class="btn ghost" id="xpv" type="button">← Önceki</button><button class="btn" id="xnx" type="button">Sonraki →</button></div></div>`;
+    const $ = s => fs.querySelector(s);
+    function nav() { $("#xnv").innerHTML = paper.map((e, i) => { const a = e.q.type === "open" ? (e.text.trim() || e.vals.some(v => v)) : e.sel !== null; return `<button type="button" class="chip ${a ? "on" : ""} ${i === idx ? "cur" : ""}" data-i="${i}" aria-label="Soru ${i + 1}${a ? " (cevaplandı)" : ""}">${i + 1}</button>`; }).join(""); $("#xp").textContent = (idx + 1) + "/" + paper.length; }
+    function show() {
+      const e = paper[idx], q = e.q, b = $("#xb");
+      if (q.type === "open") {
+        b.innerHTML = `<span class="eyebrow">Açık uçlu · ${rubMax(q)} puan</span><div class="qtext" style="font:600 clamp(20px,3vw,26px)/1.45 var(--f-display)">${esc(q.q)}</div><label class="muted small" for="wk" style="display:block;margin-top:10px">Çözümün (işlem basamakları puan getirir)</label><textarea id="wk" rows="6">${esc(e.text)}</textarea>${(q.answers || []).map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="muted small" style="min-width:140px" for="an${i}">${esc(a.label)}</label><input id="an${i}" type="text" autocomplete="off" value="${esc(e.vals[i] || "")}" style="min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"></div>`).join("")}`;
+        b.querySelector("#wk").oninput = ev => { e.text = ev.target.value; nav(); };
+        (q.answers || []).forEach((a, i) => { b.querySelector("#an" + i).oninput = ev => { e.vals[i] = ev.target.value; nav(); }; });
+      } else {
+        b.innerHTML = `<span class="eyebrow">Çoktan seçmeli · 1 puan</span>${q.passage ? `<div class="passage">${esc(q.passage)}</div>` : ""}<div class="qtext" style="font:600 clamp(20px,3vw,26px)/1.45 var(--f-display)">${esc(q.q)}</div><div class="opts">${e.opts.map((o, i) => `<button class="opt ${e.sel === i ? "sel" : ""}" type="button" data-o="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div><p><button class="btn ghost" id="xclr" type="button">Cevabı temizle</button></p>`;
+        b.querySelector(".opts").onclick = ev => { const o = ev.target.closest("[data-o]"); if (!o) return; e.sel = +o.dataset.o; show(); };
+        b.querySelector("#xclr").onclick = () => { e.sel = null; show(); };
+      }
+      $("#xpv").disabled = idx === 0; $("#xnx").disabled = idx === paper.length - 1; nav(); fs.scrollTop = 0;
+    }
+    $("#xnv").onclick = ev => { const c = ev.target.closest("[data-i]"); if (c) { idx = +c.dataset.i; show(); } };
+    $("#xpv").onclick = () => { idx = Math.max(0, idx - 1); show(); };
+    $("#xnx").onclick = () => { idx = Math.min(paper.length - 1, idx + 1); show(); };
+    $("#xq").onclick = () => { if (confirm("Denemeyi bırakmak istiyor musun? Bu denemenin sonucu kaydedilmez.")) { closeFS(); location.hash = "#/deneme"; } };
+    $("#xf").onclick = () => { const blank = paper.filter(e => e.q.type === "open" ? !(e.text.trim() || e.vals.some(v => v)) : e.sel === null).length; if (!blank || confirm(blank + " soru boş. Yine de bitirilsin mi?")) finish(); };
+    function tick() { const left = Math.max(0, total - Math.floor((Date.now() - t0) / 1000)), t = $("#xt"); if (!t) return; t.textContent = fmtT(left); t.classList.toggle("warn", left <= 60); if (left <= 0 && !over) { over = true; finish(true); } }
+    examTimer = setInterval(tick, 500); tick();
+    function finish(timeUp) { clearInterval(examTimer); examTimer = null; showResult(paper, Math.min(total, Math.floor((Date.now() - t0) / 1000)), timeUp); }
+    show();
+  }
+  function showResult(paper, secs, timeUp) {
+    paper.forEach(e => { if (e.q.type === "open") { const ok = openAuto(e.q, e.vals); e.auto = ok; if (ok && e.q.rubric.length) e.rub.add(e.q.rubric.length - 1); } });
+    const rec = { t: Date.now(), secs, score: 0, max: 0, pct: 0, topics: {} };
+    const compute = () => {
+      let sc = 0, mx = 0; const tp = {};
+      paper.forEach(e => { const q = e.q, k = konuKey(q); let got, m; if (q.type === "open") { m = rubMax(q); got = [...e.rub].reduce((a, i) => a + q.rubric[i][0], 0); } else { m = 1; got = e.sel !== null && e.opts[e.sel].ok ? 1 : 0; } sc += got; mx += m; (tp[k] = tp[k] || [0, 0]); tp[k][0] += got; tp[k][1] += m; e.got = got; e.m = m; });
+      rec.score = sc; rec.max = mx; rec.pct = mx ? Math.round(sc / mx * 100) : 0; rec.topics = tp;
+    };
+    compute();
+    paper.forEach(e => { const q = e.q; if (q.type === "open") return; const okq = e.got === 1; const qq = (S.qs[q.id] = S.qs[q.id] || { n: 0, ok: 0 }); qq.n++; if (okq) qq.ok++; if (okq) S.review = S.review.filter(x => x !== q.id); else if (!S.review.includes(q.id)) S.review.push(q.id); });
+    S.exams = (S.exams || []).concat([rec]); save();
+    const render = () => {
+      compute(); S.exams[S.exams.length - 1] = rec; save();
+      const rows = Object.keys(rec.topics).sort((a, b) => rec.topics[a][0] / rec.topics[a][1] - rec.topics[b][0] / rec.topics[b][1]);
+      const weak = rows.filter(k => rec.topics[k][0] / rec.topics[k][1] < 0.6).slice(0, 3);
+      const st = fs.scrollTop;
+      fs.innerHTML = `<div class="inner"><button class="btn ghost close" type="button" id="xcl">Kapat ✕</button><h1>${timeUp ? "Süre doldu" : "Deneme bitti"} ✦</h1>
+<p class="stat" style="margin:0">${rec.score} / ${rec.max} puan <span class="muted small" style="font:600 18px var(--f-body)">· %${rec.pct} · süre ${fmtT(secs)}</span></p>
+<h2>Konu bazlı sonuç</h2><div class="card"><table class="tbl"><thead><tr><th>Konu</th><th>Puan</th><th>%</th></tr></thead><tbody>${rows.map(k => { const [g, m] = rec.topics[k], p = Math.round(g / m * 100); return `<tr><td>${esc(konuLabel(k))}</td><td class="num">${g}/${m}</td><td class="num"><b class="${p >= 80 ? "t-ok" : p < 60 ? "t-no" : ""}">%${p}</b></td></tr>`; }).join("")}</tbody></table></div>
+${weak.length ? `<h3>Önerilen çalışma</h3><ul class="body">${weak.map(k => `<li>${esc(konuLabel(k))} → <a href="#/banka/${encodeURIComponent(k)}">soru bankasında çöz</a></li>`).join("")}</ul>` : `<p class="callout">Konuların hepsinde %60 ve üzerindesin. Zorluğu artırmak için soru sayısını artır ya da süreyi kısalt.</p>`}
+<p class="muted small">Yanlış yaptığın çoktan seçmeli sorular tekrar kutuna eklendi.</p>
+<h2>Soru soru inceleme</h2>${paper.map((e, i) => { const q = e.q, ok = e.got === e.m; return `<details class="sol" ${ok ? "" : "open"}><summary><b>${i + 1}.</b> ${ok ? "✓" : "✗"} ${esc(q.q.length > 90 ? q.q.slice(0, 90) + "…" : q.q)} <span class="muted small">(${e.got}/${e.m})</span></summary>
+${q.type === "open" ? `<p class="small">Kısa cevap: ${e.auto ? '<b class="t-ok">doğru</b>' : '<b class="t-no">tutmadı</b>'} · senin cevapların: ${esc(e.vals.filter(Boolean).join(" ; ") || "(boş)")}</p>${(q.answers || []).length ? `<p class="small">Doğru cevaplar: ${(q.answers || []).map(a => esc(a.label) + " = <b>" + esc(a.v) + "</b>").join(" · ")}</p>` : ""}${solHtml(q, true)}<div class="rub"><b>Puanlama anahtarı</b> <span class="muted small">(çözümünde olanları işaretle)</span>${q.rubric.map((r, j) => `<label style="display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:6px 0"><input type="checkbox" data-q="${i}" data-r="${j}" ${e.rub.has(j) ? "checked" : ""} style="width:22px;height:22px;flex:none"><span>${esc(r[1])} <b>(${r[0]} p)</b></span></label>`).join("")}</div>`
+        : `<p class="small">Senin cevabın: <b>${e.sel === null ? "(boş)" : esc(e.opts[e.sel].t)}</b> · doğru: <b>${esc(e.opts.find(o => o.ok).t)}</b></p><p class="small">${esc(e.opts.find(o => o.ok).why)}</p>${solHtml(q, true)}`}</details>`; }).join("")}
+<p style="margin-top:18px"><a class="btn" href="#/deneme">Yeni deneme</a> <a class="btn ghost" href="#/banka">Soru bankası</a></p></div>`;
+      fs.querySelector("#xcl").onclick = () => { closeFS(); location.hash = "#/deneme"; };
+      fs.querySelectorAll("[data-r]").forEach(c => c.onchange = () => { const e = paper[+c.dataset.q], j = +c.dataset.r; c.checked ? e.rub.add(j) : e.rub.delete(j); render(); });
+      fs.scrollTop = st;
+    };
+    render();
   }
 
   /* ---------- hedeflerim: ders seç, hedef koy ---------- */
@@ -655,7 +754,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
 
   /* ---------- günlük sorular (tam ekran) ---------- */
   let fs = null;
-  function closeFS() { if (fs) { fs.remove(); fs = null; document.body.style.overflow = ""; } }
+  function closeFS() { if (examTimer) { clearInterval(examTimer); examTimer = null; } if (fs) { fs.remove(); fs = null; document.body.style.overflow = ""; } }
   function pickDaily(onlyReview) {
     let pool = K.daily;
     if (onlyReview) pool = pool.filter(q => S.review.includes(q.id));

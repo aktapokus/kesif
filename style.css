@@ -139,3 +139,12 @@ details.sol ol{margin:6px 0 0;padding-left:22px}
 
 textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:10px;font:inherit}
 .rub{margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+
+.exbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.exbar .xt{font:800 30px var(--f-display);color:var(--accent);font-variant-numeric:tabular-nums;margin-right:auto}
+.exbar .xt.warn{color:var(--bad)}
+.xnav{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
+.chip{min-width:44px;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);font:700 16px var(--f-body);cursor:pointer}
+.chip.on{background:var(--card);border-color:var(--good)}
+.chip.cur{outline:3px solid var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--card2)}
