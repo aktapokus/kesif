@@ -5,10 +5,10 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {} });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
   const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
   const dayRec = () => (S.days[today()] = S.days[today()] || { n: 0, ok: 0 });
 
@@ -33,12 +33,13 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "plan") return renderPlan();
+    if (h[0] === "dersler") return renderSubjects();
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -48,10 +49,11 @@
   /* ---------- ana sayfa ---------- */
   function todaysLessons() {
     const dow = new Date().getDay(), want = K.week[dow] || [];
-    const have = Object.values(K.lessons);
+    const sel = selSet(), have = Object.values(K.lessons).filter(l => sel.has(l.subject));
     let list = have.filter(l => want.includes(l.subject));
     if (!list.length) list = have.filter(l => !S.done[l.id]);
     if (!list.length) list = have;
+    if (!list.length) list = Object.values(K.lessons);
     return { list, want };
   }
   function renderHome() {
@@ -69,12 +71,105 @@
 <div><h3>Günlük sorular</h3><p class="muted small" style="margin:0">Hedef: ${goal} soru${r.n ? " · doğru: " + r.ok : ""}</p></div></div>
 <p style="margin-top:14px"><a class="btn ${r.n >= goal ? "ghost" : ""}" href="#/gunluk">${r.n >= goal ? "Bir tur daha" : "Soruları çöz"}</a></p></article>`;
     if (S.review.length) html += `<article class="card"><h3>Tekrar kutusu</h3><p class="muted small">Düşünceyi yeniden kurmak istediğin ${S.review.length} soru var. Cezası yok; sadece ikinci şans.</p><a class="btn ghost" href="#/gunluk/tekrar">Tekrar et</a></article>`;
-    html += `</div><h2 style="margin-top:36px">Keşif kütüphanesi</h2><div class="grid">`;
-    for (const l of Object.values(K.lessons))
-      html += `<a class="card" style="text-decoration:none;color:inherit" href="#/ders/${l.id}/0"><span class="tag">${esc(K.subjects[l.subject].name)}</span><h3>${esc(l.title)}</h3><p class="muted small">${S.done[l.id] ? "✓ tamamlandı · " : ""}≈ ${l.minutes} dk</p></a>`;
-    for (const k in K.subjects) if (!Object.values(K.lessons).some(l => l.subject === k))
-      html += `<div class="card soon"><span class="tag">${esc(K.subjects[k].name)}</span><h3>Yakında</h3><p class="muted small">Bu ders için keşif hazırlanıyor.</p></div>`;
+    html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
     $app.innerHTML = html + "</div>";
+  }
+
+  /* ---------- ders seçimi ve çalışma süresi ---------- */
+  const selSet = () => new Set(S.sel && S.sel.length ? S.sel : Object.keys(K.subjects));
+  const studyDay = () => (S.study[today()] = S.study[today()] || {});
+  const totalSecs = () => Object.values(studyDay()).reduce((a, b) => a + b, 0);
+  const fmtT = sec => { sec = Math.floor(sec); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s2 = sec % 60, p = n => String(n).padStart(2, "0"); return (h ? h + ":" : "") + p(m) + ":" + p(s2); };
+  const subjName = k => k === "gen" ? "Genel" : (K.subjects[k] ? K.subjects[k].name : k);
+  function beep() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); g.gain.value = 0.08; o.frequency.value = 660; o.start(); o.stop(c.currentTime + 0.35); } catch (e) {} }
+  function announce(msg) { const d = document.getElementById("tbdone"); if (!d) return; d.hidden = false; d.querySelector("span").textContent = msg; beep(); document.title = "✓ Süre bitti · Aktapokus Keşif"; }
+  function addStudy(subj, secs) { const d = studyDay(); d[subj] = (d[subj] || 0) + secs; checkGoals(); }
+  function checkGoals() {
+    const t = today(), tot = totalSecs();
+    if (S.goalMin && tot >= S.goalMin * 60) { if (!S.goalDone[t]) { S.goalDone[t] = true; S.run.on = false; announce("Bitti! Bugünkü " + S.goalMin + " dakikalık çalışma hedefin tamamlandı. 🎉"); } }
+    else if (S.goalDone[t]) delete S.goalDone[t];
+    for (const k in S.subjGoal) { const g = S.subjGoal[k], key = t + k; if (g && (studyDay()[k] || 0) >= g * 60) { if (!S.goalDone[key]) { S.goalDone[key] = true; announce(subjName(k) + " hedefin (" + g + " dk) tamamlandı. 🎉"); } } else if (S.goalDone[key]) delete S.goalDone[key]; }
+  }
+  let lastTick = Date.now();
+  setInterval(() => {
+    const now = Date.now(), dt = Math.min(120, (now - lastTick) / 1000); lastTick = now;
+    if (S.run.on) { addStudy(S.run.subj, dt); if (Math.floor(totalSecs()) % 15 === 0) save(); }
+    updateBar();
+  }, 1000);
+  window.addEventListener("pagehide", save);
+  function buildBar() {
+    const bar = document.getElementById("tbar"); if (!bar) return;
+    bar.innerHTML = `<div class="tb-main"><span class="tb-time" id="tbt">00:00</span><span class="muted small" id="tbg"></span><div class="tb-prog"><i id="tbp"></i></div></div>
+<div class="tb-act"><select id="tbs" aria-label="Çalıştığım ders"></select><button class="btn" id="tbr" type="button">Başlat</button><button class="btn ghost" id="tbo" type="button" aria-expanded="false">Hedef · süre ekle</button></div>
+<div id="tbpanel" hidden><div><span class="muted small">Bugünkü çalışma hedefim:</span><div class="chips">${[15, 25, 45, 60, 90].map(n => `<button class="btn ghost" data-gm="${n}" type="button">${n} dk</button>`).join("")}<button class="btn ghost" data-gm="0" type="button">Hedefsiz</button></div></div>
+<div><label class="muted small" for="tbc">Kendi sürem (dk)</label> <input id="tbc" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbcs" type="button">Hedefi ayarla</button></div>
+<div><label class="muted small" for="tba">Elle süre ekle (dk)</label> <input id="tba" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbas" type="button">Süreyi ekle</button> <span class="muted small" id="tbam"></span></div></div>
+<div id="tbdone" hidden><span></span><button class="btn ghost" id="tbx" type="button">Tamam</button></div>`;
+    const $ = id => bar.querySelector(id);
+    $("#tbr").onclick = () => { S.run.on = !S.run.on; lastTick = Date.now(); save(); updateBar(true); };
+    $("#tbs").onchange = e => { S.run.subj = e.target.value; save(); updateBar(true); };
+    $("#tbo").onclick = () => { const p = $("#tbpanel"); p.hidden = !p.hidden; $("#tbo").setAttribute("aria-expanded", String(!p.hidden)); };
+    bar.querySelectorAll("[data-gm]").forEach(b => b.onclick = () => { S.goalMin = +b.dataset.gm; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); });
+    $("#tbcs").onclick = () => { const n = Math.round(+$("#tbc").value); if (n >= 1 && n <= 600) { S.goalMin = n; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); $("#tbc").value = ""; } };
+    $("#tbas").onclick = () => { const n = Math.round(+$("#tba").value); if (n >= 1 && n <= 600) { addStudy(S.run.subj, n * 60); save(); updateBar(true); $("#tba").value = ""; $("#tbam").textContent = n + " dk " + subjName(S.run.subj) + " için eklendi."; } };
+    $("#tbx").onclick = () => { $("#tbdone").hidden = true; document.title = "Aktapokus Keşif"; };
+    updateBar(true);
+  }
+  function updateBar(full) {
+    const bar = document.getElementById("tbar"); if (!bar) return;
+    const tot = totalSecs(), g = S.goalMin * 60;
+    bar.querySelector("#tbt").textContent = fmtT(tot);
+    bar.querySelector("#tbg").textContent = g ? "/ " + S.goalMin + " dk hedef" : "hedef yok";
+    bar.querySelector("#tbp").style.width = g ? Math.min(100, tot / g * 100) + "%" : "0";
+    if (full === true) {
+      const opts = ["gen"].concat([...selSet()]); if (!opts.includes(S.run.subj)) opts.push(S.run.subj);
+      bar.querySelector("#tbs").innerHTML = opts.map(k => `<option value="${k}" ${k === S.run.subj ? "selected" : ""}>${esc(subjName(k))}</option>`).join("");
+      bar.querySelector("#tbr").textContent = S.run.on ? "Duraklat" : "Başlat";
+      bar.querySelector("#tbr").classList.toggle("ghost", S.run.on);
+      bar.querySelectorAll("[data-gm]").forEach(b => { b.style.borderColor = +b.dataset.gm === S.goalMin ? "var(--accent)" : ""; });
+    }
+  }
+
+  /* ---------- dersler sayfası: ders seç, hedef koy ---------- */
+  function renderSubjects() {
+    const sel = selSet(), td = studyDay();
+    let html = `<h1>Dersler</h1><p class="lede">Çalışmak istediğin dersleri seç; her derse günlük bir süre hedefi koyabilirsin. Üstteki sayaç seçtiğin derse yazılır. Seçmediğin dersler "Bugün" önerisinde çıkmaz ama burada durur.</p>`;
+    for (const k in K.subjects) {
+      const sb = K.subjects[k], on = sel.has(k), g = S.subjGoal[k] || 0, mins = Math.floor((td[k] || 0) / 60);
+      const ls = Object.values(K.lessons).filter(l => l.subject === k);
+      html += `<section class="subj ${on ? "on" : ""}"><label style="display:flex;gap:10px;align-items:center;min-height:44px;font:700 20px var(--f-display)"><input type="checkbox" data-sel="${k}" ${on ? "checked" : ""} style="width:24px;height:24px"> ${esc(sb.icon)} ${esc(sb.name)}</label>
+<p class="muted small" style="margin:0">${esc(sb.note)}</p>
+<div class="setrow"><label class="muted small" for="g_${k}">Günlük hedefim</label><select id="g_${k}" data-sg="${k}">${[0, 10, 15, 20, 30, 45, 60, 90, 120].map(n => `<option value="${n}" ${n === g ? "selected" : ""}>${n ? n + " dk" : "hedef yok"}</option>`).join("")}</select>
+<span class="small">Bugün: <b>${mins} dk</b></span>${g ? `<div class="minibar" aria-hidden="true"><i style="width:${Math.min(100, mins / g * 100)}%"></i></div>${mins >= g ? "<b class='t-ok'>✓</b>" : ""}` : ""}</div>
+<div class="lst">${ls.length ? ls.map(l => `<a href="#/ders/${l.id}/0">${S.done[l.id] ? "✓ " : "› "}${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></a>`).join("") : `<span class="muted small">Bu ders için keşif hazırlanıyor.</span>`}</div></section>`;
+    }
+    $app.innerHTML = html;
+    $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); renderSubjects(); });
+    $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); renderSubjects(); });
+  }
+
+  /* ---------- hesap (isteğe bağlı eşitleme) ---------- */
+  function accountCard() {
+    const u = K.sync && K.sync.user();
+    if (!K.sync) return "";
+    return `<div class="card" id="acc" style="margin-top:16px"><h3>Hesap (isteğe bağlı)</h3>` + (u
+      ? `<p class="muted small">Giriş yapıldı: <b>${esc(u.email || "")}</b>. İlerlemen, günlük skorların, tekrar kutun ve "peki ya neden" notların bu hesaba eşitlenir (${esc(K.sync.status() || "bekleniyor")}). Başkası göremez; herkese açık sıralama yoktur.</p>
+<div class="row"><button class="btn ghost" id="so" type="button">Çıkış yap</button><button class="btn ghost" id="sd" type="button">Sunucudaki verilerimi sil</button></div>`
+      : `<p class="muted small">Giriş yapmazsan her şey yalnızca bu tarayıcıda kalır. Giriş yaparsan ilerlemeni başka cihazda da sürdürebilirsin. Şifre yok: e-postana bir bağlantı gelir. Saklanan: e-posta adresin, ilerleme, günlük skor, tekrar kutusu ve yazdığın notlar.</p>
+<label class="muted small" for="em">E-posta</label><div class="row"><input id="em" type="email" autocomplete="email" placeholder="ornek@mail.com" style="flex:1 1 220px"><button class="btn" id="sl2" type="button">Giriş bağlantısı gönder</button></div><p class="small" id="am" role="status"></p>`) + `</div>`;
+  }
+  function bindAccount() {
+    const so = $app.querySelector("#so"), sd = $app.querySelector("#sd"), sl2 = $app.querySelector("#sl2");
+    if (so) so.onclick = () => { K.sync.signOut(); renderSettings(); };
+    if (sd) sd.onclick = async () => { if (confirm("Sunucudaki ilerleme ve notların silinsin mi? Bu cihazdaki veriler kalır.")) { const ok = await K.sync.deleteData(); alert(ok ? "Sunucudaki verilerin silindi." : "Silinemedi; bağlantını kontrol et."); } };
+    if (sl2) sl2.onclick = async () => {
+      const em = $app.querySelector("#em").value.trim(), m = $app.querySelector("#am");
+      if (!/^\S+@\S+\.\S+$/.test(em)) { m.textContent = "Geçerli bir e-posta yaz."; return; }
+      sl2.disabled = true; m.textContent = "Gönderiliyor…";
+      try { await K.sync.sendLink(em); m.textContent = "Bağlantı gönderildi. E-postanı aç (spam klasörüne de bak) ve bağlantıya bu cihazda tıkla."; }
+      catch (e) { m.textContent = "Gönderilemedi: " + e.message; }
+      sl2.disabled = false;
+    };
   }
 
   /* ---------- keşif grafiği ---------- */
@@ -201,6 +296,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
+    if (S.run.on && S.run.subj !== L.subject) { S.run.subj = L.subject; updateBar(true); }
     S.notes["p_" + L.id] = i; save();
     const st = L.steps[i], total = L.steps.length;
     $app.innerHTML = `<div class="stage"><div class="steps"><div class="meta"><span>${esc(K.subjects[L.subject].name)} · ${esc(L.title)}</span><span>Adım ${i + 1}/${total}</span></div><div class="bar"><i style="width:${Math.round((i + 1) / total * 100)}%"></i></div></div><section id="step"></section><div class="row" id="nav" style="margin-top:22px"></div></div>`;
@@ -220,7 +316,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
     } else if (st.type === "expo") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; expoLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "mcq") {
-      navBtns(false); question(host, st, ok => { dayRecordLesson(st, ok); navBtns(true); }, true);
+      navBtns(false); question(host, st, ok => { dayRecordLesson(st, ok); navBtns(true); }, true, { L, i });
     } else if (st.type === "tap") {
       navBtns(false); tapQuestion(host, st, () => navBtns(true));
     } else if (st.type === "reflect") {
@@ -236,13 +332,42 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
   function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca keşif akışıdır */ }
 
   /* ---------- soru bileşenleri ---------- */
+  /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
+  function topicOf(q, hlp, extra) {
+    if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    return null;
+  }
   function question(host, q, done, inLesson, extra) {
     const opts = shuffle(q.opts), t0 = Date.now();
     host.innerHTML = `${q.predict ? '<span class="eyebrow">Tahmin et</span>' : ""}${q.passage ? `<div class="passage">${esc(q.passage)}</div>` : ""}<div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
-<div class="opts">${opts.map((o, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div><div id="fb"></div>`;
+<div class="opts">${opts.map((o, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div>
+<div class="helpbar" id="hb"><span class="muted small">Takıldın mı?</span><button class="btn ghost" data-h="hint" type="button">💡 İpucu</button><button class="btn ghost" data-h="topic" type="button">📖 Konu anlatımı</button><button class="btn ghost" data-h="solve" type="button">🧩 Çözümü göster</button></div><div id="hp"></div><div id="fb"></div>`;
     let answered = false;
+    const hlp = (K.help && K.help[q.id]) || {}, tp = topicOf(q, hlp, extra);
+    const hintTxt = q.hint || hlp.hint || (inLesson ? "Az önce yaptığın keşfi hatırla: grafikte ya da tabloda ne gördün? \"Konu anlatımı\" seni o adıma götürür." : "");
+    const hb = host.querySelector("#hb"), hp = host.querySelector("#hp");
+    if (!hintTxt) hb.querySelector('[data-h="hint"]').remove();
+    if (!tp) hb.querySelector('[data-h="topic"]').remove();
+    hb.addEventListener("click", e => {
+      const b = e.target.closest("[data-h]"); if (!b || answered) return;
+      if (b.dataset.h === "hint") { hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`; }
+      else if (b.dataset.h === "topic") {
+        hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
+        const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
+        if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
+        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c);
+        hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      } else if (b.dataset.h === "solve") {
+        answered = true; const right = opts.find(x => x.ok);
+        host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
+        hb.style.display = "none"; hp.innerHTML = "";
+        host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>${q.solution ? esc(q.solution) : `Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}`}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}<br><br><span class="muted small">Çözümü gördüğün için bu soru tekrar kutusuna eklendi; sonra kendin çözmeyi dene.</span></div>`;
+        done(false);
+      }
+    });
     host.querySelector(".opts").addEventListener("click", e => {
-      const b = e.target.closest(".opt"); if (!b || answered) return; answered = true;
+      const b = e.target.closest(".opt"); if (!b || answered) return; answered = true; hb.style.display = "none"; hp.innerHTML = "";
       const o = opts[+b.dataset.i], ok = !!o.ok, secs = Math.round((Date.now() - t0) / 1000);
       host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
       if (!ok) b.classList.add("no");
@@ -318,11 +443,17 @@ ${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.ex
 <div class="row">${[5, 10, 15, 20].map(n => `<button class="btn ${S.goal === n ? "" : "ghost"}" data-g="${n}" type="button">${n}</button>`).join("")}</div></div>
 <div class="card" style="margin-top:16px"><h3>Sınav modu</h3><p class="muted small">Açıkken her sorunun sonunda harcadığın süre görünür. Geri sayım ve baskı yok; yalnızca bilgi.</p>
 <button class="btn ${S.exam ? "" : "ghost"}" id="ex" type="button">${S.exam ? "Açık" : "Kapalı"}</button></div>
-<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p class="muted small">İlerleme ve notların yalnızca bu tarayıcıda durur. Silmek istersen:</p><button class="btn ghost" id="wipe" type="button">Tüm verileri sil</button></div>`;
+${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p class="muted small">İlerleme ve notların yalnızca bu tarayıcıda durur. Silmek istersen:</p><button class="btn ghost" id="wipe" type="button">Tüm verileri sil</button></div>`;
+    bindAccount();
     $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { S.goal = +b.dataset.g; save(); renderSettings(); });
     $app.querySelector("#ex").onclick = () => { S.exam = !S.exam; save(); renderSettings(); };
     $app.querySelector("#wipe").onclick = () => { if (confirm("Tüm ilerleme ve notlar silinsin mi?")) { S = blank(); save(); renderSettings(); } };
   }
 
+  buildBar();
+  if (K.sync && K.sync.user()) K.sync.pull().then(r => {
+    if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); }
+    route();
+  });
   route();
 })();

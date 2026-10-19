@@ -1,0 +1,36 @@
+/* Günlük soru havuzu için yardım: ipucu (cevabı vermez) ve "konu anlatımı" için ilgili ders adımı.
+   Uygulama dışına çıkmadan: soru çözülürken öğrenci ipucu, konu anlatımı ya da adım adım çözüm isteyebilir. */
+window.KESIF = window.KESIF || { lessons: {}, daily: [] };
+KESIF.help = {
+  m1: { hint: "x³ − 1 ifadesini küp farkı özdeşliğiyle çarpanlarına ayır, sonra (x − 1)'i sadeleştir.", topic: { lesson: "mat-limit", step: 5 } },
+  m2: { hint: "Doğrusal bir fonksiyonda önce yerine koymayı dene. 0 ÷ 0 çıkıyor mu?", topic: { lesson: "mat-limit", step: 5 } },
+  m3: { hint: "Pay ve paydada 0 ÷ 0 çıkıyor. Köklü ifadeyi eşleniğiyle (√(x+4) + 2) çarp.", topic: { lesson: "mat-limit", step: 5 } },
+  m4: { hint: "İki şeyi ayrı düşün: f(3) var mı? Ve x, 3'e yaklaşırken f(x) nereye gidiyor?", topic: { lesson: "mat-limit", step: 3 } },
+  t1: { hint: "“Yalnızca … değildir; … de odur” kalıbında yazarın asıl vurgusu hangi yarıda?", topic: { lesson: "tur-paragraf", step: 0 } },
+  t2: { hint: "“Dolayısıyla”dan önce gerekçeler mi var, yoksa sonuç mu? Sonrası ne iş görüyor?", topic: { lesson: "tur-paragraf", step: 3 } },
+  t3: { hint: "İlk cümle bir yargı. Sonraki cümle bu yargıya ne ekliyor: örnek mi, karşıt görüş mü, tanım mı?", topic: { lesson: "tur-paragraf", step: 0 } },
+  mt1: { hint: "30° ve 60° noktaları birbirinin ayna görüntüsü gibi: birinin yüksekliği ötekinin yatay uzaklığı.", topic: { lesson: "mat-trig-cember", step: 3 } },
+  mt2: { hint: "sin 90° tepedeki yükseklik, cos 180° en soldaki yatay uzaklık. İkisini ayrı oku, sonra topla.", topic: { lesson: "mat-trig-cember", step: 1 } },
+  mt3: { hint: "Pisagor'u çemberde düşün: yatay uzaklığın karesi + yüksekliğin karesi.", topic: { lesson: "mat-trig-cember", step: 6 } },
+  mt4: { hint: "Önce sin²x = 1 − cos²x. Karekökün hangi işareti ikinci bölgeye uyar?", topic: { lesson: "mat-trig-cember", step: 6 } },
+  mt5: { hint: "330° = 360° − 30°. Nokta x ekseninin altında mı, üstünde mi?", topic: { lesson: "mat-trig-cember", step: 5 } },
+  mt6: { hint: "300° = 360° − 60°. Nokta merkezin sağında mı, solunda mı?", topic: { lesson: "mat-trig-cember", step: 5 } },
+  mt7: { hint: "135° = 180° − 45°. 45° ailesinde yükseklik kaç? Nokta eksenin üstünde mi altında mı?", topic: { lesson: "mat-trig-cember", step: 5 } },
+  mt8: { hint: "Yatay uzaklığın 1 olduğu çember noktası hangisi? Aralığın uçlarına (< işareti) dikkat.", topic: { lesson: "mat-trig-cember", step: 1 } },
+  mt9: { hint: "sin x en az kaç olabilir? Onu 3 ile çarp, sonra 1 ekle.", topic: { lesson: "mat-trig-cember", step: 6 } },
+  mt10: { hint: "Yüksekliğin 0 olduğu noktalar x ekseni üzerindeki noktalar. Aralığın kapalı uçlarını da say.", topic: { lesson: "mat-trig-cember", step: 1 } },
+  mt11: { hint: "Aynı yükseklikte iki nokta var: x ve 180° − x. Hangisi 90°–180° aralığında?", topic: { lesson: "mat-trig-cember", step: 3 } },
+  mt12: { hint: "Aynı yatay uzaklıkta iki nokta var: x ve 360° − x. Hangisi 180°–360° aralığında?", topic: { lesson: "mat-trig-cember", step: 5 } },
+  mu1: { hint: "Önce 2⁻³'ü ayrı hesapla, sonra iki tanesini topla.", topic: { lesson: "mat-ustel-log", step: 4 } },
+  mu2: { hint: "3'ü sırayla çarp: 3, 9, 27… 81'e kaçıncı çarpımda ulaşıyorsun?", topic: { lesson: "mat-ustel-log", step: 6 } },
+  mu3: { hint: "1/8'i 2'nin bir (negatif) üssü olarak yaz: 2 üzeri kaç = 1/8?", topic: { lesson: "mat-ustel-log", step: 4 } },
+  mu4: { hint: "4'ün hangi üssü 2'ye eşit? Karekökü düşün.", topic: { lesson: "mat-ustel-log", step: 6 } },
+  mu5: { hint: "1/4'ü 2'nin bir üssü olarak yazmayı dene (örüntüde geriye doğru git).", topic: { lesson: "mat-ustel-log", step: 4 } },
+  mu6: { hint: "f(3) ve f(1)'i ayrı ayrı hesapla, sonra çıkar.", topic: { lesson: "mat-ustel-log", step: 1 } },
+  mu7: { hint: "Aynı tabandaki logaritmaların toplamı, içlerinin çarpımının logaritmasıdır.", topic: { lesson: "mat-ustel-log", step: 11 } },
+  mu8: { hint: "Aynı tabandaki logaritmaların farkı, içlerinin bölümünün logaritmasıdır.", topic: { lesson: "mat-ustel-log", step: 11 } },
+  mu9: { hint: "Noktayı y = aˣ denkleminde yerine koy: 9 = a². Taban pozitif olmalı.", topic: { lesson: "mat-ustel-log", step: 1 } },
+  mu10: { hint: "logₓ 16 = 4 demek x⁴ = 16 demek. Taban pozitif ve 1'den farklı olmalı.", topic: { lesson: "mat-ustel-log", step: 6 } },
+  mu11: { hint: "Taban 1'den küçükse fonksiyon artan mı azalan mı? Sıralama ne olur?", topic: { lesson: "mat-ustel-log", step: 1 } },
+  mu12: { hint: "log₂ x = 3 ⟺ 2³ = x. Üssü kendin hesapla.", topic: { lesson: "mat-ustel-log", step: 6 } }
+};
