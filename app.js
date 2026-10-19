@@ -170,10 +170,11 @@
   const qmeta = q => Object.assign({ sinav: [], zor: 1, kaynak: "özgün" }, (K.meta && K.meta[q.id]) || {});
   const SINAV = [["all", "Hepsi"], ["s11", "11. sınıf"], ["tyt", "TYT"], ["ayt", "AYT"]];
   const ZOR = ["", "kolay", "orta", "zor"];
-  function yksTitle(id) { if (!K.yks) return null; for (const lv of K.yks.levels) for (const ar of lv.areas) for (const t of ar.topics) if (t[0] === id) return t[1]; return null; }
+  function kzFind(id) { const i = id.indexOf(":"); if (i < 0 || !K.kz) return null; const k = id.slice(0, i), c = id.slice(i + 1), sub = K.kz[k]; if (!sub) return null; const it = sub.items.find(x => x.c === c); return { name: sub.name, text: it ? it.t : "" }; }
+  function yksTitle(id) { if (id.indexOf(":") > -1) { const f = kzFind(id); return f ? f.text : null; } if (!K.yks) return null; for (const lv of K.yks.levels) for (const ar of lv.areas) for (const t of ar.topics) if (t[0] === id) return t[1]; return null; }
   function s11Title(id) { const t = s11Topics().find(p => p.id === id); return t ? t.title : null; }
   function konuKey(q) { const m = qmeta(q); return m.yks ? "y:" + m.yks : m.s11 ? "s:" + m.s11 : "d:" + q.subject; }
-  function konuLabel(key) { const [k, v] = [key.slice(0, 1), key.slice(2)]; return k === "y" ? v + " " + (yksTitle(v) || "") : k === "s" ? "11. sınıf " + v + " " + (s11Title(v) || "") : (K.subjects[v] ? K.subjects[v].name : v) + " (genel)"; }
+  function konuLabel(key) { const [k, v] = [key.slice(0, 1), key.slice(2)]; return k === "y" ? (v.indexOf(":") > -1 && kzFind(v) ? kzFind(v).name + " " + v.slice(v.indexOf(":") + 1) + " " : v + " ") + (yksTitle(v) || "") : k === "s" ? "11. sınıf " + v + " " + (s11Title(v) || "") : (K.subjects[v] ? K.subjects[v].name : v) + " (genel)"; }
   const BF = { sinav: "all", ders: "all", konu: "all", zor: 0 };
   const bankMatch = q => { const m = qmeta(q); return (BF.sinav === "all" || m.sinav.includes(BF.sinav)) && (BF.ders === "all" || q.subject === BF.ders) && (BF.konu === "all" || konuKey(q) === BF.konu) && (!BF.zor || m.zor === BF.zor); };
   const qStat = id => (S.qs && S.qs[id]) || { n: 0, ok: 0 };
@@ -227,6 +228,23 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
         });
         html += `</details>`;
       });
+    }
+    if (K.kz) {
+      const cnt = {}; K.daily.forEach(q => { const m = qmeta(q); if (m.yks && m.yks.indexOf(":") > -1) cnt[m.yks] = (cnt[m.yks] || 0) + 1; });
+      const N = tab === "tyt" ? { edeb: "Türkçe testi: 40 soru", tar: "Tarih: 5 soru", ink: "Tarih testi içinde", cog: "Coğrafya: 5 soru", fel: "Felsefe: 5 soru", din: "Din Kültürü: 5 soru", fiz: "Fizik: 7 soru", kim: "Kimya: 7 soru", biy: "Biyoloji: 6 soru" }
+        : { edeb: "Edebiyat: 24 soru", tar: "Tarih-1: 10 · Tarih-2: 11", ink: "Tarih testi içinde", cog: "Coğrafya-1: 6 · Coğrafya-2: 11", fel: "Felsefe grubu: 12", din: "Din Kültürü: 6", fiz: "Fizik: 14", kim: "Kimya: 13", biy: "Biyoloji: 13" };
+      html += `<h2 style="margin-top:28px">Diğer dersler (${label})</h2><p class="muted small">Resmî kazanım listesi (kod + kazanım). Kendi alanına ait dersleri aç; soru sayısı varsa "Soru" bağlantısı çıkar. Sınavdaki soru sayıları 2026-YKS kılavuzundandır.</p>`;
+      ["edeb", "tar", "ink", "cog", "fel", "din", "fiz", "kim", "biy"].forEach(k => {
+        const sub = K.kz[k]; if (!sub) return;
+        const nq = sub.items.filter(i => i.c && cnt[k + ":" + i.c]).reduce((a, i) => a + cnt[k + ":" + i.c], 0);
+        html += `<details class="subj"><summary style="font:700 20px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${esc(sub.name)} <span class="muted small">${esc(N[k] || "")}${nq ? " · " + nq + " soru hazır" : ""}</span></summary>`;
+        sub.items.forEach(i => {
+          if (i.u) html += `<h3 style="margin:14px 0 6px">${esc(i.u)}</h3>`;
+          else html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:76px">${esc(i.c)}</span><span style="flex:1 1 240px">${esc(i.t)}</span>${cnt[k + ":" + i.c] ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("y:" + k + ":" + i.c)}">Soru (${cnt[k + ":" + i.c]})</a>` : ""}</div>`;
+        });
+        html += `</details>`;
+      });
+      html += `<p class="muted small">Mantık, Sosyoloji, Psikoloji ve yabancı dil dersleri bu listeye eklenecek. Kaynak: MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>`;
     }
     const others = Object.values(K.lessons).filter(l => (K.tracks[l.id] || []).includes(tab) && l.subject !== "mat");
     others.forEach(l => { html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[l.subject].icon)} ${esc(K.subjects[l.subject].name)}</h2><div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div></section>`; });
