@@ -564,6 +564,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
     return null;
   }
   function question(host, q, done, inLesson, extra) {
+    if (q.type === "open") return openQuestion(host, q, done, inLesson, extra);
     const opts = shuffle(q.opts), t0 = Date.now();
     host.innerHTML = `${q.predict ? '<span class="eyebrow">Tahmin et</span>' : ""}${q.passage ? `<div class="passage">${esc(q.passage)}</div>` : ""}<div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
 <div class="opts">${opts.map((o, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div>
@@ -603,6 +604,41 @@ ${solHtml(q, !ok)}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</
       done(ok);
     });
   }
+  /* Açık uçlu / kısa cevaplı soru (Maarif okul sınavı biçimi): öğrenci çözümünü yazar, kısa cevap(lar)ı girer;
+     sistem kısa cevabı kontrol eder, örnek çözümü ve puanlama anahtarını gösterir, öğrenci kendini puanlar. */
+  function openQuestion(host, q, done, inLesson, extra) {
+    const hlp = (K.help && K.help[q.id]) || {}, tp = topicOf(q, hlp, extra), hintTxt = q.hint || hlp.hint || "";
+    const ans = q.answers || [];
+    const norm = v => String(v).toLowerCase().replace(/\s+/g, "").replace(/\*|·|×/g, "").replace(/kök/g, "√").replace(/cm²|cm2|cm|derece|°|adet|tane/g, "").replace(/,/g, ".");
+    const same = (a, b) => { const x = norm(a), y = norm(b); if (x === y) return true; const nx = parseFloat(x), ny = parseFloat(y); return !isNaN(nx) && !isNaN(ny) && /^-?[\d.]+$/.test(x) && /^-?[\d.]+$/.test(y) && Math.abs(nx - ny) < 1e-9; };
+    host.innerHTML = `<span class="eyebrow">Açık uçlu soru</span><div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
+<label class="muted small" for="wk" style="display:block;margin-top:12px">Çözümünü buraya yaz (puanlamada işlem basamakları da sayılır; yalnızca bu cihazda kalır).</label><textarea id="wk" rows="5"></textarea>
+${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="muted small" for="an${i}" style="min-width:140px">${esc(a.label)}</label><input id="an${i}" type="text" autocomplete="off" aria-label="${esc(a.label)}" style="min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"></div>`).join("")}
+<div class="helpbar" id="hb"><button class="btn" data-h="check" type="button">Kontrol et</button>${hintTxt ? '<button class="btn ghost" data-h="hint" type="button">💡 İpucu</button>' : ""}${tp ? '<button class="btn ghost" data-h="topic" type="button">📖 Konu özeti</button>' : ""}<button class="btn ghost" data-h="solve" type="button">🧩 Çözümü göster</button></div><div id="hp"></div><div id="fb"></div>`;
+    const hb = host.querySelector("#hb"), hp = host.querySelector("#hp"), fb = host.querySelector("#fb"); let finished = false;
+    function finish(vals, ok) {
+      finished = true; hb.style.display = "none"; hp.innerHTML = "";
+      const rows = ans.length ? `<ul class="body">${ans.map((a, i) => `<li>${esc(a.label)}: ${vals && vals[i] !== undefined && vals[i] !== null ? (same(vals[i], a.v) || (a.accept || []).some(x => same(vals[i], x)) ? `<b class="t-ok">${esc(vals[i])} ✓</b>` : `<b class="t-no">${esc(vals[i] || "(boş)")}</b> → doğrusu <b>${esc(a.v)}</b>`) : `doğrusu <b>${esc(a.v)}</b>`}</li>`).join("")}</ul>` : "";
+      const rub = Array.isArray(q.rubric) && q.rubric.length ? `<div class="rub"><b>Puanlama anahtarı</b> <span class="muted small">(işaretle: çözümünde var mı?)</span>${q.rubric.map((r, i) => `<label style="display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:6px 0"><input type="checkbox" data-r="${r[0]}" style="width:22px;height:22px;flex:none"><span>${esc(r[1])} <b>(${r[0]} p)</b></span></label>`).join("")}<p><b id="rsc">0</b> / ${q.rubric.reduce((a, r) => a + r[0], 0)} puan</p></div>` : "";
+      fb.innerHTML = `<div class="fb"><b>${ok === true ? '<span class="t-ok">Kısa cevabın doğru.</span>' : ok === false ? '<span class="t-no">Kısa cevabın tutmadı.</span>' : "Çözüm"}</b>${rows}${solHtml(q, true)}${rub}${q.explain ? `<p class="muted">${esc(q.explain)}</p>` : ""}</div>`;
+      fb.querySelectorAll("[data-r]").forEach(c => c.onchange = () => { fb.querySelector("#rsc").textContent = [...fb.querySelectorAll("[data-r]:checked")].reduce((a, x) => a + (+x.dataset.r), 0); });
+      done(ok === true);
+    }
+    hb.addEventListener("click", e => {
+      const b = e.target.closest("[data-h]"); if (!b || finished) return;
+      if (b.dataset.h === "hint") hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`;
+      else if (b.dataset.h === "topic" && tp.note) hp.innerHTML = `<div class="fb topic"><b>📖 Konu özeti</b> <span class="muted small">(${esc(tp.title)})</span><div class="body" style="margin-top:10px">${tp.note}</div></div>`;
+      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); }
+      else if (b.dataset.h === "solve") finish(null, null);
+      else if (b.dataset.h === "check") {
+        if (!ans.length) { finish(null, null); return; }
+        const vals = ans.map((a, i) => host.querySelector("#an" + i).value.trim());
+        if (vals.some(v => !v)) { hp.innerHTML = `<div class="fb">Önce kısa cevap kutularını doldur ya da <b>Çözümü göster</b>'e bas.</div>`; return; }
+        finish(vals, ans.every((a, i) => same(vals[i], a.v) || (a.accept || []).some(x => same(vals[i], x))));
+      }
+    });
+  }
+
   function tapQuestion(host, q, done) {
     host.innerHTML = `<span class="eyebrow">Kilit cümle avı</span><div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
 <div class="sentwrap">${q.sents.map((s, i) => `<button class="sent" type="button" data-i="${i}"><span class="n">${i + 1}</span>${esc(s.t)}</button>`).join("")}</div><div id="fb"></div>`;
