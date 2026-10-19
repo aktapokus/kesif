@@ -230,74 +230,70 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
 
   /* ---------- birim çember keşfi: sin = yükseklik, cos = yatay uzaklık ---------- */
   function circleLab(step, host) {
-    const c = step.cfg, R = 100, cx = 140, cy = 150, wx = 330, ww = 280, both = c.wave === "both";
+    const c = step.cfg, R = 100, cx = 140, cy = 150, wx = 340, ww = 270;
     const rad = d => d * Math.PI / 180;
     const EX = [[0, "0"], [0.5, "1/2"], [Math.SQRT1_2, "√2/2"], [Math.sqrt(3) / 2, "√3/2"], [1, "1"]];
     const lab = v => { const a = Math.abs(v), m = EX.find(e => Math.abs(e[0] - a) < 1e-9); return m ? (v < 0 && a > 1e-9 ? "−" : "") + m[1] : (+v.toFixed(3)).toString().replace(".", ",").replace("-", "−"); };
     const WX = d => wx + d / 360 * ww, WY = v => cy - R * v;
     const path = fn => { let s = ""; for (let d = 0; d <= 360; d += 3) s += (d ? "L" : "M") + WX(d).toFixed(1) + " " + WY(fn(rad(d))).toFixed(1); return s; };
+    let mode = c.wave === "cos" ? "cos" : c.wave === "both" ? "both" : "sin";
+    const ticks = [1, EX[3][0], EX[2][0], 0.5, 0, -0.5, -EX[2][0], -EX[3][0], -1];
     host.innerHTML = `<p>${step.intro}</p><div class="lab">
-<svg viewBox="0 0 640 300" role="img" aria-label="${esc(step.title)}">
+<div class="side row" style="margin:0 0 10px"><span class="muted">Eğri:</span><button class="btn ghost" data-w="sin" type="button">Sinüs</button><button class="btn ghost" data-w="cos" type="button">Kosinüs</button><button class="btn ghost" data-w="both" type="button">İkisi birden</button></div>
+<svg viewBox="0 0 640 310" role="img" aria-label="${esc(step.title)}">
 <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="2"/>
 <line class="ax" x1="${cx - R - 14}" y1="${cy}" x2="${cx + R + 14}" y2="${cy}"/><line class="ax" x1="${cx}" y1="${cy - R - 14}" x2="${cx}" y2="${cy + R + 14}"/>
+<text x="${cx + R + 16}" y="${cy - 6}" fill="var(--muted)" font-size="15">1</text><text x="${cx - R - 30}" y="${cy - 6}" fill="var(--muted)" font-size="15">−1</text>
+<g stroke="var(--line)" stroke-width="1" stroke-dasharray="2 5">${ticks.map(t => `<line x1="${wx}" y1="${WY(t)}" x2="${wx + ww}" y2="${WY(t)}"/>`).join("")}</g>
 <line class="ax" x1="${wx}" y1="${cy}" x2="${wx + ww + 8}" y2="${cy}"/><line class="ax" x1="${wx}" y1="${cy - R - 14}" x2="${wx}" y2="${cy + R + 14}"/>
-<g fill="var(--muted)" font-size="13" text-anchor="middle">${[90, 180, 270, 360].map(d => `<text x="${WX(d)}" y="${cy + R + 30}">${d}°</text>`).join("")}<text x="${wx - 14}" y="${WY(1) + 4}">1</text><text x="${wx - 16}" y="${WY(-1) + 4}">−1</text></g>
-<path d="${path(Math.sin)}" fill="none" stroke="var(--accent)" stroke-opacity=".22" stroke-width="2"/>
-${both ? `<path d="${path(Math.cos)}" fill="none" stroke="var(--cyan)" stroke-opacity=".22" stroke-width="2"/>` : ""}
-<path id="ts" fill="none" stroke="var(--accent)" stroke-width="3.5"/>${both ? `<path id="tc" fill="none" stroke="var(--cyan)" stroke-width="3.5"/>` : ""}
+<g fill="var(--muted)" font-size="13" text-anchor="end">${ticks.map(t => `<text x="${wx - 6}" y="${WY(t) + 4}">${lab(t)}</text>`).join("")}</g>
+<g fill="var(--muted)" font-size="14" text-anchor="middle">${[90, 180, 270, 360].map(d => `<text x="${WX(d)}" y="${cy + R + 32}">${d}°</text>`).join("")}</g>
+<path id="gs" d="${path(Math.sin)}" fill="none" stroke="var(--accent)" stroke-opacity=".22" stroke-width="2"/><path id="gc" d="${path(Math.cos)}" fill="none" stroke="var(--cyan)" stroke-opacity=".28" stroke-width="2"/>
+<path id="ts" fill="none" stroke="var(--accent)" stroke-width="3.5"/><path id="tc" fill="none" stroke="var(--cyan)" stroke-width="3.5"/>
+<g id="mk"></g>
 <line id="guide" stroke="var(--accent)" stroke-dasharray="3 5" stroke-width="1.5"/>
 <line id="rl" stroke="var(--ink)" stroke-width="2.5"/>
 <line id="cv" stroke="var(--cyan)" stroke-width="5" stroke-linecap="round"/><line id="sv" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
-<circle id="pt" r="8" fill="var(--ink)"/><circle id="wd" r="6" fill="var(--accent)"/>${both ? `<circle id="wc" r="6" fill="var(--cyan)"/>` : ""}</svg>
+<circle id="pt" r="8" fill="var(--ink)"/><circle id="wd" r="6.5" fill="var(--accent)"/><circle id="wc" r="6.5" fill="var(--cyan)"/>
+<text id="ls" font-size="17" font-weight="700" fill="var(--accent)" stroke="var(--card2)" stroke-width="4" paint-order="stroke"></text><text id="lc" font-size="17" font-weight="700" fill="var(--cyan)" stroke="var(--card2)" stroke-width="4" paint-order="stroke"></text></svg>
 <div class="side row" style="margin:10px 0">${(c.snaps || []).map(a => `<button class="btn ghost" data-a="${a}" type="button">${a}°</button>`).join("")}</div>
 <label for="sl" class="muted small">Açı: kabini döndür</label><input id="sl" type="range" min="0" max="360" step="1" value="${c.start || 0}" aria-label="Açı">
 <div class="readout"><span>açı = <b id="av">0°</b></span><span style="color:var(--cyan)">cos (yatay) = <b id="cvl" style="color:var(--cyan)">–</b></span><span>sin (yükseklik) = <b id="svl">–</b></span></div>
 <table><thead><tr><th>açı</th><th>cos</th><th>sin</th></tr></thead><tbody id="tb"></tbody></table></div>`;
-    const q = s => host.querySelector(s), sl = q("#sl"), tb = q("#tb"), seen = {}, set = (e, o) => { for (const k in o) e.setAttribute(k, o[k]); };
+    const q = s => host.querySelector(s), sl = q("#sl"), tb = q("#tb"), mk = q("#mk"), seen = {}, set = (e, o) => { for (const k in o) e.setAttribute(k, o[k]); };
+    const NS = "http://www.w3.org/2000/svg";
+    function view() {
+      const S1 = mode !== "cos", C1 = mode !== "sin", sh = (id, on) => { q(id).style.display = on ? "" : "none"; };
+      sh("#gs", S1); sh("#ts", S1); sh("#wd", S1); sh("#ls", S1); sh("#sv", S1); sh("#guide", S1);
+      sh("#gc", C1); sh("#tc", C1); sh("#wc", C1); sh("#lc", C1); sh("#cv", C1);
+      mk.querySelectorAll("[data-k]").forEach(e => { e.style.display = (e.dataset.k === "sin" ? S1 : C1) ? "" : "none"; });
+      host.querySelectorAll("[data-w]").forEach(b => { b.style.borderColor = b.dataset.w === mode ? "var(--accent)" : ""; });
+    }
+    function mark(d, v, kind, color) {
+      const t = document.createElementNS(NS, "text"), o = document.createElementNS(NS, "circle");
+      set(o, { cx: WX(d), cy: WY(v), r: 4.5, fill: color, "data-k": kind }); mk.appendChild(o);
+      set(t, { x: WX(d), y: WY(v) + (v >= 0 ? -9 : 20), "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: color, stroke: "var(--card2)", "stroke-width": 3, "paint-order": "stroke", "data-k": kind }); t.textContent = lab(v); mk.appendChild(t);
+    }
     function upd() {
       const d = +sl.value, co = Math.cos(rad(d)), si = Math.sin(rad(d)), px = cx + R * co, py = cy - R * si;
       set(q("#rl"), { x1: cx, y1: cy, x2: px, y2: py }); set(q("#pt"), { cx: px, cy: py });
       set(q("#sv"), { x1: px, y1: cy, x2: px, y2: py }); set(q("#cv"), { x1: cx, y1: cy + 0.01, x2: px, y2: cy + 0.01 });
       let ds = "", dc = ""; for (let a = 0; a <= d; a += 3) { ds += (a ? "L" : "M") + WX(a).toFixed(1) + " " + WY(Math.sin(rad(a))).toFixed(1); dc += (a ? "L" : "M") + WX(a).toFixed(1) + " " + WY(Math.cos(rad(a))).toFixed(1); }
       ds += "L" + WX(d).toFixed(1) + " " + WY(si).toFixed(1); dc += "L" + WX(d).toFixed(1) + " " + WY(co).toFixed(1);
-      set(q("#ts"), { d: ds }); if (both) { set(q("#tc"), { d: dc }); set(q("#wc"), { cx: WX(d), cy: WY(co) }); }
-      set(q("#wd"), { cx: WX(d), cy: WY(si) }); set(q("#guide"), { x1: px, y1: py, x2: WX(d), y2: WY(si) });
+      set(q("#ts"), { d: ds }); set(q("#tc"), { d: dc });
+      set(q("#wc"), { cx: WX(d), cy: WY(co) }); set(q("#wd"), { cx: WX(d), cy: WY(si) }); set(q("#guide"), { x1: px, y1: py, x2: WX(d), y2: WY(si) });
+      const end = WX(d) > wx + ww - 120, ax = end ? "end" : "start", lx = WX(d) + (end ? -12 : 12);
+      const ls = q("#ls"), lc = q("#lc"); ls.textContent = "sin " + d + "° = " + lab(si); lc.textContent = "cos " + d + "° = " + lab(co);
+      set(ls, { x: lx, y: WY(si) - 12, "text-anchor": ax }); set(lc, { x: lx, y: WY(co) + (mode === "both" && Math.abs(co - si) < 0.35 ? 26 : -12), "text-anchor": ax });
       q("#av").textContent = d + "°"; q("#cvl").textContent = lab(co); q("#svl").textContent = lab(si);
-      if ((d % 30 === 0 || d % 45 === 0) && !seen[d]) { seen[d] = 1; const rows = [...tb.children]; const tr = el("tr", { "data-d": d }, `<td>${d}°</td><td>${lab(co)}</td><td>${lab(si)}</td>`); const nx = rows.find(r => +r.dataset.d > d); tb.insertBefore(tr, nx || null); }
+      if ((d % 30 === 0 || d % 45 === 0) && !seen[d]) {
+        seen[d] = 1; const rows = [...tb.children]; const tr = el("tr", { "data-d": d }, `<td>${d}°</td><td>${lab(co)}</td><td>${lab(si)}</td>`); tb.insertBefore(tr, rows.find(r => +r.dataset.d > d) || null);
+        mark(d, si, "sin", "var(--accent)"); mark(d, co, "cos", "var(--cyan)"); view();
+      }
     }
     sl.addEventListener("input", upd);
-    host.querySelector(".side").addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) { sl.value = b.dataset.a; upd(); } });
-    upd();
-  }
-
-  /* ---------- üstel / logaritma keşfi: taban kaydırıcısı, isteğe bağlı ayna (y = x) ---------- */
-  function expoLab(step, host) {
-    const c = step.cfg, W = 540, H = 480, xmin = -3, xmax = 6, ymin = -3, ymax = 5, u = W / (xmax - xmin);
-    const X = x => (x - xmin) * u, Y = y => H - (y - ymin) * u;
-    const f = v => (+v.toFixed(3)).toString().replace(".", ",").replace("-", "−");
-    host.innerHTML = `<p>${step.intro}</p><div class="lab"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><defs><clipPath id="cp"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>
-<g stroke="var(--line)" stroke-width="1">${[-2, -1, 1, 2, 3, 4, 5].map(i => `<line x1="${X(i)}" y1="0" x2="${X(i)}" y2="${H}"/>`).join("")}${[-2, -1, 1, 2, 3, 4].map(i => `<line x1="0" y1="${Y(i)}" x2="${W}" y2="${Y(i)}"/>`).join("")}</g>
-<line class="ax" x1="0" y1="${Y(0)}" x2="${W}" y2="${Y(0)}"/><line class="ax" x1="${X(0)}" y1="0" x2="${X(0)}" y2="${H}"/>
-${c.inverse ? `<line x1="${X(ymin)}" y1="${Y(ymin)}" x2="${X(ymax)}" y2="${Y(ymax)}" stroke="var(--muted)" stroke-dasharray="6 6" stroke-width="2"/><text x="${X(3.6)}" y="${Y(4.1)}" fill="var(--muted)" font-size="15">y = x</text>` : ""}
-<g clip-path="url(#cp)"><path id="pe" fill="none" stroke="var(--accent)" stroke-width="4"/>${c.inverse ? `<path id="pl" fill="none" stroke="var(--cyan)" stroke-width="4"/>` : ""}</g>
-<circle cx="${X(0)}" cy="${Y(1)}" r="7" fill="var(--accent)"/><text x="${X(0) + 10}" y="${Y(1) - 8}" fill="var(--accent)" font-size="15">(0, 1)</text>
-${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text x="${X(1) + 8}" y="${Y(0) + 20}" fill="var(--cyan)" font-size="15">(1, 0)</text>` : ""}</svg>
-<div class="side row" style="margin:10px 0">${(c.snaps || []).map(a => `<button class="btn ghost" data-a="${a}" type="button">taban ${String(a).replace(".", ",")}</button>`).join("")}</div>
-<label for="sl" class="muted small">Taban a</label><input id="sl" type="range" min="0.2" max="4" step="0.1" value="${c.start || 2}" aria-label="Taban">
-<div class="readout"><span>a = <b id="av">–</b></span><span id="note" class="muted small"></span></div>
-<table><thead><tr><th>x</th>${[-2, -1, 0, 1, 2, 3].map(x => `<th>${f(x)}</th>`).join("")}</tr></thead><tbody><tr><td class="muted">a<sup>x</sup></td>${[-2, -1, 0, 1, 2, 3].map(x => `<td data-x="${x}"></td>`).join("")}</tr></tbody></table></div>`;
-    const q = s => host.querySelector(s), sl = q("#sl");
-    function upd() {
-      const a = +sl.value; let de = "", dl = "";
-      for (let x = -3; x <= 6.001; x += 0.05) { const y = Math.pow(a, x); if (isFinite(y) && Math.abs(y) < 60) { de += (de && de.slice(-1) !== "M" ? "L" : "M") + X(x).toFixed(1) + " " + Y(y).toFixed(1); dl += (dl && dl.slice(-1) !== "M" ? "L" : "M") + X(y).toFixed(1) + " " + Y(x).toFixed(1); } }
-      q("#pe").setAttribute("d", de); if (c.inverse) q("#pl").setAttribute("d", dl);
-      q("#av").textContent = f(a).replace("−", "-");
-      host.querySelectorAll("td[data-x]").forEach(td => td.textContent = f(Math.pow(a, +td.dataset.x)));
-      q("#note").textContent = Math.abs(a - 1) < 1e-9 ? "a = 1: eğri düz bir çizgi, logaritma tanımsız (taban 1 olamaz)." : a > 1 ? "a > 1: x arttıkça yükseliyor." : "0 < a < 1: x arttıkça alçalıyor.";
-    }
-    sl.addEventListener("input", upd);
-    host.querySelector(".side").addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) { sl.value = b.dataset.a; upd(); } });
-    upd();
+    host.addEventListener("click", e => { const w = e.target.closest("[data-w]"); if (w) { mode = w.dataset.w; view(); upd(); return; } const b = e.target.closest("[data-a]"); if (b) { sl.value = b.dataset.a; upd(); } });
+    view(); upd();
   }
 
   /* ---------- ders akışı ---------- */
