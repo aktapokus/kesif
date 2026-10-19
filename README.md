@@ -1,4 +1,4 @@
-# Aktapokus Keşif
+# aktapokus-kesif
 
 TYT/AYT yolculuğu için ezber değil keşif. Statik web uygulaması: sunucu, hesap, izleyici yok; ilerleme yalnızca tarayıcıda.
 

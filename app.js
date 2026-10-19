@@ -84,7 +84,7 @@
   const fmtT = sec => { sec = Math.floor(sec); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s2 = sec % 60, p = n => String(n).padStart(2, "0"); return (h ? h + ":" : "") + p(m) + ":" + p(s2); };
   const subjName = k => k === "gen" ? "Genel" : (K.subjects[k] ? K.subjects[k].name : k);
   function beep() { try { const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); g.gain.value = 0.08; o.frequency.value = 660; o.start(); o.stop(c.currentTime + 0.35); } catch (e) {} }
-  function announce(msg) { const d = document.getElementById("tbdone"); if (!d) return; d.hidden = false; d.querySelector("span").textContent = msg; beep(); document.title = "✓ Süre bitti · Aktapokus Keşif"; }
+  function announce(msg) { const d = document.getElementById("tbdone"); if (!d) return; d.hidden = false; d.querySelector("span").textContent = msg; beep(); document.title = "✓ Süre bitti · aktapokus-kesif"; }
   function addStudy(subj, secs) { const d = studyDay(); d[subj] = (d[subj] || 0) + secs; checkGoals(); }
   function checkGoals() {
     const t = today(), tot = totalSecs();
@@ -114,7 +114,7 @@
     bar.querySelectorAll("[data-gm]").forEach(b => b.onclick = () => { S.goalMin = +b.dataset.gm; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); });
     $("#tbcs").onclick = () => { const n = Math.round(+$("#tbc").value); if (n >= 1 && n <= 600) { S.goalMin = n; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); $("#tbc").value = ""; } };
     $("#tbas").onclick = () => { const n = Math.round(+$("#tba").value); if (n >= 1 && n <= 600) { addStudy(S.run.subj, n * 60); save(); updateBar(true); $("#tba").value = ""; $("#tbam").textContent = n + " dk " + subjName(S.run.subj) + " için eklendi."; } };
-    $("#tbx").onclick = () => { $("#tbdone").hidden = true; document.title = "Aktapokus Keşif"; };
+    $("#tbx").onclick = () => { $("#tbdone").hidden = true; document.title = "aktapokus-kesif"; };
     updateBar(true);
   }
   function updateBar(full) {
@@ -172,6 +172,7 @@
   }
 
   /* ---------- hedeflerim: ders seç, hedef koy ---------- */
+  function keepScroll(fn) { const y = window.scrollY; fn(); window.scrollTo(0, y); }
   function renderGoals() {
     const sel = selSet(), td = studyDay();
     let html = `${tabsHtml("hedef")}<p class="lede">Çalışmak istediğin dersleri seç; her derse günlük bir süre hedefi koyabilirsin. Üstteki sayaç seçtiğin derse yazılır. Seçmediğin dersler "Bugün" önerisinde çıkmaz ama burada durur.</p>`;
@@ -185,8 +186,8 @@
 <div class="lst">${ls.length ? ls.map(l => `<a href="#/ders/${l.id}/0">${S.done[l.id] ? "✓ " : "› "}${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></a>`).join("") : `<span class="muted small">Bu ders için keşif hazırlanıyor.</span>`}</div></section>`;
     }
     $app.innerHTML = `<h1>Dersler</h1>` + html;
-    $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); renderGoals(); });
-    $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); renderGoals(); });
+    $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); keepScroll(renderGoals); });
+    $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); keepScroll(renderGoals); });
   }
 
   /* ---------- hesap (isteğe bağlı eşitleme) ---------- */
