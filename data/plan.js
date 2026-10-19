@@ -1,5 +1,5 @@
 /* Dersler, ağırlıklar ve haftalık ritim.
-   Ağırlıklar YKS (EA alanı) soru dağılımından türetilmiş TAHMİNDİR; ÖSYM kılavuzundan doğrulanmalıdır (bkz. docs/YOL_HARITASI.md). */
+   Ağırlıklar YKS (EA alanı) soru dağılımından türetilmiştir ve 2026-YKS Kılavuzu Tablo 1B (TYT 120 + AYT 80 soru) ile DOĞRULANMIŞTIR. Kılavuz her yıl değişebilir; yeni kılavuzla yeniden kontrol edilmelidir (bkz. docs/YOL_HARITASI.md). */
 window.KESIF = window.KESIF || { lessons: {}, daily: [] };
 KESIF.subjects = {
   mat:   { name: "Matematik",   icon: "∑",  w: 40,  note: "TYT 40 + AYT 40 soru" },
@@ -7,7 +7,7 @@ KESIF.subjects = {
   edeb:  { name: "Edebiyat",    icon: "❦",  w: 12,  note: "AYT 24 soru" },
   tar:   { name: "Tarih",       icon: "⌛", w: 7.5, note: "TYT 5 + AYT 10 soru" },
   cog:   { name: "Coğrafya",    icon: "🌍", w: 5.5, note: "TYT 5 + AYT 6 soru" },
-  fel:   { name: "Felsefe",     icon: "💭", w: 2.5, note: "TYT 5 soru" },
+  fel:   { name: "Felsefe / Din",     icon: "💭", w: 2.5, note: "TYT 5 soru (Felsefe ya da Din Kültürü seçimi)" },
   fiz:   { name: "Fizik",       icon: "⚛",  w: 3.5, note: "TYT 7 soru" },
   kim:   { name: "Kimya",       icon: "⚗",  w: 3.5, note: "TYT 7 soru" },
   biy:   { name: "Biyoloji",    icon: "🧬", w: 3,   note: "TYT 6 soru" }

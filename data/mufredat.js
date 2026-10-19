@@ -36,5 +36,8 @@ KESIF.tracks = {
   "mat-iki-degisken": ["s11"],
   "mat-veri-inceleme": ["s11"],
   "mat-cokgen": ["s11"],
+  "fiz-hareket": ["tyt"],
+  "cog-boylam": ["tyt", "ayt"],
+  "kim-periyodik": ["tyt"],
   "tur-paragraf": ["tyt"]
 };

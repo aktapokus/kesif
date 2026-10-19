@@ -22,3 +22,5 @@ Kurallar:
 - Ondalık ayırıcı **virgül** (3,5); bin ayırıcı boşluk veya nokta tutarlı olsun.
 - Her yeni derste ilk kez geçen simge, yanında sözcükle tanıtılır (Δt = ölçüm aralığı).
 - Dersin diline "h" gibi anlamsız harf getirme; sınav kitaplarında genel simge ne ise onu kullan.
+
+- Fizikte konum/yol **x** (Δx yer değiştirme), hız **v**, ivme **a**, zaman **t**; matematikte konum fonksiyonu s(t) kullanılabilir. Saniye birimi her yerde **s**.

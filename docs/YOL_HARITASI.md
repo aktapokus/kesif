@@ -5,10 +5,10 @@ Hedef: öğrenci uygulamayı açınca "Bugün neyi ezberleyeceğim?" değil, **"
 
 ## İlk öğrenci: 11. sınıf (seneye 12), fen lisesi, Eşit Ağırlık (TM) sınavı
 
-## Ders ağırlıkları (TAHMİN — ÖSYM kılavuzundan doğrulanacak)
+## Ders ağırlıkları (2026-YKS Kılavuzu Tablo 1B ile DOĞRULANDI)
 EA yolunda toplam ≈ 200 soru: TYT 120 (Türkçe 40, Sosyal 20, Matematik 40, Fen 20) + AYT-EA 80 (Matematik 40, Edebiyat 24, Tarih-1 10, Coğrafya-1 6).
 → Matematik %40, Türkçe+Edebiyat ≈ %32, Sosyal ≈ %20, Fen ≈ %10. `data/plan.js` bu orandan türetildi.
-**Doğrulanacak:** güncel YKS kılavuzundaki soru dağılımı (değişmiş olabilir).
+**Doğrulandı:** 2026-YKS kılavuzu (TYT 120, AYT-EA: Matematik 40, Edebiyat 24, Tarih-1 10, Coğrafya-1 6). Her yıl yeni kılavuzla yeniden kontrol edilecek; 2028 sınavı için yeni kılavuz beklenir.
 
 ## Matematik ve Türkçe öncelik mantığı
 - 11. sınıf müfredatı (trigonometri, çember/analitik geometri, logaritma, diziler, olasılık…) ve TYT çekirdeği (problemler, fonksiyonlar, temel kavramlar) **önce**.
@@ -34,3 +34,11 @@ Yanlış seçenek açıklamaları kasıtlı: her yanlış, belirli bir yanlış 
 - Hız vaadi yok. "Hızlı okuma" yalnızca bağlaç/kilit cümle stratejisi olarak geçer.
 - Tanı koymaz; öğretmenin yerini tutmaz.
 - İçerik doğruluğu: her ders yayımdan önce matematik/Türkçe öğretmeni gözüyle ya da yayımlı kaynakla karşılaştırılmalı (bkz. ../YAYIN_KONTROL_LISTESI.md).
+
+
+## Güncel durum (2026-10-19)
+- Konu sırası (11. sınıf): MEB 11. sınıf ders kitabı içindekiler (`data/mufredat.js`).
+- TYT/AYT kazanım listeleri: MEB–ÖSYM 2026 kazanım belgesi (`data/yks-kazanim.js`, 12 ders); eski program kodları, 2028 için güncellenecek.
+- Soru bankası: özgün sorular, adım adım çözümlü (`data/banka-*.js`); çıkmış soru metni telif nedeniyle YOK, ÖSYM bağlantıları var.
+- Sınav hazırlık modu (süreli, puanlı), açık uçlu soru türü, ilerleme eşitleme (e-posta girişi).
+- Simgeler: `docs/SEMBOLLER.md`.

@@ -655,6 +655,22 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
     sl.addEventListener("input", draw); q("#m1").addEventListener("change", draw); q("#m2").addEventListener("change", draw); draw();
   }
 
+
+  /* ---------- genel simülasyon: kaydırıcılar + hesaplanan çıktılar + isteğe bağlı SVG (tüm dersler için) ---------- */
+  function simLab(step, host) {
+    const c = step.cfg, vb = c.vb || "0 0 640 280";
+    host.innerHTML = `<p>${step.intro}</p><div class="lab">${c.svg ? `<svg viewBox="${vb}" role="img" aria-label="${esc(step.title)}"><g id="sg"></g></svg>` : ""}
+${c.vars.map(v => `<div style="margin-top:8px"><label for="v_${v.k}" class="muted small">${v.label}: <b id="o_${v.k}"></b></label><input id="v_${v.k}" type="range" min="${v.min}" max="${v.max}" step="${v.step || 1}" value="${v.value}" aria-label="${esc(v.label)}"></div>`).join("")}
+<div class="readout" style="flex-direction:column;gap:4px">${c.out.map((o, i) => `<span>${o.label} = <b id="r_${i}">–</b></span>`).join("")}</div></div>`;
+    const q = s => host.querySelector(s);
+    function upd() {
+      const v = {}; c.vars.forEach(x => { v[x.k] = +q("#v_" + x.k).value; q("#o_" + x.k).textContent = String(v[x.k]).replace(".", ",") + (x.unit ? " " + x.unit : ""); });
+      c.out.forEach((o, i) => { q("#r_" + i).textContent = o.fn(v); });
+      if (c.svg) q("#sg").innerHTML = c.svg(v);
+    }
+    host.addEventListener("input", upd); upd();
+  }
+
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
@@ -675,6 +691,8 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; explorer(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "circle") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; circleLab(st, host.querySelector("#ex")); navBtns(true);
+    } else if (st.type === "sim") {
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; simLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "polygon") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; polygonLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "bar") {
@@ -705,7 +723,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
     const mt = K.meta && K.meta[q.id]; if (mt && mt.s11 && K.topicNotes && K.topicNotes[mt.s11]) return { note: K.topicNotes[mt.s11], title: "11. sınıf " + mt.s11 + " " + (s11Title(mt.s11) || "") };
-    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar", "polygon"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar", "polygon", "sim"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
     return null;
   }
   function question(host, q, done, inLesson, extra) {
@@ -728,7 +746,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
         if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
-        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c);
+        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); else if (st.type === "sim") simLab(st, c);
         hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (b.dataset.h === "solve") {
         answered = true; const right = opts.find(x => x.ok);
@@ -773,7 +791,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
       const b = e.target.closest("[data-h]"); if (!b || finished) return;
       if (b.dataset.h === "hint") hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`;
       else if (b.dataset.h === "topic" && tp.note) hp.innerHTML = `<div class="fb topic"><b>📖 Konu özeti</b> <span class="muted small">(${esc(tp.title)})</span><div class="body" style="margin-top:10px">${tp.note}</div></div>`;
-      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); }
+      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); else if (st.type === "sim") simLab(st, c); }
       else if (b.dataset.h === "solve") finish(null, null);
       else if (b.dataset.h === "check") {
         if (!ans.length) { finish(null, null); return; }
@@ -841,7 +859,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
     const rows = Object.entries(K.subjects).sort((a, b) => b[1].w - a[1].w).map(([k, s]) =>
       `<tr><td>${s.icon} ${esc(s.name)}</td><td class="num">%${String(s.w).replace(".", ",")}</td><td class="muted small">${esc(s.note)}</td></tr>`).join("");
     const week = [1, 2, 3, 4, 5, 6, 0].map(d => `<tr><td>${K.dayNames[d]}</td><td>${K.week[d].map(k => esc(K.subjects[k].name)).join(" · ")}</td></tr>`).join("");
-    $app.innerHTML = `<h1>Yol haritası</h1><p class="lede">Dokuz dersin tamamı var; ağırlık, sınavda en çok net getiren derslerde (matematik, Türkçe, edebiyat, sosyal). Rakamlar tahmindir; ÖSYM kılavuzundan kontrol edilmelidir.</p>
+    $app.innerHTML = `<h1>Yol haritası</h1><p class="lede">Dokuz dersin tamamı var; ağırlık, sınavda en çok net getiren derslerde (matematik, Türkçe, edebiyat, sosyal). Rakamlar 2026-YKS kılavuzunun soru dağılımından (TYT 120 + AYT-EA 80 soru) çıkarılmıştır; kılavuz değişirse güncellenir.</p>
 <div class="card" style="margin:18px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Çalışma payı</th><th>Dayanak</th></tr></thead><tbody>${rows}</tbody></table></div>
 <h2>Haftalık ritim</h2><div class="card"><table class="tbl"><tbody>${week}</tbody></table></div>
 <p class="muted small" style="margin-top:14px">Her gün: bir ana keşif (≈25 dk) + günlük sorular. Yorgun günde yalnızca sorular da yeterli.</p>`;
