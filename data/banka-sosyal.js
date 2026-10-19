@@ -41,23 +41,23 @@
     ["Yaz: sıcak + kurak.", "Kış: ılık + yağışlı.", "Bu rejim Akdeniz iklimidir."]);
   /* ---------- Tarih ---------- */
   var AN = "Anadolu'nun Türkleşmesi", IS = "Islahat ve Meşrutiyet", KS = "Kurtuluş Savaşı", IN = "Cumhuriyet inkılapları";
-  Qk("th1", "tar", T, AN, 1, "Anadolu'nun kapılarını Türklere açan savaş aşağıdakilerden hangisidir?", "Malazgirt Meydan Muharebesi (1071)", "Selçuklu Sultanı Alparslan, Bizans İmparatoru Romen Diyojen'i yenmiş; Anadolu'ya Türk akınları hızlanmıştır.",
+  Qk("ths1", "tar", T, AN, 1, "Anadolu'nun kapılarını Türklere açan savaş aşağıdakilerden hangisidir?", "Malazgirt Meydan Muharebesi (1071)", "Selçuklu Sultanı Alparslan, Bizans İmparatoru Romen Diyojen'i yenmiş; Anadolu'ya Türk akınları hızlanmıştır.",
     [["Miryokefalon Savaşı", "1176; Bizans'ın Anadolu'yu geri alamamasına yol açtı ama kapıları açan savaş değil."], ["Dandanakan Savaşı", "1040; Gazneliler'e karşı kazanılan, Selçuklu devletinin kuruluşunu sağlayan savaş."], ["Kosova Savaşı", "1389; Balkanlarda Osmanlı."]],
     "Tarih 1071.", "Önce sonucu sor: hangi savaştan sonra Anadolu Türkleşmeye başladı? Tarih ve kişiyle bağla (Alparslan – Romen Diyojen).",
     ["1071'de Alparslan Bizans'ı yendi.", "Bu zaferle Anadolu'nun kapıları Türk akınlarına açıldı."]);
-  Qk("th2", "tar", T, IS, 2, "Osmanlı Devleti'nin ilk anayasası olan Kanun-i Esasi hangi yıl ilan edilmiştir?", "1876", "II. Abdülhamid döneminde, I. Meşrutiyet ile birlikte ilan edilmiştir.",
+  Qk("ths2", "tar", T, IS, 2, "Osmanlı Devleti'nin ilk anayasası olan Kanun-i Esasi hangi yıl ilan edilmiştir?", "1876", "II. Abdülhamid döneminde, I. Meşrutiyet ile birlikte ilan edilmiştir.",
     [["1839", "Tanzimat Fermanı yılı."], ["1856", "Islahat Fermanı yılı."], ["1908", "II. Meşrutiyet yılı."]],
     "Meşrutiyetlerin sırasını düşün: ilkinin yılı.", "Dört temel tarihi kronolojik tek zincire koy: 1839 Tanzimat → 1856 Islahat → 1876 Kanun-i Esasi → 1908 II. Meşrutiyet.",
     ["Kronoloji: 1839 – 1856 – 1876 – 1908.", "Kanun-i Esasi ilk anayasa → I. Meşrutiyet yılı 1876."]);
-  Qk("th3", "tar", T, KS, 2, "Millî Mücadele'nin kronolojik sıralaması hangisinde doğru verilmiştir?", "Sakarya Meydan Muharebesi → Büyük Taarruz → Mudanya Ateşkesi → Lozan", "Sakarya (1921), Büyük Taarruz (26 Ağustos 1922), Mudanya (Ekim 1922), Lozan (1923).",
+  Qk("ths3", "tar", T, KS, 2, "Millî Mücadele'nin kronolojik sıralaması hangisinde doğru verilmiştir?", "Sakarya Meydan Muharebesi → Büyük Taarruz → Mudanya Ateşkesi → Lozan", "Sakarya (1921), Büyük Taarruz (26 Ağustos 1922), Mudanya (Ekim 1922), Lozan (1923).",
     [["Büyük Taarruz → Sakarya → Lozan → Mudanya", "Sakarya Büyük Taarruz'dan önce."], ["Lozan → Mudanya → Sakarya → Büyük Taarruz", "Lozan en sondadır."], ["Mudanya → Sakarya → Büyük Taarruz → Lozan", "Mudanya Büyük Taarruz'dan sonradır."]],
     "Savaşın bittiği, barışın en sonda yapıldığı ilkesini kullan.", "Önce hangi olayın en son olduğunu (Lozan) bul; sonra ateşkesin savaştan sonra geldiğini hatırla.",
     ["Sakarya savunması 1921.", "Büyük Taarruz 1922 Ağustos.", "Mudanya Ateşkesi 1922 Ekim.", "Lozan Barışı 1923."]);
-  Qk("th4", "tar", T, IN, 2, "Aşağıdaki inkılaplardan hangisi diğerlerinden önce yapılmıştır?", "Halifeliğin kaldırılması", "3 Mart 1924'te halifelik kaldırıldı; Harf İnkılabı 1928, Soyadı Kanunu 1934, kadınlara seçme ve seçilme hakkı 1934.",
+  Qk("ths4", "tar", T, IN, 2, "Aşağıdaki inkılaplardan hangisi diğerlerinden önce yapılmıştır?", "Halifeliğin kaldırılması", "3 Mart 1924'te halifelik kaldırıldı; Harf İnkılabı 1928, Soyadı Kanunu 1934, kadınlara seçme ve seçilme hakkı 1934.",
     [["Harf İnkılabı", "1928."], ["Soyadı Kanunu", "1934."], ["Kadınlara milletvekili seçilme hakkı", "1934."]],
     "Cumhuriyetin ilanından (1923) hemen sonrasını düşün.", "Her inkılabı yıla bağla; en erken olanı bul.",
     ["Halifelik: 1924.", "Harf: 1928.", "Soyadı ve kadın hakları: 1934.", "En erken: halifeliğin kaldırılması."]);
-  Qk("th5", "tar", T, KS, 1, "Türkiye Büyük Millet Meclisi hangi tarihte açılmıştır?", "23 Nisan 1920", "Ankara'da açılan Meclis, Millî Mücadele'yi yürüten yasama organı olmuştur.",
+  Qk("ths5", "tar", T, KS, 1, "Türkiye Büyük Millet Meclisi hangi tarihte açılmıştır?", "23 Nisan 1920", "Ankara'da açılan Meclis, Millî Mücadele'yi yürüten yasama organı olmuştur.",
     [["29 Ekim 1923", "Cumhuriyet'in ilanı."], ["19 Mayıs 1919", "Mustafa Kemal'in Samsun'a çıkışı."], ["30 Ağustos 1922", "Başkomutanlık Meydan Muharebesi'nin zaferi."]],
     "Çocuk Bayramı olan gün.", "Bayram tarihlerini olaylarla eşle: 23 Nisan = TBMM, 19 Mayıs = Samsun, 30 Ağustos = Zafer, 29 Ekim = Cumhuriyet.",
     ["23 Nisan 1920: TBMM açılışı.", "Diğer tarihler başka olaylara ait."]);
