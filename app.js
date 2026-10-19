@@ -555,9 +555,11 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
   function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca keşif akışıdır */ }
 
   /* ---------- soru bileşenleri ---------- */
+  const solHtml = (q, open) => Array.isArray(q.solution) && q.solution.length ? `<details class="sol" ${open ? "open" : ""}><summary><b>🧩 Adım adım çözüm</b></summary><ol class="body">${q.solution.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "";
   /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
+    const mt = K.meta && K.meta[q.id]; if (mt && mt.s11 && K.topicNotes && K.topicNotes[mt.s11]) return { note: K.topicNotes[mt.s11], title: "11. sınıf " + mt.s11 + " " + (s11Title(mt.s11) || "") };
     if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
     return null;
   }
@@ -575,6 +577,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
     hb.addEventListener("click", e => {
       const b = e.target.closest("[data-h]"); if (!b || answered) return;
       if (b.dataset.h === "hint") { hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`; }
+      else if (b.dataset.h === "topic" && tp.note) { hp.innerHTML = `<div class="fb topic"><b>📖 Konu özeti</b> <span class="muted small">(${esc(tp.title)})</span><div class="body" style="margin-top:10px">${tp.note}</div></div>`; hp.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
       else if (b.dataset.h === "topic") {
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
@@ -585,7 +588,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
         answered = true; const right = opts.find(x => x.ok);
         host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
         hb.style.display = "none"; hp.innerHTML = "";
-        host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>${q.solution ? esc(q.solution) : `Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}`}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}<br><br><span class="muted small">Çözümü gördüğün için bu soru tekrar kutusuna eklendi; sonra kendin çözmeyi dene.</span></div>`;
+        host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}${Array.isArray(q.solution) ? solHtml(q, true) : typeof q.solution === "string" ? "<br>" + esc(q.solution) : ""}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}<br><br><span class="muted small">Çözümü gördüğün için bu soru tekrar kutusuna eklendi; sonra kendin çözmeyi dene.</span></div>`;
         done(false);
       }
     });
@@ -596,7 +599,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       if (!ok) b.classList.add("no");
       const right = opts.find(x => x.ok);
       host.querySelector("#fb").innerHTML = `<div class="fb">${ok ? `<b class="t-ok">Doğru.</b> ` : `<b class="t-no">Düşünce burada kaymış olabilir:</b> `}${esc(o.why)}${ok ? "" : `<br><br><b>Doğru yol:</b> ${esc(right.t)} — ${esc(right.why)}`}
-${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
+${solHtml(q, !ok)}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
       done(ok);
     });
   }

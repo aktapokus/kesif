@@ -132,3 +132,7 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:18px;color:var(--ink
 .stat{font:800 34px var(--f-display);color:var(--accent);margin:6px 0}
 .uname{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:640px){.uname{display:none}.top{flex-wrap:wrap;row-gap:6px}.top nav{flex-wrap:wrap;gap:2px;justify-content:flex-start}.top nav a{padding:8px 10px}}
+
+details.sol{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+details.sol summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+details.sol ol{margin:6px 0 0;padding-left:22px}
