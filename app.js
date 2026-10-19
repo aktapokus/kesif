@@ -100,7 +100,7 @@
   function buildBar() {
     const bar = document.getElementById("tbar"); if (!bar) return;
     bar.innerHTML = `<div class="tb-main"><span class="tb-time" id="tbt">00:00</span><span class="muted small" id="tbg"></span><div class="tb-prog"><i id="tbp"></i></div></div>
-<div class="tb-act"><select id="tbs" aria-label="Çalıştığım ders"></select><button class="btn" id="tbr" type="button">Başlat</button><button class="btn ghost" id="tbo" type="button" aria-expanded="false">Hedef · süre ekle</button></div>
+<div class="tb-act"><select id="tbs" aria-label="Çalıştığım ders"></select><button class="btn" id="tbr" type="button">Başlat</button><button class="btn ghost" id="tbo" type="button" aria-expanded="false">Hedef ⏱</button></div>
 <div id="tbpanel" hidden><div><span class="muted small">Bugünkü çalışma hedefim:</span><div class="chips">${[15, 25, 45, 60, 90].map(n => `<button class="btn ghost" data-gm="${n}" type="button">${n} dk</button>`).join("")}<button class="btn ghost" data-gm="0" type="button">Hedefsiz</button></div></div>
 <div><label class="muted small" for="tbc">Kendi sürem (dk)</label> <input id="tbc" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbcs" type="button">Hedefi ayarla</button></div>
 <div><label class="muted small" for="tba">Elle süre ekle (dk)</label> <input id="tba" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbas" type="button">Süreyi ekle</button> <span class="muted small" id="tbam"></span></div></div>
@@ -186,16 +186,21 @@
     }
     if (seg.length > 1) d += "M" + seg.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L");
     const hasL = typeof c.L === "number";
+    const ystep = (c.ymax - c.ymin) > 10 ? 2 : 1; let tk = "";
+    for (let x = Math.ceil(c.xmin); x <= Math.floor(c.xmax); x++) tk += `<line class="ax" x1="${X(x)}" y1="${H - P}" x2="${X(x)}" y2="${H - P + 5}"/><text x="${X(x)}" y="${H - P + 20}" text-anchor="middle" fill="var(--muted)" font-size="17">${String(x).replace("-", "−")}</text>`;
+    for (let y = Math.ceil(c.ymin); y <= Math.floor(c.ymax); y += ystep) tk += `<line class="ax" x1="${P - 5}" y1="${Y(y)}" x2="${P}" y2="${Y(y)}"/><text x="${P - 9}" y="${Y(y) + 4}" text-anchor="end" fill="var(--muted)" font-size="17">${String(y).replace("-", "−")}</text>`;
+    tk += `<text x="${W - P}" y="${H - 6}" text-anchor="end" fill="var(--ink)" font-size="18" font-weight="700">${esc(c.xTitle || c.varName)} →</text><text x="${P + 4}" y="20" fill="var(--ink)" font-size="18" font-weight="700">↑ ${esc(c.yTitle || c.fLabel)}</text>`;
     host.innerHTML = `<p>${step.intro}</p><div class="lab">
 <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)} grafiği">
 <line class="ax" x1="${P}" y1="${Y(Math.max(c.ymin, Math.min(0, c.ymax)))}" x2="${W - P}" y2="${Y(Math.max(c.ymin, Math.min(0, c.ymax)))}"/>
 <line class="ax" x1="${X(Math.max(c.xmin, Math.min(0, c.xmax)))}" y1="${P}" x2="${X(Math.max(c.xmin, Math.min(0, c.xmax)))}" y2="${H - P}"/>
 <line class="ax" x1="${X(c.a)}" y1="${P}" x2="${X(c.a)}" y2="${H - P}" stroke-dasharray="3 5"/>
-${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}"/>` : ""}
-<path class="curve" d="${d}"/>${hasL ? `<circle class="hole" cx="${X(c.a)}" cy="${Y(c.L)}" r="7"/>` : ""}
-<circle class="dot" id="pt" r="8" cx="-20" cy="-20"/></svg>
+${tk}
+${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}"/><text x="${P + 6}" y="${Y(c.L) - 8}" text-anchor="start" fill="var(--good)" font-size="18" font-weight="700">yaklaştığı değer (limit) = ${String(c.L).replace(".", ",")}</text>` : ""}
+<path class="curve" d="${d}"/>${hasL ? `<circle class="hole" cx="${X(c.a)}" cy="${Y(c.L)}" r="7"/><text x="${X(c.a) + 12}" y="${Y(c.L) + 24}" fill="var(--accent)" font-size="17">boşluk: burada değer yok</text>` : ""}
+<circle class="dot" id="pt" r="8" cx="-20" cy="-20"/><text id="ptl" font-size="18" font-weight="700" fill="var(--ink)" stroke="var(--card2)" stroke-width="4" paint-order="stroke"></text></svg>
 <div class="side row" style="margin:10px 0"></div>
-<label for="sl" class="muted small">Yaklaşma aralığı <b>|${c.varName} − ${String(c.a).replace(".", ",")}|</b> (sağa çek: küçülsün)</label>
+<label for="sl" class="muted small">${c.sliderLabel || `Yaklaşma aralığı <b>|${c.varName} − ${String(c.a).replace(".", ",")}|</b> (sağa çek: küçülsün)`}</label>
 <input id="sl" type="range" min="0" max="100" value="0" aria-label="Aralığı küçült">
 <div class="readout"><span>${c.varName} = <b id="xv">–</b></span><span>${c.fLabel} = <b id="fv">–</b>${c.unit ? " " + c.unit : ""}</span></div>
 <table><thead><tr><th>${c.varName}</th><th>${c.fLabel}</th></tr></thead><tbody id="tb"></tbody></table></div>`;
@@ -212,6 +217,8 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
       const x = c.a + (side === "left" ? -dist : dist), y = c.f(x), pt = host.querySelector("#pt");
       host.querySelector("#xv").textContent = fmt(x); host.querySelector("#fv").textContent = fmt(y);
       if (isFinite(y) && y >= c.ymin - 1 && y <= c.ymax + 1) { pt.setAttribute("cx", X(x)); pt.setAttribute("cy", Y(y)); } else { pt.setAttribute("cx", X(x)); pt.setAttribute("cy", y > 0 ? P : H - P); }
+      const tl = host.querySelector("#ptl"), tx = +pt.getAttribute("cx"), ty = +pt.getAttribute("cy");
+      tl.textContent = c.varName + " = " + fmt(x) + " → " + fmt(y); tl.setAttribute("text-anchor", tx > W - 190 ? "end" : "start"); tl.setAttribute("x", tx > W - 190 ? tx - 14 : tx + 14); tl.setAttribute("y", Math.max(P + 14, ty - 14));
       for (let k = 0; k <= Math.floor(sl.value / 10); k++) {
         const key = side + k; if (seen[key]) continue; seen[key] = 1;
         const dk = c.dmax * Math.pow(10, -3 * k * 10 / 100), xk = c.a + (side === "left" ? -dk : dk);

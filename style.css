@@ -116,3 +116,5 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:18px;color:var(--ink
 .helpbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}
 .helpbar .btn{min-height:44px}
 .fb.topic .lab{margin:10px 0}
+
+@media (max-width:640px){.tbar{padding:6px 12px;gap:6px 10px}.tbar .tb-time{font-size:20px}.tbar .tb-act{flex-wrap:nowrap;width:100%}.tbar select{flex:1 1 0;min-width:0;max-width:150px}.tbar .btn{padding:0 12px;white-space:nowrap}}

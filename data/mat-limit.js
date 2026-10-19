@@ -20,8 +20,8 @@ KESIF.lessons["mat-limit"] = {
 
     { type: "explorer", id: "hiz", title: "Aralığı küçült, ortalama hıza bak",
       say: "Kaydırıcıyla ölçüm aralığı h'yi küçült. Ortalama hızın hangi sayıya yaklaştığını izle.",
-      intro: "Kaydırıcıyı sağa çek: ölçüm aralığı <b>h</b> küçülüyor. Ortalama hız = (s(3+h) − s(3)) ÷ h. Tabloda değerler birikiyor.",
-      cfg: { varName: "h", a: 0, sides: ["right"], f: h => ((3 + h) * (3 + h) - 9) / h, L: 6, xmin: -1, xmax: 1.5, ymin: 4, ymax: 8,
+      intro: "<b>Ne yapıyoruz?</b> Arabanın hızını, 3. saniyeden <b>h saniye sonrasına</b> kadar ölçüyoruz (h = ölçüm aralığı). <b>Kaydırıcıyı sağa çek:</b> h küçülür. Grafikte yatay eksen h, dikey eksen o aralıktaki <b>ortalama hız</b>. Sarı nokta eğri üstünde sola kayarken <b>tabloya</b> bak: sayılar hangi değere yaklaşıyor?",
+      cfg: { varName: "h", xTitle: "h: ölçüm aralığı (sn)", yTitle: "ortalama hız (m/s)", sliderLabel: "Ölçüm aralığı h  (sağa çek: aralık küçülsün)", a: 0, sides: ["right"], f: h => ((3 + h) * (3 + h) - 9) / h, L: 6, xmin: -1, xmax: 1.5, ymin: 4, ymax: 8,
              fLabel: "ortalama hız", unit: "m/s", dmax: 1 } },
 
     { type: "mcq", predict: true, q: "h sıfıra çok çok yaklaşırken ortalama hız hangi sayıya yaklaşıyor?",
@@ -41,8 +41,8 @@ KESIF.lessons["mat-limit"] = {
 
     { type: "explorer", id: "delik", title: "Haritada bir delik: f(x) = (x² − 4) ÷ (x − 2)",
       say: "Şimdi x'i 2'ye soldan ve sağdan yaklaştır. x tam 2 olduğunda fonksiyon tanımsız, ama etrafında ne oluyor?",
-      intro: "x = 2'de <b>f tanımsız</b> (0 ÷ 0). Yine de x'i 2'ye soldan ve sağdan yaklaştır; <b>f(x)</b> nereye gidiyor?",
-      cfg: { varName: "x", a: 2, sides: ["left", "right"], f: x => (x * x - 4) / (x - 2), L: 4, xmin: -1, xmax: 5, ymin: 0, ymax: 7, fLabel: "f(x)", unit: "", dmax: 1 } },
+      intro: "Bu eğride x = 2 noktasında <b>bir boşluk</b> var: orada f(x) hesaplanamıyor (0 ÷ 0). Ama boşluğa <b>çok yaklaşırsan</b> eğri nereye gidiyor? <b>Kaydırıcıyı sağa çek</b>, sarı nokta boşluğa yaklaşsın; <b>Soldan</b> ve <b>Sağdan</b> düğmeleriyle iki yönü de dene. Tablodaki f(x) sayılarına bak.",
+      cfg: { varName: "x", xTitle: "x", yTitle: "f(x)", sliderLabel: "Boşluğa uzaklık  (sağa çek: boşluğa yaklaş)", a: 2, sides: ["left", "right"], f: x => (x * x - 4) / (x - 2), L: 4, xmin: -1, xmax: 5, ymin: 0, ymax: 7, fLabel: "f(x)", unit: "", dmax: 1 } },
 
     { type: "text", title: "Delik yolu değiştirmez — sadeleştirme",
       say: "x iki değilken, x kare eksi dört, x eksi iki çarpı x artı iki olarak yazılır. Sadeleşince f(x) eşittir x artı iki olur. x ikiye yaklaşırken bu dörde yaklaşır.",
