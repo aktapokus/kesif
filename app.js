@@ -70,7 +70,7 @@
     const dayName = K.dayNames[new Date().getDay()];
     let html = `<span class="eyebrow">${dayName}</span><h1>Bugün neyi keşfedeceksin?</h1>
 <p class="lede">Ezber yok. ${S.pickSubj && S.pickSubj !== "all" ? "Seçtiğin ders" : "Bugünün planı"}: <b>${esc(wantNames || "serbest")}</b>. Önce bir fikri anla, sonra soruyla dene.</p>
-<div class="chips" id="pk" role="group" aria-label="Ders seç" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="btn ${!S.pickSubj || S.pickSubj === "all" ? "" : "ghost"}" data-pk="all" type="button">Haftalık plan</button>${Object.keys(K.subjects).map(k => `<button class="btn ${S.pickSubj === k ? "" : "ghost"}" data-pk="${k}" type="button">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</button>`).join("")}</div><div class="grid" style="margin-top:22px">`;
+<div class="grid" style="margin-top:22px">`;
     if (pending) html += `<article class="card pick"><span class="tag">${esc(K.subjects[pending.subject].name)}</span><span class="tag">≈ ${pending.minutes} dk</span>
 <h3>${esc(pending.title)}</h3><p class="muted small">${esc(pending.hook)}</p>
 <a class="btn" href="#/ders/${pending.id}/${S.done[pending.id] ? 0 : (S.notes["p_" + pending.id] || 0)}">${S.done[pending.id] ? "Tekrar keşfet" : (S.notes["p_" + pending.id] ? "Kaldığın yerden devam" : "Keşfe başla")}</a></article>`;
@@ -82,7 +82,6 @@
     html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
     if (!pending) html += `<article class="card pick"><h3>${esc(K.subjects[S.pickSubj] ? K.subjects[S.pickSubj].name : "Bu ders")}</h3><p class="muted small">Bu ders için henüz keşif yok; soru bankasından çalışabilirsin.</p><a class="btn" href="#/banka/ders:${esc(S.pickSubj)}">Sorulara git</a> <a class="btn ghost" href="#/dersler/k:${esc(S.pickSubj)}">Ders sayfası</a></article>`;
     $app.innerHTML = html + "</div>";
-    $app.querySelectorAll("[data-pk]").forEach(b => b.onclick = () => { S.pickSubj = b.dataset.pk; save(); renderHome(); });
   }
 
   /* ---------- ders seçimi ve çalışma süresi ---------- */
@@ -107,17 +106,19 @@
     updateBar();
   }, 1000);
   window.addEventListener("pagehide", save);
+  /* TEK ders seçici: üstteki liste kutusu. Ana sayfa önerisi, günlük sorular ve çalışma sayacı hep bunu izler. */
+  function setSubject(k) { S.pickSubj = k && K.subjects[k] ? k : "all"; S.run.subj = S.pickSubj === "all" ? "gen" : S.pickSubj; save(); updateBar(true); }
   function buildBar() {
     const bar = document.getElementById("tbar"); if (!bar) return;
     bar.innerHTML = `<div class="tb-main"><span class="tb-time" id="tbt">00:00</span><span class="muted small" id="tbg"></span><div class="tb-prog"><i id="tbp"></i></div></div>
-<div class="tb-act"><select id="tbs" aria-label="Çalıştığım ders"></select><button class="btn" id="tbr" type="button">Başlat</button><button class="btn ghost" id="tbo" type="button" aria-expanded="false">Hedef ⏱</button></div>
+<div class="tb-act"><select id="tbs" aria-label="Ders seç"></select><button class="btn" id="tbr" type="button">Başlat</button><button class="btn ghost" id="tbo" type="button" aria-expanded="false">Hedef ⏱</button></div>
 <div id="tbpanel" hidden><div><span class="muted small">Bugünkü çalışma hedefim:</span><div class="chips">${[15, 25, 45, 60, 90].map(n => `<button class="btn ghost" data-gm="${n}" type="button">${n} dk</button>`).join("")}<button class="btn ghost" data-gm="0" type="button">Hedefsiz</button></div></div>
 <div><label class="muted small" for="tbc">Kendi sürem (dk)</label> <input id="tbc" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbcs" type="button">Hedefi ayarla</button></div>
 <div><label class="muted small" for="tba">Elle süre ekle (dk)</label> <input id="tba" type="number" min="1" max="600" style="width:90px"> <button class="btn ghost" id="tbas" type="button">Süreyi ekle</button> <span class="muted small" id="tbam"></span></div></div>
 <div id="tbdone" hidden><span></span><button class="btn ghost" id="tbx" type="button">Tamam</button></div>`;
     const $ = id => bar.querySelector(id);
     $("#tbr").onclick = () => { S.run.on = !S.run.on; lastTick = Date.now(); save(); updateBar(true); };
-    $("#tbs").onchange = e => { S.run.subj = e.target.value; save(); updateBar(true); };
+    $("#tbs").onchange = e => { setSubject(e.target.value); if (/^(#\/?)?$|^#\/(banka|deneme|dersler|plan)/.test(location.hash)) route(); };
     $("#tbo").onclick = () => { const p = $("#tbpanel"); p.hidden = !p.hidden; $("#tbo").setAttribute("aria-expanded", String(!p.hidden)); };
     bar.querySelectorAll("[data-gm]").forEach(b => b.onclick = () => { S.goalMin = +b.dataset.gm; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); });
     $("#tbcs").onclick = () => { const n = Math.round(+$("#tbc").value); if (n >= 1 && n <= 600) { S.goalMin = n; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); $("#tbc").value = ""; } };
@@ -132,8 +133,8 @@
     bar.querySelector("#tbg").textContent = g ? "/ " + S.goalMin + " dk hedef" : "hedef yok";
     bar.querySelector("#tbp").style.width = g ? Math.min(100, tot / g * 100) + "%" : "0";
     if (full === true) {
-      const opts = ["gen"].concat([...selSet()]); if (!opts.includes(S.run.subj)) opts.push(S.run.subj);
-      bar.querySelector("#tbs").innerHTML = opts.map(k => `<option value="${k}" ${k === S.run.subj ? "selected" : ""}>${esc(subjName(k))}</option>`).join("");
+      const cur = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "all";
+      bar.querySelector("#tbs").innerHTML = `<option value="all" ${cur === "all" ? "selected" : ""}>Haftalık plan</option>` + Object.keys(K.subjects).map(k => `<option value="${k}" ${k === cur ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("");
       bar.querySelector("#tbr").textContent = S.run.on ? "Duraklat" : "Başlat";
       bar.querySelector("#tbr").classList.toggle("ghost", S.run.on);
       bar.querySelectorAll("[data-gm]").forEach(b => { b.style.borderColor = +b.dataset.gm === S.goalMin ? "var(--accent)" : ""; });
@@ -203,7 +204,7 @@
     const keys = KZ_OF[k] || [];
     if (keys.length && K.kz) html += `<h2 style="margin-top:28px">Resmî konu ve kazanım listesi</h2><p class="muted small">MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>` + keys.map(key => kzHtml(key, cnt)).join("");
     $app.innerHTML = html;
-    $app.querySelector("#pkb").onclick = () => { S.pickSubj = k; save(); location.hash = "#/"; };
+    $app.querySelector("#pkb").onclick = () => { setSubject(k); location.hash = "#/"; };
   }
 
   /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
@@ -252,6 +253,7 @@
   const bankMatch = q => { const m = qmeta(q); return (BF.sinav === "all" || m.sinav.includes(BF.sinav)) && (BF.ders === "all" || q.subject === BF.ders) && (BF.konu === "all" || konuKey(q) === BF.konu) && (!BF.zor || m.zor === BF.zor); };
   const qStat = id => (S.qs && S.qs[id]) || { n: 0, ok: 0 };
   function renderBank(param) {
+    if (!param && BF._ps !== (S.pickSubj || "all")) { BF._ps = S.pickSubj || "all"; BF.ders = BF._ps; BF.konu = "all"; }
     if (param && /^[ysd]:/.test(param)) { BF.konu = param; BF.sinav = "all"; BF.ders = "all"; BF.zor = 0; }
     if (param && /^ders:/.test(param)) { BF.ders = param.slice(5); BF.konu = "all"; BF.sinav = "all"; BF.zor = 0; }
     const all = K.daily.slice(), list = all.filter(bankMatch);
@@ -339,6 +341,7 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
     const all = K.daily.slice(), counts = {}; all.forEach(q => { const k = konuKey(q); counts[k] = (counts[k] || 0) + 1; });
     const keys = Object.keys(counts).sort(), keySubj = {}; all.forEach(q => { keySubj[konuKey(q)] = q.subject; });
     if (preset && K.subjects[preset]) EXC.sel = new Set(keys.filter(k => keySubj[k] === preset));
+    else if (!preset && EXC._ps !== (S.pickSubj || "all")) { EXC._ps = S.pickSubj || "all"; EXC.sel = EXC._ps === "all" ? new Set(keys) : new Set(keys.filter(k => keySubj[k] === EXC._ps)); }
     if (!EXC.sel) EXC.sel = new Set(keys);
     const hist = (S.exams || []).slice(-6).reverse();
     $app.innerHTML = `<h1>Sınav hazırlık modu</h1><p class="lede">Konularını seç; süreli ve puanlı bir mini deneme çöz. Sorular tek tek geri bildirim vermez, sınav gibi: bitirince puanını, konu bazlı sonucunu ve çözümlerini görürsün.</p>
@@ -792,7 +795,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
-    if (S.run.on && S.run.subj !== L.subject) { S.run.subj = L.subject; updateBar(true); }
+    if (S.pickSubj !== L.subject) setSubject(L.subject);
     S.notes["p_" + L.id] = i; save();
     const st = L.steps[i], total = L.steps.length;
     $app.innerHTML = `<div class="stage"><div class="steps"><div class="meta"><span>${esc(K.subjects[L.subject].name)} · ${esc(L.title)}</span><span>Adım ${i + 1}/${total}</span></div><div class="bar"><i style="width:${Math.round((i + 1) / total * 100)}%"></i></div></div><section id="step"></section><div class="row" id="nav" style="margin-top:22px"></div></div>`;

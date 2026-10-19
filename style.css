@@ -157,3 +157,4 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .opt.sel{border-color:var(--accent);background:var(--card2)}
 
 .errbox{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+@media (max-width:640px){.top nav{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none}.top nav::-webkit-scrollbar{display:none}.top nav a{white-space:nowrap;flex:none}}
