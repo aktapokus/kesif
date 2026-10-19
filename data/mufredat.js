@@ -39,5 +39,7 @@ KESIF.tracks = {
   "fiz-hareket": ["tyt"],
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
-  "tur-paragraf": ["tyt"]
+  "tur-paragraf": ["tyt"],
+  "tar-malazgirt": ["tyt", "ayt"],
+  "edeb-soz-sanatlari": ["ayt"]
 };
