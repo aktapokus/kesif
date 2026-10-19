@@ -310,8 +310,8 @@
   function kzFind(id) { const i = id.indexOf(":"); if (i < 0 || !K.kz) return null; const k = id.slice(0, i), c = id.slice(i + 1), sub = K.kz[k]; if (!sub) return null; const it = sub.items.find(x => x.c === c); return { name: sub.name, text: it ? it.t : "" }; }
   function yksTitle(id) { if (id.indexOf(":") > -1) { const f = kzFind(id); return f ? f.text : null; } if (!K.yks) return null; for (const lv of K.yks.levels) for (const ar of lv.areas) for (const t of ar.topics) if (t[0] === id) return t[1]; return null; }
   function s11Title(id) { const t = s11Topics().find(p => p.id === id); return t ? t.title : null; }
-  function konuKey(q) { const m = qmeta(q); return m.yks ? "y:" + m.yks : m.s11 ? "s:" + m.s11 : "d:" + q.subject; }
-  function konuLabel(key) { const [k, v] = [key.slice(0, 1), key.slice(2)]; return k === "y" ? (v.indexOf(":") > -1 && kzFind(v) ? kzFind(v).name + " " + v.slice(v.indexOf(":") + 1) + " " : v + " ") + (yksTitle(v) || "") : k === "s" ? "11. sınıf " + v + " " + (s11Title(v) || "") : (K.subjects[v] ? K.subjects[v].name : v) + " (genel)"; }
+  function konuKey(q) { const m = qmeta(q); return m.yks ? "y:" + m.yks : m.s11 ? "s:" + m.s11 : m.kn ? "n:" + q.subject + "|" + m.kn : "d:" + q.subject; }
+  function konuLabel(key) { const [k, v] = [key.slice(0, 1), key.slice(2)]; return k === "y" ? (v.indexOf(":") > -1 && kzFind(v) ? kzFind(v).name + " " + v.slice(v.indexOf(":") + 1) + " " : v + " ") + (yksTitle(v) || "") : k === "n" ? (K.subjects[v.split("|")[0]] ? K.subjects[v.split("|")[0]].name : "") + " · " + v.split("|")[1] : k === "s" ? "11. sınıf " + v + " " + (s11Title(v) || "") : (K.subjects[v] ? K.subjects[v].name : v) + " (genel)"; }
   const BF = { sinav: "all", ders: "all", konu: "all", zor: 0 };
   const bankMatch = q => { const m = qmeta(q); return (BF.sinav === "all" || m.sinav.includes(BF.sinav)) && (BF.ders === "all" || q.subject === BF.ders) && (BF.konu === "all" || konuKey(q) === BF.konu) && (!BF.zor || m.zor === BF.zor); };
   const qStat = id => (S.qs && S.qs[id]) || { n: 0, ok: 0 };
