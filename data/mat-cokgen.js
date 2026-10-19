@@ -1,7 +1,7 @@
 /* Matematik keşfi (11. sınıf, 2. Tema: Geometrik Şekiller — 2.1–2.4): Çokgenler, dörtgenler. Özgün içerik (CC BY-NC-SA 4.0). */
 KESIF.lessons["mat-cokgen"] = {
   id: "mat-cokgen", subject: "mat", title: "Bal peteği neden altıgen? Çokgenlerin açıları ve köşegenleri", minutes: 25,
-  grade: "11. sınıf — 2. Tema, 2.1–2.4 (dörtgenler, çokgenlerin sınıflandırılması, dışbükey çokgenler); kazanım kodu resmî programdan doğrulanacak",
+  grade: "11. sınıf — 2. Tema, 2.1–2.4 (dörtgenler, çokgenlerin sınıflandırılması, dışbükey çokgenler); kazanım kodu MEB ODSGM dağılım tablosundan (MAT.11.x) alınmıştır",
   hook: "Bir çokgeni üçgenlere bölersen iç açıların toplamını bulursun: kaç üçgene bölünüyor?",
   steps: [
     { type: "text", title: "Üçgenden çokgene",

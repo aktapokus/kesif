@@ -16,7 +16,7 @@
   function pick() { return Array.prototype.map.call(arguments, function (k) { return D[k]; }); }
   KESIF.lessons["mat-iki-degisken"] = {
     id: "mat-iki-degisken", subject: "mat", title: "Sıcak hava, çok dondurma: iki değişken arasındaki ilişki", minutes: 25,
-    grade: "11. sınıf — 1. Tema, 1.1 İki niceliksel değişkenli veriler (MEB 11. sınıf ders kitabı içindekiler); kazanım kodu resmî programdan doğrulanacak",
+    grade: "11. sınıf — 1. Tema, 1.1 İki niceliksel değişkenli veriler (MEB 11. sınıf ders kitabı içindekiler); kazanım kodu MEB ODSGM dağılım tablosundan (MAT.11.x) alınmıştır",
     hook: "Dondurma satışı ile hava sıcaklığı arasında bir ilişki var mı, varsa ne kadar güçlü?",
     steps: [
       { type: "text", title: "Her gün için iki sayı",

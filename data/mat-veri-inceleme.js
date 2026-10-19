@@ -14,7 +14,7 @@
   };
   KESIF.lessons["mat-veri-inceleme"] = {
     id: "mat-veri-inceleme", subject: "mat", title: "Bu grafiğe güvenebilir miyim? Başkasının verisini sorgula", minutes: 25,
-    grade: "11. sınıf — 1. Tema, 1.2 Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme (MEB 11. sınıf ders kitabı içindekiler); kazanım kodu resmî programdan doğrulanacak",
+    grade: "11. sınıf — 1. Tema, 1.2 Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme (MEB 11. sınıf ders kitabı içindekiler); kazanım kodu MEB ODSGM dağılım tablosundan (MAT.11.x) alınmıştır",
     hook: "Bir haberde 'kahve içenlerin notları daha yüksek' diyor. Doğru mu, yoksa grafik seni mi kandırıyor?",
     steps: [
       { type: "text", title: "Haberde bir grafik gördün",

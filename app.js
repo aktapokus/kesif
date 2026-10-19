@@ -140,6 +140,40 @@
     }
   }
 
+  /* ---------- okul sınavı: MEB ODSGM konu-soru dağılım tablosu (senaryolar) + deneme ---------- */
+  const SCH = { grade: "11", exam: 1, scen: 0 };
+  function renderSchool() {
+    if (!K.okul) { $app.innerHTML = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p>Tablo yüklenemedi.</p>`; return; }
+    const G = K.okul.grades, g = G[SCH.grade], nS = SCH.exam === 1 ? g.n1 : g.n2, key = SCH.exam === 1 ? "e1" : "e2";
+    if (SCH.scen >= nS) SCH.scen = 0;
+    const rows = g.rows.map(r => ({ r, n: (r[key] || [])[SCH.scen] || 0 })).filter(x => x.n > 0);
+    const total = rows.reduce((a, x) => a + x.n, 0);
+    const s11id = r => r.code.indexOf("MAT.11.") === 0 ? r.code.slice(7) : null;
+    const have = r => { const id = s11id(r); return id ? K.daily.filter(q => (qmeta(q).s11 || "") === id).length : 0; };
+    let html = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">MEB'in yayımladığı ${esc(K.okul.term)} <b>ortak yazılı sınav</b> konu-soru dağılım tablosu. Okul zümresi senaryolardan birini seçer; sınav <b>açık uçlu / kısa cevaplı</b> yapılır. Hangi senaryonun kullanılacağını matematik öğretmeninden öğren, sonra o senaryoyu burada dene.</p>
+<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><span class="muted small">Sınıf:</span>${["9", "10", "11", "12"].map(x => `<button class="btn ${SCH.grade === x ? "" : "ghost"}" data-g="${x}" type="button">${x}. sınıf</button>`).join("")}<span class="muted small" style="margin-left:12px">Sınav:</span><button class="btn ${SCH.exam === 1 ? "" : "ghost"}" data-e="1" type="button">1. yazılı</button><button class="btn ${SCH.exam === 2 ? "" : "ghost"}" data-e="2" type="button">2. yazılı</button></div>`;
+    if (!nS) html += `<p class="callout">Bu sınıf için ${SCH.exam}. yazılının senaryo tablosu ayrıca yayımlanacak (MEB notu).</p>`;
+    else {
+      html += `<div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0"><span class="muted small">Senaryo:</span>${Array.from({ length: nS }, (_, i) => `<button class="btn ${SCH.scen === i ? "" : "ghost"}" data-s="${i}" type="button">${i + 1}</button>`).join("")}</div>
+<div class="card"><table class="tbl"><thead><tr><th>Konu (kazanım)</th><th>Soru</th><th>Bende hazır</th></tr></thead><tbody>${rows.map(x => { const hv = SCH.grade === "11" ? have(x.r) : 0, id = s11id(x.r); return `<tr><td><span class="muted small">${esc(x.r.code)}</span><br>${esc(x.r.konu)}${id ? ` <a class="small" href="#/banka/${encodeURIComponent("s:" + id)}">sorular</a>` : ""}</td><td class="num"><b>${x.n}</b></td><td class="num">${SCH.grade === "11" ? (hv >= x.n ? '<b class="t-ok">' + hv + " ✓</b>" : hv) : "–"}</td></tr>`; }).join("")}<tr><td><b>Toplam</b></td><td class="num"><b>${total}</b></td><td></td></tr></tbody></table></div>`;
+      if (SCH.grade === "11") html += `<p style="margin-top:14px"><button class="btn" id="sgo" type="button">Bu senaryoyu dene (40 dk)</button> <span class="muted small" id="smsg" role="status">Senaryodaki her konudan istenen sayıda özgün soru seçilir (varsa açık uçlu öncelikli).</span></p>`;
+      else html += `<p class="muted small" style="margin-top:14px">Bu sınıf için uygulamada henüz soru yok; yalnızca MEB dağılımı gösteriliyor (şimdilik 11. sınıf öncelikli).</p>`;
+    }
+    html += `<p class="muted small" style="margin-top:14px">Kaynak: ${esc(K.okul.source)}. Sınav süresi okulca belirlenir; deneme süresi 40 dk varsayılmıştır.</p>`;
+    $app.innerHTML = html;
+    $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { SCH.grade = b.dataset.g; SCH.scen = 0; renderSchool(); });
+    $app.querySelectorAll("[data-e]").forEach(b => b.onclick = () => { SCH.exam = +b.dataset.e; SCH.scen = 0; renderSchool(); });
+    $app.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { SCH.scen = +b.dataset.s; renderSchool(); });
+    const go = $app.querySelector("#sgo");
+    if (go) go.onclick = () => {
+      const paper = []; let miss = 0;
+      rows.forEach(x => { const id = s11id(x.r), pool = shuffle(K.daily.filter(q => (qmeta(q).s11 || "") === id)).sort((a, b) => (b.type === "open" ? 1 : 0) - (a.type === "open" ? 1 : 0)); const take = pool.slice(0, x.n); miss += x.n - take.length; take.forEach(q => paper.push({ q, opts: q.type === "open" ? null : shuffle(q.opts), sel: null, vals: [], text: "", rub: new Set() })); });
+      if (!paper.length) { $app.querySelector("#smsg").textContent = "Bu senaryo için henüz soru yok."; return; }
+      if (miss && !confirm(miss + " soru eksik (bu konularda yeterli soru henüz yazılmadı). Eldeki sorularla devam edilsin mi?")) return;
+      runExam(paper, 40);
+    };
+  }
+
   /* ---------- tüm dersler: ders kartları ve ders sayfası ---------- */
   const KZ_OF = { mat: [], tur: ["edeb"], edeb: ["edeb"], tar: ["tar", "ink"], cog: ["cog"], fel: ["fel", "man", "sos", "psi", "din"], fiz: ["fiz"], kim: ["kim"], biy: ["biy"] };
   function renderAllSubjects() {
@@ -173,7 +207,7 @@
   }
 
   /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
-  const TABS = [["tum", "Tüm dersler"], ["s11", "11. Sınıf (mat.)"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
+  const TABS = [["tum", "Tüm dersler"], ["s11", "11. Sınıf (mat.)"], ["okul", "Okul sınavı"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
   const tabsHtml = cur => `<nav class="tabs" role="tablist" aria-label="Ders bölümleri">${TABS.map(t => `<a role="tab" href="#/dersler/${t[0]}" ${t[0] === cur ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
   const s11Topics = () => K.s11 ? K.s11.themes.flatMap(t => t.topics.map(p => Object.assign({ theme: t }, p))) : [];
   const topicDone = p => !!(p.lesson && S.done[p.lesson]);
@@ -183,6 +217,7 @@
   function renderDersler(tab) {
     if (tab === "hedef") return renderGoals();
     if (tab === "tum") return renderAllSubjects();
+    if (tab === "okul") return renderSchool();
     if (tab.indexOf("k:") === 0) return renderSubjectPage(tab.slice(2));
     if (tab === "tyt" || tab === "ayt") return renderExam(tab);
     let html = `<h1>Dersler</h1>${tabsHtml(tab)}`;
@@ -194,7 +229,7 @@
         html += `<section class="subj on"><h2 style="margin:0 0 4px">${th.n}. Tema: ${esc(th.title)}</h2><div class="lst" style="gap:10px;margin-top:10px">`;
         th.topics.forEach(p => {
           const isNext = nx && nx.id === p.id, has = !!p.lesson && !!K.lessons[p.lesson];
-          html += `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;${isNext ? "border-left:4px solid var(--accent);padding-left:10px" : ""}"><span style="font-weight:700;min-width:34px">${p.id}</span><span style="flex:1 1 220px">${esc(p.title)}${isNext ? ' <span class="tag">sıradaki</span>' : ""}${p.partial ? ' <span class="muted small">(bir bölümü)</span>' : ""}</span>${has ? `${S.done[p.lesson] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(p.lesson)}` : '<span class="muted small">keşif hazırlanıyor</span>'}</div>`;
+          html += `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;${isNext ? "border-left:4px solid var(--accent);padding-left:10px" : ""}"><span style="font-weight:700;min-width:34px">${p.id}</span>${p.mat ? `<span class="tag" title="Resmî kazanım kodu (MEB ODSGM tablosu)">${esc(p.mat)}</span>` : ""}<span style="flex:1 1 220px">${esc(p.title)}${isNext ? ' <span class="tag">sıradaki</span>' : ""}${p.partial ? ' <span class="muted small">(bir bölümü)</span>' : ""}</span>${has ? `${S.done[p.lesson] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(p.lesson)}` : '<span class="muted small">keşif hazırlanıyor</span>'}</div>`;
         });
         html += `</div></section>`;
       });
