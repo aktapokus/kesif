@@ -125,3 +125,10 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:18px;color:var(--ink
 
 .brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
 .brand img{border-radius:50%;display:block}
+
+.usr{display:inline-flex;align-items:center;gap:8px}
+.avatar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:800 15px var(--f-display)}
+.avatar.big{width:64px;height:64px;font-size:28px}
+.stat{font:800 34px var(--f-display);color:var(--accent);margin:6px 0}
+.uname{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:640px){.uname{display:none}.top{flex-wrap:wrap;row-gap:6px}.top nav{flex-wrap:wrap;gap:2px;justify-content:flex-start}.top nav a{padding:8px 10px}}

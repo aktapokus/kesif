@@ -5,7 +5,7 @@
   const KEY = "kesif.v1";
 
   /* ---------- kayıt ---------- */
-  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {} });
+  const blank = () => ({ done: {}, days: {}, review: [], notes: {}, goal: 10, exam: false, sel: null, goalMin: 0, subjGoal: {}, study: {}, run: { on: false, subj: "gen" }, goalDone: {}, profile: { name: "" } });
   let S;
   try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = blank(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} if (K.sync) K.sync.push(S); };
@@ -33,13 +33,14 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "plan") return renderPlan();
     if (h[0] === "dersler") return renderDersler(h[1] || "s11");
+    if (h[0] === "profil") return renderProfile();
     if (h[0] === "ayarlar") return renderSettings();
     renderHome();
     $app.focus({ preventScroll: true });
@@ -190,6 +191,40 @@
     $app.querySelectorAll("[data-sg]").forEach(c => c.onchange = () => { S.subjGoal[c.dataset.sg] = +c.value; checkGoals(); save(); keepScroll(renderGoals); });
   }
 
+  /* ---------- kullanıcı bölümü ---------- */
+  const userLabel = () => { const u = K.sync && K.sync.user(); if (!u) return null; return (S.profile && S.profile.name) || (u.email || "").split("@")[0] || "Hesabım"; };
+  function setUser() {
+    const a = document.getElementById("usr"); if (!a) return;
+    const n = userLabel();
+    a.innerHTML = n ? `<span class="avatar" aria-hidden="true">${esc(n.charAt(0).toUpperCase())}</span><span class="uname">${esc(n)}</span>` : "Giriş yap";
+    a.setAttribute("aria-label", n ? "Profilim: " + n : "Giriş yap");
+  }
+  function streak() {
+    const act = new Set(Object.keys(S.days).filter(k => (S.days[k].n || 0) > 0).concat(Object.keys(S.study).filter(k => Object.values(S.study[k]).reduce((a, b) => a + b, 0) > 60)));
+    const f = dt => dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+    const dt = new Date(); if (!act.has(f(dt))) dt.setDate(dt.getDate() - 1);
+    let n = 0; while (act.has(f(dt))) { n++; dt.setDate(dt.getDate() - 1); }
+    return n;
+  }
+  function renderProfile() {
+    const u = K.sync && K.sync.user();
+    if (!u) { $app.innerHTML = `<h1>Giriş</h1><p class="lede">Giriş yaparsan ilerlemen ve notların hesabına bağlanır, başka cihazda da devam edersin. Giriş yapmadan da her şeyi kullanabilirsin.</p>${accountCard()}`; bindAccount(); return; }
+    const totSec = Object.values(S.study).reduce((a, dd) => a + Object.values(dd).reduce((x, y) => x + y, 0), 0);
+    const week = Object.keys(S.study).filter(k => (Date.now() - new Date(k).getTime()) / 86400000 < 7).reduce((a, k) => a + Object.values(S.study[k]).reduce((x, y) => x + y, 0), 0);
+    const qn = Object.values(S.days).reduce((a, r) => a + (r.n || 0), 0), qok = Object.values(S.days).reduce((a, r) => a + (r.ok || 0), 0);
+    const all = s11Topics(), dn = all.filter(topicDone).length, mins = x => Math.round(x / 60);
+    $app.innerHTML = `<div class="row" style="align-items:center;gap:16px"><span class="avatar big" aria-hidden="true">${esc(userLabel().charAt(0).toUpperCase())}</span><div><span class="eyebrow">Profilim</span><h1 style="margin:0">Merhaba, ${esc(userLabel())}</h1><p class="muted small" style="margin:4px 0 0">${esc(u.email || "")} · ${esc(K.sync.status() || "bekleniyor")}</p></div></div>
+<div class="grid" style="margin-top:22px">
+<article class="card"><h3>Çalışma süresi</h3><p class="stat">${mins(totSec)} dk</p><p class="muted small" style="margin:0">Bu hafta: ${mins(week)} dk · Seri: <b>${streak()} gün</b></p></article>
+<article class="card"><h3>Keşifler</h3><p class="stat">${Object.keys(S.done).length}</p><p class="muted small" style="margin:0">tamamlanan keşif · 11. sınıf: ${dn}/${all.length} konu</p></article>
+<article class="card"><h3>Sorular</h3><p class="stat">${qok}/${qn}</p><p class="muted small" style="margin:0">ilk denemede doğru / çözülen · tekrar kutusunda ${S.review.length}</p></article></div>
+<div class="card" style="margin-top:16px"><h3>Görünen ad</h3><p class="muted small">İstersen takma ad yaz; başkaları görmez, yalnızca bu ekranda ve üst çubukta görünür.</p><div class="row"><input id="pn" type="text" maxlength="30" value="${esc((S.profile && S.profile.name) || "")}" placeholder="adın" style="flex:1 1 200px;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"><button class="btn" id="pns" type="button">Kaydet</button></div><p class="small" id="pnm" role="status"></p></div>
+<div class="card" style="margin-top:16px"><h3>Hesap</h3><div class="row"><a class="btn ghost" href="#/ayarlar">Ayarlar</a><button class="btn ghost" id="so" type="button">Çıkış yap</button><button class="btn ghost" id="sd" type="button">Sunucudaki verilerimi sil</button></div></div>`;
+    $app.querySelector("#pns").onclick = () => { S.profile = { name: $app.querySelector("#pn").value.trim().slice(0, 30) }; save(); setUser(); $app.querySelector("#pnm").textContent = "Kaydedildi."; };
+    $app.querySelector("#so").onclick = () => { K.sync.signOut(); setUser(); location.hash = "#/profil"; renderProfile(); };
+    $app.querySelector("#sd").onclick = async () => { if (confirm("Sunucudaki ilerleme ve notların silinsin mi? Bu cihazdaki veriler kalır.")) { const ok = await K.sync.deleteData(); alert(ok ? "Sunucudaki verilerin silindi." : "Silinemedi; bağlantını kontrol et."); } };
+  }
+
   /* ---------- hesap (isteğe bağlı eşitleme) ---------- */
   function accountCard() {
     const u = K.sync && K.sync.user();
@@ -202,7 +237,7 @@
   }
   function bindAccount() {
     const so = $app.querySelector("#so"), sd = $app.querySelector("#sd"), sl2 = $app.querySelector("#sl2");
-    if (so) so.onclick = () => { K.sync.signOut(); renderSettings(); };
+    if (so) so.onclick = () => { K.sync.signOut(); setUser(); renderSettings(); };
     if (sd) sd.onclick = async () => { if (confirm("Sunucudaki ilerleme ve notların silinsin mi? Bu cihazdaki veriler kalır.")) { const ok = await K.sync.deleteData(); alert(ok ? "Sunucudaki verilerin silindi." : "Silinemedi; bağlantını kontrol et."); } };
     if (sl2) sl2.onclick = async () => {
       const em = $app.querySelector("#em").value.trim(), m = $app.querySelector("#am");
@@ -577,9 +612,9 @@ ${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p c
     $app.querySelector("#wipe").onclick = () => { if (confirm("Tüm ilerleme ve notlar silinsin mi?")) { S = blank(); save(); renderSettings(); } };
   }
 
-  buildBar();
+  buildBar(); setUser();
   if (K.sync && K.sync.user()) K.sync.pull().then(r => {
-    if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); }
+    if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); setUser(); }
     route();
   });
   route();

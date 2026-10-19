@@ -14,7 +14,7 @@
     if (!/access_token=/.test(location.hash)) return;
     var p = new URLSearchParams(location.hash.replace(/^#\/?/, "")), at = p.get("access_token"), rt = p.get("refresh_token");
     if (at && rt) { var c = jwt(at); store({ access_token: at, refresh_token: rt, expires_at: Math.floor(Date.now() / 1000) + (+p.get("expires_in") || 3600), sub: c.sub, email: c.email }); }
-    history.replaceState(null, "", location.pathname + "#/ayarlar");
+    history.replaceState(null, "", location.pathname + "#/profil");
   })();
   function call(path, opt, token) {
     opt = opt || {};
@@ -46,6 +46,7 @@
     o.sel = (a || {}).sel || (b || {}).sel || null;
     o.subjGoal = Object.assign({}, (b || {}).subjGoal, (a || {}).subjGoal);
     o.goalDone = Object.assign({}, (b || {}).goalDone, (a || {}).goalDone);
+    o.profile = { name: ((a || {}).profile || {}).name || ((b || {}).profile || {}).name || "" };
     return o;
   }
   K.sync = {
