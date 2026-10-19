@@ -158,3 +158,10 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 
 .errbox{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
 @media (max-width:640px){.top nav{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none}.top nav::-webkit-scrollbar{display:none}.top nav a{white-space:nowrap;flex:none}}
+
+.klist{padding:6px 14px}
+.krow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)}
+.krow:last-child{border-bottom:none}
+.krow .kl{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}
+.krow .kc{flex:none}
+.card{max-width:100%;overflow-x:auto}
