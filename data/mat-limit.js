@@ -5,38 +5,38 @@ KESIF.lessons["mat-limit"] = {
   hook: "Hız kamerası 'tam şu anki' hızı nasıl bilir?",
   steps: [
     { type: "text", title: "Hız kamerası sana neyi saklıyor?",
-      say: "Bir araç, t saniyede t kare metre yol alıyor. Üçüncü saniyedeki hızı bulmak istiyoruz. Hız, yol bölü süredir. Ama tam üçüncü saniye bir andır; süre sıfır, yol sıfır. Sıfır bölü sıfır nasıl hesaplanır? Hız kameraları iki ölçüm arasındaki süreyi küçülterek bu sorunu çözer.",
+      say: "Bir araç, t saniyede t² metre yol alıyor. Üçüncü saniyedeki hızı bulmak istiyoruz. Hız, yol bölü süredir. Ama tam üçüncü saniye bir andır; süre sıfır, yol sıfır. Sıfır bölü sıfır nasıl hesaplanır? Hız kameraları iki ölçüm arasındaki süreyi küçülterek bu sorunu çözer.",
       html: `<p class="big">Bir araç duruyor ve hareket ediyor: başladığından <span class="math">t</span> saniye sonra toplam <span class="math">t²</span> metre yol yapmış oluyor.</p>
-<table class="tbl" style="max-width:520px"><thead><tr><th>Geçen süre t (sn)</th><th>Toplam yol (m)</th></tr></thead><tbody><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>4</td></tr><tr><td>3</td><td>9</td></tr><tr><td>4</td><td>16</td></tr></tbody></table>
-<p><b>Hız nedir?</b> Birim sürede alınan yol: <span class="math">hız = alınan yol ÷ geçen süre</span>. Örneğin 3. saniyeden 4. saniyeye: yol 16 − 9 = <b>7 m</b>, süre <b>1 sn</b> → ortalama hız <b>7 m/s</b>.</p>
-<p><b>Bu hesabı harflerle yazalım.</b> 3. saniyeden <i>h</i> saniye sonrasına bakıyoruz (h = ölçüm aralığı). Alınan yol = (3+h. saniyedeki toplam yol) − (3. saniyedeki toplam yol); geçen süre = h. Toplam yola <span class="math">s(t)</span> dersek:</p>
-<p class="big math">ortalama hız = (s(3+h) − s(3)) ÷ h</p>
-<p class="muted small">Yeni bir kural değil; "alınan yol ÷ geçen süre"nin harfli yazılışı. h = 1 için (16 − 9) ÷ 1 = 7.</p>
+<table class="tbl" style="max-width:520px"><thead><tr><th>Geçen süre t (s)</th><th>Toplam yol (m)</th></tr></thead><tbody><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>4</td></tr><tr><td>3</td><td>9</td></tr><tr><td>4</td><td>16</td></tr></tbody></table>
+<p><b>Hız nedir?</b> Birim sürede alınan yol: <span class="math">hız = alınan yol ÷ geçen süre</span>. Örneğin 3. saniyeden 4. saniyeye: yol 16 − 9 = <b>7 m</b>, süre <b>1 s</b> → ortalama hız <b>7 m/s</b>.</p>
+<p><b>Bu hesabı harflerle yazalım.</b> t = 3 s anından <i>Δt</i> sonrasına bakıyoruz (Δt = ölçüm aralığı). Alınan yol = (t = 3 + Δt anındaki toplam yol) − (t = 3 anındaki toplam yol); geçen süre = Δt. Toplam yola <span class="math">s(t)</span> dersek:</p>
+<p class="big math">ortalama hız = (s(3+Δt) − s(3)) ÷ Δt</p>
+<p class="muted small">Yeni bir kural değil; "alınan yol ÷ geçen süre"nin harfli yazılışı. Δt = 1 için (16 − 9) ÷ 1 = 7.</p>
 <p>Ama bizim istediğimiz <b>tam o anki hız</b>. "Tam o an" bir <i>an</i>dır: geçen süre 0, alınan yol da 0.</p>
 <p class="callout">0 ÷ 0 hesaplanamaz. Peki yol kenarındaki hız kamerası neden yine de bir hız söyleyebiliyor?</p>
-<svg viewBox="0 0 640 150" role="img" aria-label="Yolda iki noktada araç: 3. saniye ve 3 artı h saniye" style="width:100%;height:auto;background:var(--card2);border-radius:12px">
+<svg viewBox="0 0 640 150" role="img" aria-label="Yolda iki noktada araç: 3. saniye ve 3 artı Δt saniye" style="width:100%;height:auto;background:var(--card2);border-radius:12px">
  <line x1="20" y1="100" x2="620" y2="100" stroke="var(--muted)" stroke-width="3"/>
  <g font-size="34" text-anchor="middle"><text x="140" y="92">🚗</text><text x="400" y="92">🚗</text></g>
  <line x1="140" y1="108" x2="140" y2="124" stroke="var(--accent)" stroke-width="3"/><line x1="400" y1="108" x2="400" y2="124" stroke="var(--accent)" stroke-width="3"/>
- <text x="140" y="144" text-anchor="middle" fill="var(--ink)" font-size="16">t = 3</text><text x="400" y="144" text-anchor="middle" fill="var(--ink)" font-size="16">t = 3 + h</text>
+ <text x="140" y="144" text-anchor="middle" fill="var(--ink)" font-size="16">t = 3</text><text x="400" y="144" text-anchor="middle" fill="var(--ink)" font-size="16">t = 3 + Δt</text>
  <path d="M146 40 H394" stroke="var(--cyan)" stroke-width="3" marker-end="url(#a)"/><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--cyan)"/></marker></defs>
- <text x="270" y="30" text-anchor="middle" fill="var(--cyan)" font-size="16">ölçüm aralığı h</text></svg>
+ <text x="270" y="30" text-anchor="middle" fill="var(--cyan)" font-size="16">ölçüm aralığı Δt</text></svg>
 <p class="muted small" style="margin-top:10px">İpucu: kamera iki nokta arasını ölçer. Aralığı küçültürsek ne olur?</p>` },
 
     { type: "explorer", id: "hiz", title: "Aralığı küçült, ortalama hıza bak",
-      say: "Kaydırıcıyla ölçüm aralığı h'yi küçült. Ortalama hızın hangi sayıya yaklaştığını izle.",
-      intro: "<b>Ne yapıyoruz?</b> Arabanın hızını, 3. saniyeden <b>h saniye sonrasına</b> kadar ölçüyoruz (h = ölçüm aralığı). <b>Kaydırıcıyı sağa çek:</b> h küçülür. Grafikte yatay eksen h, dikey eksen o aralıktaki <b>ortalama hız</b>. Sarı nokta eğri üstünde sola kayarken <b>tabloya</b> bak: sayılar hangi değere yaklaşıyor?",
-      cfg: { varName: "h", xTitle: "h: ölçüm aralığı (sn)", yTitle: "ortalama hız (m/s)", sliderLabel: "Ölçüm aralığı h  (sağa çek: aralık küçülsün)", a: 0, sides: ["right"], f: h => ((3 + h) * (3 + h) - 9) / h, L: 6, xmin: -1, xmax: 1.5, ymin: 4, ymax: 8,
+      say: "Kaydırıcıyla ölçüm aralığı Δt'yi küçült. Ortalama hızın hangi sayıya yaklaştığını izle.",
+      intro: "<b>Ne yapıyoruz?</b> Arabanın hızını, t = 3 s anından <b>Δt süre sonrasına</b> kadar ölçüyoruz (Δt = ölçüm aralığı). <b>Kaydırıcıyı sağa çek:</b> Δt küçülür. Grafikte yatay eksen Δt, dikey eksen o aralıktaki <b>ortalama hız</b>. Sarı nokta eğri üstünde sola kayarken <b>tabloya</b> bak: sayılar hangi değere yaklaşıyor?",
+      cfg: { varName: "Δt", xTitle: "Δt: ölçüm aralığı (s)", yTitle: "ortalama hız (m/s)", sliderLabel: "Ölçüm aralığı Δt  (sağa çek: aralık küçülsün)", a: 0, sides: ["right"], f: h => ((3 + h) * (3 + h) - 9) / h, L: 6, xmin: -1, xmax: 1.5, ymin: 4, ymax: 8,
              fLabel: "ortalama hız", unit: "m/s", dmax: 1 } },
 
-    { type: "mcq", predict: true, q: "h sıfıra çok çok yaklaşırken ortalama hız hangi sayıya yaklaşıyor?",
+    { type: "mcq", predict: true, q: "Δt sıfıra çok çok yaklaşırken ortalama hız hangi sayıya yaklaşıyor?",
       opts: [
         { t: "6", ok: true, why: "Tablodaki değerler 6,1 → 6,01 → 6,001 diye 6'ya sokuluyor. Bu sayıya 'limit' diyoruz." },
         { t: "0", why: "Süre sıfıra gidiyor ama yol da sıfıra gidiyor. İkisinin oranı 0 olmak zorunda değil; oran ayrı bir sayıya oturuyor." },
-        { t: "Hesaplanamaz, bu yüzden bir cevap yok", why: "h = 0 olduğu anda işlem gerçekten tanımsız. Ama sorduğumuz şey h = 0 değil, h → 0. Yaklaşırken değerler düzenli bir yere gidiyor." },
-        { t: "7", why: "7, h = 1 iken (3'ten 4'e) bulduğumuz ilk ölçüm. Aralığı küçülttükçe değer değişti." }
+        { t: "Hesaplanamaz, bu yüzden bir cevap yok", why: "Δt = 0 olduğu anda işlem gerçekten tanımsız. Ama sorduğumuz şey Δt = 0 değil, Δt → 0. Yaklaşırken değerler düzenli bir yere gidiyor." },
+        { t: "7", why: "7, Δt = 1 iken (3'ten 4'e) bulduğumuz ilk ölçüm. Aralığı küçülttükçe değer değişti." }
       ],
-      explain: "Önemli fikir: h = 0 yasak. Ama h'yi 0'a istediğimiz kadar yaklaştırabiliriz ve sonuç tek bir sayıya gidiyor." },
+      explain: "Önemli fikir: Δt = 0 yasak. Ama Δt'yi 0'a istediğimiz kadar yaklaştırabiliriz ve sonuç tek bir sayıya gidiyor." },
 
     { type: "text", title: "Limit: ulaşmak değil, yaklaşmak",
       say: "Limit şunu söyler: x, bir a sayısına yaklaşırken fonksiyon hangi değere yaklaşıyor? Kritik nokta: x tam a olmak zorunda değil. Fonksiyonun orada tanımsız olması limiti bozmaz.",

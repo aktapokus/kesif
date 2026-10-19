@@ -8,7 +8,7 @@ KESIF.s11 = {
   themes: [
     { n: 1, title: "İstatistiksel Araştırma Süreci", topics: [
       { id: "1.1", title: "İki niceliksel değişkenli veriler", lesson: "mat-iki-degisken" },
-      { id: "1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: null } ] },
+      { id: "1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: "mat-veri-inceleme" } ] },
     { n: 2, title: "Geometrik Şekiller", topics: [
       { id: "2.1", title: "Dörtgenlerin özellikleri", lesson: null },
       { id: "2.2", title: "Özel dörtgenler arasındaki ilişkiler", lesson: null },
@@ -34,5 +34,6 @@ KESIF.tracks = {
   "mat-trig-cember": ["s11", "ayt"],
   "mat-ustel-log": ["s11", "ayt"],
   "mat-iki-degisken": ["s11"],
+  "mat-veri-inceleme": ["s11"],
   "tur-paragraf": ["tyt"]
 };

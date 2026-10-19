@@ -341,14 +341,14 @@ ${hasL ? `<line class="lim" x1="${P}" y1="${Y(c.L)}" x2="${W - P}" y2="${Y(c.L)}
   /* ---------- saçılım grafiği keşfi: iki niceliksel değişken, eğilim doğrusu, ilişki katsayısı r ---------- */
   function scatterLab(step, host) {
     const c = step.cfg, W = 640, H = 360, PL = 56, PR = 20, PT = 26, PB = 52;
-    const sets = c.sets.map(s => ({ title: s.title, xt: s.xt, yt: s.yt, note: s.note, x: s.x.slice(), y: s.y.slice(), y0: s.y.slice() }));
+    const sets = c.sets.map(s => ({ title: s.title, xt: s.xt, yt: s.yt, note: s.note, x: s.x.slice(), y: s.y.slice(), y0: s.y.slice(), g: s.g ? s.g.slice() : null, gn: s.gn }));
     let cur = 0;
     const f = (v, d) => (+v.toFixed(d == null ? 2 : d)).toString().replace(".", ",").replace("-", "−");
     const nice = raw => { const p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; };
     host.innerHTML = `<p>${step.intro}</p><div class="lab">
 <div class="side row" style="margin:0 0 10px">${sets.map((s, i) => `<button class="btn ghost" data-d="${i}" type="button">${esc(s.title)}</button>`).join("")}</div>
 <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><g id="gr"></g></svg>
-<div class="row" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="ln" style="width:22px;height:22px"> Eğilim doğrusunu göster</label></div>
+<div class="row" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="ln" style="width:22px;height:22px"> Eğilim doğrusunu göster</label><label id="gw" style="display:none;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="gp" style="width:22px;height:22px"> Grupları renkle ayır</label></div>
 ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukarı–aşağı oynat</label><input id="ol" type="range" min="0" max="100" value="50" aria-label="Son noktayı oynat">` : ""}
 <div class="readout"><span>r = <b id="rv">–</b></span><span id="rd" class="muted small"></span></div>
 <p class="small" id="eq" style="margin:4px 0"></p><p class="muted small" id="nt"></p></div>`;
@@ -359,7 +359,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       const a = sxy / sxx; return { r: sxy / Math.sqrt(sxx * syy), a, b: my - a * mx };
     }
     function draw() {
-      const d = sets[cur], st = stats(d), g = q("#gr"), line = q("#ln").checked;
+      const d = sets[cur], st = stats(d), g = q("#gr"), line = q("#ln").checked, grp = !!(d.g && q("#gp").checked); q("#gw").style.display = d.g ? "flex" : "none";
       const ex = Math.min(...d.x), Ex = Math.max(...d.x), ey = Math.min(...d.y0), Ey = Math.max(...d.y0);
       const xmin = ex - (Ex - ex) * 0.08, xmax = Ex + (Ex - ex) * 0.08, ymin = ey - (Ey - ey) * 0.12, ymax = Ey + (Ey - ey) * 0.12;
       const X = v => PL + (v - xmin) / (xmax - xmin) * (W - PL - PR), Y = v => H - PB - (v - ymin) / (ymax - ymin) * (H - PB - PT);
@@ -369,22 +369,50 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       for (let v = Math.ceil(ymin / sy) * sy; v <= ymax; v += sy) h += `<line stroke="var(--line)" x1="${PL}" y1="${Y(v)}" x2="${W - PR}" y2="${Y(v)}"/><text x="${PL - 8}" y="${Y(v) + 5}" text-anchor="end" fill="var(--muted)" font-size="15">${f(v, 1)}</text>`;
       h += `<line class="ax" x1="${PL}" y1="${H - PB}" x2="${W - PR}" y2="${H - PB}"/><line class="ax" x1="${PL}" y1="${PT}" x2="${PL}" y2="${H - PB}"/>`;
       h += `<text x="${(PL + W - PR) / 2}" y="${H - 8}" text-anchor="middle" fill="var(--ink)" font-size="16" font-weight="700">${esc(d.xt)} →</text><text x="${PL}" y="16" fill="var(--ink)" font-size="16" font-weight="700">↑ ${esc(d.yt)}</text>`;
-      if (line) h += `<line x1="${X(xmin)}" y1="${Y(st.a * xmin + st.b)}" x2="${X(xmax)}" y2="${Y(st.a * xmax + st.b)}" stroke="var(--good)" stroke-width="3" stroke-dasharray="7 5"/>`;
-      d.x.forEach((xv, i) => { const last = c.outlier && i === d.x.length - 1; h += `<circle cx="${X(xv)}" cy="${Y(d.y[i])}" r="${last ? 9 : 7}" fill="${last ? "var(--bad)" : "var(--accent)"}" ${last ? 'stroke="var(--ink)" stroke-width="3"' : ""}/>`; });
+      const gcol = ["var(--accent)", "var(--cyan)"], gst = [];
+      if (grp) { for (let k = 0; k < 2; k++) { const sub = { x: [], y: [] }; d.x.forEach((xv, i) => { if (d.g[i] === k) { sub.x.push(xv); sub.y.push(d.y[i]); } }); gst.push({ st: stats(sub), x0: Math.min(...sub.x), x1: Math.max(...sub.x) }); } }
+      if (line && !grp) h += `<line x1="${X(xmin)}" y1="${Y(st.a * xmin + st.b)}" x2="${X(xmax)}" y2="${Y(st.a * xmax + st.b)}" stroke="var(--good)" stroke-width="3" stroke-dasharray="7 5"/>`;
+      if (line && grp) gst.forEach((o, k) => { h += `<line x1="${X(o.x0)}" y1="${Y(o.st.a * o.x0 + o.st.b)}" x2="${X(o.x1)}" y2="${Y(o.st.a * o.x1 + o.st.b)}" stroke="${gcol[k]}" stroke-width="3.5"/>`; });
+      d.x.forEach((xv, i) => { const last = c.outlier && i === d.x.length - 1; h += `<circle cx="${X(xv)}" cy="${Y(d.y[i])}" r="${last ? 9 : 7}" fill="${last ? "var(--bad)" : grp ? gcol[d.g[i]] : "var(--accent)"}" ${last ? 'stroke="var(--ink)" stroke-width="3"' : ""}/>`; });
       g.innerHTML = h;
       const r = st.r, ar = Math.abs(r), s = ar < 0.2 ? "yok denecek kadar zayıf" : (ar < 0.5 ? "zayıf" : ar < 0.8 ? "orta düzeyde" : "güçlü") + (r > 0 ? ", aynı yönlü (pozitif)" : ", ters yönlü (negatif)");
-      q("#rv").textContent = f(r, 2); q("#rd").textContent = "→ doğrusal ilişki " + s;
-      q("#eq").innerHTML = line ? `Eğilim doğrusu: <b>y ≈ ${f(st.a, 2)}·x ${st.b < 0 ? "−" : "+"} ${f(Math.abs(st.b), 1)}</b> (x'in 1 birim artışında y'nin tahmini değişimi ${f(st.a, 2)})` : "";
+      q("#rv").textContent = f(r, 2); q("#rd").textContent = grp ? "→ tüm veri birlikte: " + s : "→ doğrusal ilişki " + s;
+      if (grp) q("#eq").innerHTML = gst.map((o, k) => `<span style="color:${gcol[k]};font-weight:700">${esc((d.gn || ["Grup 1", "Grup 2"])[k])}: r = ${f(o.st.r, 2)}, eğim ${f(o.st.a, 2)}</span>`).join(" &nbsp; ");
+      else q("#eq").innerHTML = line ? `Eğilim doğrusu: <b>y ≈ ${f(st.a, 2)}·x ${st.b < 0 ? "−" : "+"} ${f(Math.abs(st.b), 1)}</b> (x'in 1 birim artışında y'nin tahmini değişimi ${f(st.a, 2)})` : "";
       q("#nt").textContent = d.note || "";
       host.querySelectorAll("[data-d]").forEach(b => { b.style.borderColor = +b.dataset.d === cur ? "var(--accent)" : ""; });
     }
     host.addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (b) { cur = +b.dataset.d; sets[cur].y = sets[cur].y0.slice(); syncOl(); draw(); } });
-    q("#ln").addEventListener("change", draw);
+    q("#ln").addEventListener("change", draw); q("#gp").addEventListener("change", draw);
     const ol = q("#ol");
     function syncOl() { if (!ol) return; const d = sets[cur], lo = Math.min(...d.y0), hi = Math.max(...d.y0), span = hi - lo; ol.value = Math.round((d.y0[d.y0.length - 1] - (lo - span * 0.6)) / (span * 2.2) * 100); }
     syncOl();
     if (ol) ol.addEventListener("input", () => { const d = sets[cur], lo = Math.min(...d.y0), hi = Math.max(...d.y0), span = hi - lo; d.y[d.y.length - 1] = lo - span * 0.6 + (+ol.value / 100) * span * 2.2; draw(); });
     draw();
+  }
+
+
+  /* ---------- çubuk grafik keşfi: dikey eksenin başlangıcı grafiği nasıl değiştirir? ---------- */
+  function barLab(step, host) {
+    const c = step.cfg, W = 640, H = 340, PL = 60, PR = 20, PT = 30, PB = 56;
+    const f = v => (+v.toFixed(2)).toString().replace(".", ",");
+    const mn = Math.min(...c.bars.map(b => b.v)), mx = Math.max(...c.bars.map(b => b.v)), top = c.top || Math.ceil(mx * 1.05);
+    const maxBase = Math.floor(mn * 0.96);
+    host.innerHTML = `<p>${step.intro}</p><div class="lab"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><g id="gr"></g></svg>
+<label for="sl" class="muted small">Dikey eksenin başlangıç değeri (sağa çek: eksen yukarıdan başlasın)</label><input id="sl" type="range" min="0" max="${maxBase}" step="1" value="0" aria-label="Eksen başlangıcı">
+<div class="readout"><span>eksen: <b id="b0">0</b> ile ${top} arası</span></div><p id="cmp" style="margin:6px 0"></p></div>`;
+    const q = s => host.querySelector(s), sl = q("#sl");
+    function draw() {
+      const base = +sl.value, Y = v => H - PB - (v - base) / (top - base) * (H - PB - PT), bw = (W - PL - PR) / c.bars.length;
+      let h = "", st = Math.max(1, Math.round((top - base) / 5));
+      for (let v = Math.ceil(base / st) * st; v <= top; v += st) h += `<line stroke="var(--line)" x1="${PL}" y1="${Y(v)}" x2="${W - PR}" y2="${Y(v)}"/><text x="${PL - 8}" y="${Y(v) + 5}" text-anchor="end" fill="var(--muted)" font-size="16">${v}</text>`;
+      h += `<line class="ax" x1="${PL}" y1="${PT}" x2="${PL}" y2="${H - PB}"/><line class="ax" x1="${PL}" y1="${H - PB}" x2="${W - PR}" y2="${H - PB}"/><text x="${PL}" y="18" fill="var(--ink)" font-size="16" font-weight="700">↑ ${esc(c.yt)}</text>`;
+      c.bars.forEach((b, i) => { const x = PL + bw * i + bw * 0.2, w = bw * 0.6, y = Y(b.v); h += `<rect x="${x}" y="${y}" width="${w}" height="${H - PB - y}" rx="4" fill="${i ? "var(--cyan)" : "var(--accent)"}"/><text x="${x + w / 2}" y="${y - 8}" text-anchor="middle" fill="var(--ink)" font-size="18" font-weight="700">${b.v}</text><text x="${x + w / 2}" y="${H - PB + 26}" text-anchor="middle" fill="var(--ink)" font-size="16">${esc(b.n)}</text>`; });
+      q("#gr").innerHTML = h; q("#b0").textContent = base;
+      const a = c.bars[0].v, b2 = c.bars[1].v, vis = (b2 - base) / (a - base), real = b2 / a;
+      q("#cmp").innerHTML = `Gerçekte ${esc(c.bars[1].n)} değeri, ${esc(c.bars[0].n)} değerinin <b>${f(real)} katı</b> (fark %${f((real - 1) * 100)}). Grafikte ise ${esc(c.bars[1].n)} çubuğu <b>${f(vis)} kat</b> uzun görünüyor.`;
+    }
+    sl.addEventListener("input", draw); draw();
   }
 
   /* ---------- ders akışı ---------- */
@@ -407,6 +435,8 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; explorer(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "circle") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; circleLab(st, host.querySelector("#ex")); navBtns(true);
+    } else if (st.type === "bar") {
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; barLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "scatter") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; scatterLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "expo") {
@@ -431,7 +461,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
   /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
-    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
     return null;
   }
   function question(host, q, done, inLesson, extra) {
@@ -452,7 +482,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
         if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
-        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c);
+        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c);
         hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (b.dataset.h === "solve") {
         answered = true; const right = opts.find(x => x.ok);
