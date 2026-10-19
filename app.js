@@ -178,7 +178,7 @@
 
   /* ---------- müfredat: her ders için resmî konu/kazanım listesi + içerik doluluğu ---------- */
   const LESSON_KZ = { "fiz-hareket": ["fiz:9.3.1.2", "fiz:9.3.1.3", "fiz:9.3.1.4", "fiz:9.3.1.5"], "cog-boylam": ["cog:9.1.4", "cog:9.1.5"], "kim-periyodik": ["kim:9.2.3.1", "kim:9.2.3.2", "kim:9.2.3.3"], "tur-paragraf": ["edeb:A.4.4"] };
-  const MUF = { gaps: false };
+  const MUF = { gaps: false, view: "okul", grade: "11" };
   function covCounts() {
     const cnt = {}; K.daily.forEach(q => { const m = qmeta(q); if (m.yks) cnt[m.yks] = (cnt[m.yks] || 0) + 1; if (m.s11) cnt["s:" + m.s11] = (cnt["s:" + m.s11] || 0) + 1; });
     const les = {}; Object.keys(LESSON_KZ).forEach(id => LESSON_KZ[id].forEach(c => { (les[c] = les[c] || []).push(id); }));
@@ -198,8 +198,29 @@
 <p class="muted small" style="margin-top:12px">Kaynak: MEB 11. sınıf matematik kitabı ve MEB–ÖSYM 2026 kazanım belgesi (eski program kodları). Mantık, Sosyoloji, Psikoloji kodları belgede yok (ünite.kazanım sırası). Yabancı diller henüz yok.</p>`;
       $app.innerHTML = html; $app.querySelectorAll("[data-ms]").forEach(b => b.onclick = () => { setSubject(b.dataset.ms); renderCurriculum(); }); return;
     }
-    const sb = K.subjects[cur], c = subjCoverage(cur, cv);
-    html += `<h2>${esc(sb.icon)} ${esc(sb.name)}</h2><p class="callout"><b>Doluluk:</b> ${c.total} konu/kazanımdan <b>${c.withQ}</b>'inde soru var (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}); keşif/ders anlatımı bağlı olan: <b>${c.withL}</b>.</p>
+    const sb = K.subjects[cur], c = subjCoverage(cur, cv), mf = K.maarif && K.maarif[cur === "tur" ? "edeb" : cur];
+    html += `<h2>${esc(sb.name)}</h2><div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn ${MUF.view === "okul" ? "" : "ghost"}" data-v="okul" type="button">Okul müfredatı</button><button class="btn ${MUF.view === "sinav" ? "" : "ghost"}" data-v="sinav" type="button">Sınav (TYT/AYT)</button></div>`;
+    if (MUF.view === "okul") {
+      if (!mf || !Object.keys(mf.grades).length) html += `<p class="callout">Bu ders için okul müfredatı (Maarif) henüz eklenmedi. "Sınav (TYT/AYT)" görünümünde resmî kazanım listesi var.</p>`;
+      else {
+        const gs = Object.keys(mf.grades); if (!gs.includes(MUF.grade)) MUF.grade = gs.includes("11") ? "11" : gs[0];
+        html += `<div class="row" style="gap:6px;flex-wrap:wrap;margin:4px 0 12px"><span class="muted small">Sınıf:</span>${gs.map(g => `<button class="btn ${MUF.grade === g ? "" : "ghost"}" data-g="${g}" type="button">${g}. sınıf</button>`).join("")}</div><p class="muted small">Türkiye Yüzyılı Maarif Modeli öğretim programı (MEB). Ünite/tema, ders saati, konular ve öğrenme çıktıları resmî programdandır.</p>`;
+        const s11byCode = {}; if (cur === "mat" && MUF.grade === "11") s11Topics().forEach(p => { if (p.mat) s11byCode[p.mat] = p; });
+        mf.grades[MUF.grade].forEach(u => {
+          const covered = cur === "mat" && MUF.grade === "11" ? u.lo.filter(x => { const t = s11byCode[x.c]; return t && (cv.cnt["s:" + t.id] || t.lesson); }).length : 0;
+          html += `<details class="subj" ${mf.grades[MUF.grade].length <= 3 ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(u.title)} <span class="muted small">${esc(u.hours ? u.hours + " ders saati" : "")}${cur === "mat" && MUF.grade === "11" ? " · içerik: " + covered + "/" + u.lo.length : ""}</span></summary>`;
+          if (u.konu.length) html += `<p class="muted small" style="margin:4px 0">Konular: ${u.konu.map(x => esc(x.replace(/^•\s*/, ""))).join(" · ")}</p>`;
+          u.lo.forEach(x => {
+            const t = s11byCode[x.c], qn = t ? (cv.cnt["s:" + t.id] || 0) : 0, ls = t && t.lesson ? [t.lesson] : [];
+            if (MUF.gaps && (qn || ls.length) && cur === "mat") return;
+            html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
+          });
+          html += `</details>`;
+        });
+        if (cur !== "mat") html += `<p class="muted small">Bu derste uygulamadaki soru ve keşifler henüz okul müfredatı kodlarına bağlanmadı; "Sınav (TYT/AYT)" görünümünde kazanım bazlı doluluk görünür.</p>`;
+      }
+    } else {
+    html += `<p class="callout"><b>Doluluk:</b> ${c.total} konu/kazanımdan <b>${c.withQ}</b>'inde soru var (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}); keşif/ders anlatımı bağlı olan: <b>${c.withL}</b>.</p>
 <label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="mg" ${MUF.gaps ? "checked" : ""} style="width:22px;height:22px"> Yalnızca henüz içeriği olmayanları göster</label>`;
     const row = (code, text, qn, ls, link) => `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:76px">${esc(code)}</span><span style="flex:1 1 220px">${esc(text)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : '<span class="muted small">içerik hazırlanıyor</span>'}</div>`;
     if (cur === "mat") {
@@ -210,8 +231,11 @@
     } else {
       (KZ_OF[cur] || []).forEach(key => { const sub = K.kz[key]; if (!sub) return; html += `<h3 style="margin-top:20px">${esc(sub.name)}</h3>`; let unitShown = ""; sub.items.forEach(i => { if (i.u) { unitShown = `<h4 style="margin:12px 0 4px">${esc(i.u)}</h4>`; return; } const id = key + ":" + i.c, qn = cv.cnt[id] || 0, ls = (cv.les[id] || []).filter((x, ix, a) => a.indexOf(x) === ix && K.lessons[x]); if (MUF.gaps && (qn || ls.length)) return; html += unitShown; unitShown = ""; html += row(i.c, i.t, qn, ls, "#/banka/" + encodeURIComponent("y:" + id)); }); });
     }
+    }
     $app.innerHTML = html;
-    $app.querySelector("#mg").onchange = e => { MUF.gaps = e.target.checked; renderCurriculum(); };
+    const mg = $app.querySelector("#mg"); if (mg) mg.onchange = e => { MUF.gaps = e.target.checked; renderCurriculum(); };
+    $app.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { MUF.view = b.dataset.v; renderCurriculum(); });
+    $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { MUF.grade = b.dataset.g; renderCurriculum(); });
   }
 
   /* ---------- tüm dersler: ders kartları ve ders sayfası ---------- */
