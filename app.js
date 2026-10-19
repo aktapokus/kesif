@@ -180,6 +180,7 @@
   const qStat = id => (S.qs && S.qs[id]) || { n: 0, ok: 0 };
   function renderBank(param) {
     if (param && /^[ysd]:/.test(param)) { BF.konu = param; BF.sinav = "all"; BF.ders = "all"; BF.zor = 0; }
+    if (param && /^ders:/.test(param)) { BF.ders = param.slice(5); BF.konu = "all"; BF.sinav = "all"; BF.zor = 0; }
     const all = K.daily.slice(), list = all.filter(bankMatch);
     const groups = {}; list.forEach(q => { (groups[konuKey(q)] = groups[konuKey(q)] || []).push(q); });
     const konular = [...new Set(all.map(konuKey))].sort();
@@ -190,6 +191,7 @@
 <div class="setrow"><label class="muted small" for="fd">Ders</label><select id="fd"><option value="all">Hepsi</option>${subs.map(k => `<option value="${k}" ${BF.ders === k ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select>
 <label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
 <label class="muted small" for="fz">Zorluk</label><select id="fz"><option value="0">Hepsi</option>${[1, 2, 3].map(z => `<option value="${z}" ${BF.zor === z ? "selected" : ""}>${ZOR[z]}</option>`).join("")}</select></div></div>
+<div class="card" style="margin:14px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Soru</th><th>Keşif</th></tr></thead><tbody>${Object.keys(K.subjects).map(k => { const nq = all.filter(q => q.subject === k).length, nl = Object.values(K.lessons).filter(l => l.subject === k).length; return `<tr><td><a href="#/banka/ders:${k}">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</a></td><td class="num">${nq}</td><td class="num">${nl}</td></tr>`; }).join("")}</tbody></table></div>
 <div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/deneme">Deneme sınavı</a><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
 ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><th>Soru</th><th>Çözülen</th><th></th></tr></thead><tbody>${Object.keys(groups).sort().map(k => `<tr><td>${esc(konuLabel(k))}</td><td class="num">${groups[k].length}</td><td class="num">${groups[k].filter(q => qStat(q.id).n > 0).length}</td><td><button class="btn ghost" data-go="${k}" type="button">Çöz</button></td></tr>`).join("")}</tbody></table></div>` : `<p class="callout">Bu filtreyle soru yok. Soru bankası her hafta genişliyor; filtreyi gevşet.</p>`}
 <p class="muted small" style="margin-top:14px">Kaynak: tüm sorular bu proje için özgün yazılmıştır ("çıkmış soru" değildir). ÖSYM çıkmış soruları telif nedeniyle burada değil, ÖSYM'nin sayfasındadır.</p>`;

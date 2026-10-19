@@ -55,15 +55,11 @@ KESIF.yks = {
    Bağlantılar ÖSYM sitesinden doğrulanmıştır; diğer yıllar için resmî arşiv sayfasına bakınız. */
 KESIF.osym = {
   note: "Sınav soruları ÖSYM'nin telifindedir ve yazılı izin olmadan çoğaltılamaz (2026-YKS kılavuzu). Bu yüzden soru metinleri burada değil, ÖSYM'nin kendi sayfasında.",
-  archive: { title: "ÖSYM — YKS çıkmış sorular (arşiv)", url: "https://www.osym.gov.tr/tr,15164/yks-cikmis-sorular.html" },
-  years: [
-    { y: 2026, url: "https://www.osym.gov.tr/2026-yuksekogretim-kurumlari-sinavi-2026yks-temel-soru-kitapciklari-ve-cevap-anahtarlari-yayimlandi" },
-    { y: 2025, url: "https://www.osym.gov.tr/TR,33280/2025-yks-tyt-ayt-ve-ydt-temel-soru-kitapciklari-ve-cevap-anahtarlari.html" },
-    { y: 2024, url: "https://www.osym.gov.tr/2024yks-tyt-ayt-ve-ydt-temel-soru-kitapciklari-ve-cevap-anahtarlari" },
-    { y: 2022, url: "https://www.osym.gov.tr/2022yks-tyt-ayt-ve-ydt-temel-soru-kitapciklari-ve-cevap-anahtarlari" },
-    { y: 2020, url: "https://www.osym.gov.tr/TR,19369/2020-yks-tyt-ayt-ve-ydt-temel-soru-kitapciklari-ve-cevap-anahtarlari.html" },
-    { y: 2018, url: "https://www.osym.gov.tr/2018yks-tyt-ayt-ydt-temel-soru-kitapciklari-ve-cevap-anahtarlari" }
-  ]
+  archive: { title: "ÖSYM — Yükseköğretim Kurumları Sınavı (tüm yıllar)", url: "https://www.osym.gov.tr/SinavGrubu/Menu/323" },
+  /* Bağlantılar 2026-10-19'da ÖSYM sitesinden tek tek açılarak doğrulandı (sayfa başlığı kontrol edildi). */
+  years: [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018].map(function (y) {
+    return { y: y, url: "https://www.osym.gov.tr/" + y + (y <= 2019 ? "yks-tyt-ayt-ydt" : "yks-tyt-ayt-ve-ydt") + "-temel-soru-kitapciklari-ve-cevap-anahtarlari" };
+  })
 };
 
 /* Soru bankası etiketleri: her sorunun hangi konuya (yks: MEB-ÖSYM konu kodu, s11: 11. sınıf kitabı konusu), hangi sınava hizmet ettiği ve zorluk düzeyi.
