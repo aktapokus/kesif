@@ -629,6 +629,32 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
     sl.addEventListener("input", draw); draw();
   }
 
+
+  /* ---------- çokgen keşfi: n kenarlı düzgün çokgen, üçgenleme, açılar, köşegenler ---------- */
+  function polygonLab(step, host) {
+    const c = step.cfg, W = 640, H = 330, cx = 190, cy = 165, R = 130;
+    const f = v => (+v.toFixed(2)).toString().replace(".", ",");
+    host.innerHTML = `<p>${step.intro}</p><div class="lab"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(step.title)}"><g id="pg"></g><g id="tx" fill="var(--ink)" font-size="19"></g></svg>
+<div class="row" style="gap:16px;flex-wrap:wrap;margin:8px 0"><label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="m1" checked style="width:22px;height:22px"> Bir köşeden köşegenler (üçgenleme)</label><label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="m2" style="width:22px;height:22px"> Tüm köşegenler</label></div>
+<label for="sl" class="muted small">Kenar sayısı n</label><input id="sl" type="range" min="3" max="12" step="1" value="${c.start || 5}" aria-label="Kenar sayısı">
+<table><thead><tr><th>n</th><th>Üçgen sayısı (n − 2)</th><th>İç açılar toplamı</th><th>Düzgünse 1 iç açı</th><th>1 dış açı</th><th>Köşegen sayısı</th></tr></thead><tbody><tr id="rw"></tr></tbody></table></div>`;
+    const q = s => host.querySelector(s), sl = q("#sl"), ns = "http://www.w3.org/2000/svg";
+    function draw() {
+      const n = +sl.value, pts = []; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + 2 * Math.PI * i / n; pts.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]); }
+      const P = i => pts[i].map(v => v.toFixed(1)).join(","); let h = "";
+      const cols = ["rgba(255,200,87,.35)", "rgba(108,212,255,.30)"];
+      if (q("#m1").checked) for (let i = 1; i < n - 1; i++) h += `<polygon points="${P(0)} ${P(i)} ${P(i + 1)}" fill="${cols[i % 2]}" stroke="none"/>`;
+      if (q("#m2").checked) for (let i = 0; i < n; i++) for (let j = i + 2; j < n; j++) { if (i === 0 && j === n - 1) continue; h += `<line x1="${pts[i][0]}" y1="${pts[i][1]}" x2="${pts[j][0]}" y2="${pts[j][1]}" stroke="var(--muted)" stroke-width="1.2"/>`; }
+      if (q("#m1").checked) for (let i = 2; i < n - 1; i++) h += `<line x1="${pts[0][0]}" y1="${pts[0][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" stroke="var(--accent)" stroke-width="2.5"/>`;
+      h += `<polygon points="${pts.map((p, i) => P(i)).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="3"/>` + pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--ink)"/>`).join("");
+      q("#pg").innerHTML = h;
+      const sum = (n - 2) * 180, diag = n * (n - 3) / 2;
+      q("#tx").innerHTML = `<text x="370" y="60" font-weight="700">n = ${n}</text><text x="370" y="96">Üçgen sayısı: ${n - 2}</text><text x="370" y="132">İç açılar toplamı: ${n - 2} · 180° = ${sum}°</text><text x="370" y="168">Düzgün çokgende iç açı: ${f(sum / n)}°</text><text x="370" y="204">Dış açı: 360° ÷ ${n} = ${f(360 / n)}°</text><text x="370" y="240">Köşegen: ${n} · ${n - 3} ÷ 2 = ${diag}</text><text x="370" y="276" fill="var(--muted)" font-size="15">Bir köşeden ${n - 3} köşegen çizilir</text>`;
+      q("#rw").innerHTML = `<td>${n}</td><td>${n - 2}</td><td>${sum}°</td><td>${f(sum / n)}°</td><td>${f(360 / n)}°</td><td>${diag}</td>`;
+    }
+    sl.addEventListener("input", draw); q("#m1").addEventListener("change", draw); q("#m2").addEventListener("change", draw); draw();
+  }
+
   /* ---------- ders akışı ---------- */
   function renderLesson(L, i) {
     i = Math.max(0, Math.min(L.steps.length - 1, i));
@@ -649,6 +675,8 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; explorer(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "circle") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; circleLab(st, host.querySelector("#ex")); navBtns(true);
+    } else if (st.type === "polygon") {
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; polygonLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "bar") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; barLab(st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "scatter") {
@@ -677,7 +705,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
     const mt = K.meta && K.meta[q.id]; if (mt && mt.s11 && K.topicNotes && K.topicNotes[mt.s11]) return { note: K.topicNotes[mt.s11], title: "11. sınıf " + mt.s11 + " " + (s11Title(mt.s11) || "") };
-    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
+    if (extra && extra.L) for (let j = extra.i - 1; j >= 0; j--) if (["text", "explorer", "circle", "expo", "scatter", "bar", "polygon"].includes(extra.L.steps[j].type)) return { L: extra.L, i: j };
     return null;
   }
   function question(host, q, done, inLesson, extra) {
@@ -700,7 +728,7 @@ ${c.outlier ? `<label for="ol" class="muted small">Son noktayı (halkalı) yukar
         hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b> <span class="muted small">(${esc(tp.L.title)})</span><div id="tpc" style="margin-top:10px"></div><p class="small" style="margin-top:12px"><a href="#/ders/${tp.L.id}/${tp.i}">Dersin bu adımını tam ekran aç →</a></p></div>`;
         const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i];
         if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
-        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c);
+        else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c);
         hp.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else if (b.dataset.h === "solve") {
         answered = true; const right = opts.find(x => x.ok);
@@ -745,7 +773,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
       const b = e.target.closest("[data-h]"); if (!b || finished) return;
       if (b.dataset.h === "hint") hp.innerHTML = `<div class="fb"><b>💡 İpucu:</b> ${esc(hintTxt)}</div>`;
       else if (b.dataset.h === "topic" && tp.note) hp.innerHTML = `<div class="fb topic"><b>📖 Konu özeti</b> <span class="muted small">(${esc(tp.title)})</span><div class="body" style="margin-top:10px">${tp.note}</div></div>`;
-      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); }
+      else if (b.dataset.h === "topic") { hp.innerHTML = `<div class="fb topic"><b>📖 Konu anlatımı</b><div id="tpc" style="margin-top:10px"></div></div>`; const c = hp.querySelector("#tpc"), st = tp.L.steps[tp.i]; if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`; else if (st.type === "explorer") explorer(st, c); else if (st.type === "circle") circleLab(st, c); else if (st.type === "expo") expoLab(st, c); else if (st.type === "scatter") scatterLab(st, c); else if (st.type === "bar") barLab(st, c); else if (st.type === "polygon") polygonLab(st, c); }
       else if (b.dataset.h === "solve") finish(null, null);
       else if (b.dataset.h === "check") {
         if (!ans.length) { finish(null, null); return; }

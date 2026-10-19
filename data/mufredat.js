@@ -10,10 +10,10 @@ KESIF.s11 = {
       { id: "1.1", title: "İki niceliksel değişkenli veriler", lesson: "mat-iki-degisken" },
       { id: "1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: "mat-veri-inceleme" } ] },
     { n: 2, title: "Geometrik Şekiller", topics: [
-      { id: "2.1", title: "Dörtgenlerin özellikleri", lesson: null },
-      { id: "2.2", title: "Özel dörtgenler arasındaki ilişkiler", lesson: null },
-      { id: "2.3", title: "Çokgenlerin sınıflandırılması", lesson: null },
-      { id: "2.4", title: "Dışbükey çokgenlerin özellikleri", lesson: null },
+      { id: "2.1", partial: true, title: "Dörtgenlerin özellikleri", lesson: "mat-cokgen" },
+      { id: "2.2", partial: true, title: "Özel dörtgenler arasındaki ilişkiler", lesson: "mat-cokgen" },
+      { id: "2.3", partial: true, title: "Çokgenlerin sınıflandırılması", lesson: "mat-cokgen" },
+      { id: "2.4", partial: true, title: "Dışbükey çokgenlerin özellikleri", lesson: "mat-cokgen" },
       { id: "2.5", title: "Çokgenlerle ilgili problemler", lesson: null } ] },
     { n: 3, title: "Nicelikler ve Değişimler (1)", topics: [
       { id: "3.1", title: "Trigonometrik fonksiyonlar ve nitel özellikleri", lesson: "mat-trig-cember", partial: true },
@@ -35,5 +35,6 @@ KESIF.tracks = {
   "mat-ustel-log": ["s11", "ayt"],
   "mat-iki-degisken": ["s11"],
   "mat-veri-inceleme": ["s11"],
+  "mat-cokgen": ["s11"],
   "tur-paragraf": ["tyt"]
 };
