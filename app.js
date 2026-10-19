@@ -231,10 +231,10 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
     }
     if (K.kz) {
       const cnt = {}; K.daily.forEach(q => { const m = qmeta(q); if (m.yks && m.yks.indexOf(":") > -1) cnt[m.yks] = (cnt[m.yks] || 0) + 1; });
-      const N = tab === "tyt" ? { edeb: "Türkçe testi: 40 soru", tar: "Tarih: 5 soru", ink: "Tarih testi içinde", cog: "Coğrafya: 5 soru", fel: "Felsefe: 5 soru", din: "Din Kültürü: 5 soru", fiz: "Fizik: 7 soru", kim: "Kimya: 7 soru", biy: "Biyoloji: 6 soru" }
-        : { edeb: "Edebiyat: 24 soru", tar: "Tarih-1: 10 · Tarih-2: 11", ink: "Tarih testi içinde", cog: "Coğrafya-1: 6 · Coğrafya-2: 11", fel: "Felsefe grubu: 12", din: "Din Kültürü: 6", fiz: "Fizik: 14", kim: "Kimya: 13", biy: "Biyoloji: 13" };
+      const N = tab === "tyt" ? { edeb: "Türkçe testi: 40 soru", tar: "Tarih: 5 soru", ink: "Tarih testi içinde", cog: "Coğrafya: 5 soru", fel: "Felsefe: 5 soru", man: "Felsefe grubu / Mantık", sos: "Felsefe grubu / Sosyoloji", psi: "Felsefe grubu / Psikoloji", din: "Din Kültürü: 5 soru", fiz: "Fizik: 7 soru", kim: "Kimya: 7 soru", biy: "Biyoloji: 6 soru" }
+        : { edeb: "Edebiyat: 24 soru", tar: "Tarih-1: 10 · Tarih-2: 11", ink: "Tarih testi içinde", cog: "Coğrafya-1: 6 · Coğrafya-2: 11", fel: "Felsefe grubu: 12", man: "Felsefe grubu: 12 (Mantık)", sos: "Felsefe grubu: 12 (Sosyoloji)", psi: "Felsefe grubu: 12 (Psikoloji)", din: "Din Kültürü: 6", fiz: "Fizik: 14", kim: "Kimya: 13", biy: "Biyoloji: 13" };
       html += `<h2 style="margin-top:28px">Diğer dersler (${label})</h2><p class="muted small">Resmî kazanım listesi (kod + kazanım). Kendi alanına ait dersleri aç; soru sayısı varsa "Soru" bağlantısı çıkar. Sınavdaki soru sayıları 2026-YKS kılavuzundandır.</p>`;
-      ["edeb", "tar", "ink", "cog", "fel", "din", "fiz", "kim", "biy"].forEach(k => {
+      ["edeb", "tar", "ink", "cog", "fel", "man", "sos", "psi", "din", "fiz", "kim", "biy"].forEach(k => {
         const sub = K.kz[k]; if (!sub) return;
         const nq = sub.items.filter(i => i.c && cnt[k + ":" + i.c]).reduce((a, i) => a + cnt[k + ":" + i.c], 0);
         html += `<details class="subj"><summary style="font:700 20px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${esc(sub.name)} <span class="muted small">${esc(N[k] || "")}${nq ? " · " + nq + " soru hazır" : ""}</span></summary>`;
@@ -244,7 +244,7 @@ ${list.length ? `<div class="card"><table class="tbl"><thead><tr><th>Konu</th><t
         });
         html += `</details>`;
       });
-      html += `<p class="muted small">Mantık, Sosyoloji, Psikoloji ve yabancı dil dersleri bu listeye eklenecek. Kaynak: MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>`;
+      html += `<p class="muted small">Yabancı dil dersleri bu listeye eklenecek; Mantık, Sosyoloji ve Psikoloji kodları belgede yoktur (ünite.kazanım sırası). Kaynak: MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>`;
     }
     const others = Object.values(K.lessons).filter(l => (K.tracks[l.id] || []).includes(tab) && l.subject !== "mat");
     others.forEach(l => { html += `<section class="subj on"><h2 style="margin:0">${esc(K.subjects[l.subject].icon)} ${esc(K.subjects[l.subject].name)}</h2><div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px"><span style="flex:1 1 220px">${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></span>${S.done[l.id] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(l.id)}</div></section>`; });
