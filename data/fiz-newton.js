@@ -6,11 +6,11 @@ KESIF.lessons["fiz-newton"] = {
   steps: [
     { type: "mcq", predict: true, q: "Markette boş bir arabayı ve içi su dolu bir arabayı aynı güçle itiyorsun. Hangisi daha çabuk hızlanır?",
       opts: [
-        { t: "Boş araba.", ok: true, why: "Haklısın. Şimdi bunun arkasındaki kuralı kendimiz bulacağız." },
+        { t: "Boş araba.", ok: true, why: "Aynı kuvvet, küçük kütleyi büyük kütleye göre daha çok hızlandırır. Boş arabanın kütlesi küçük olduğu için ivmesi büyük olur." },
         { t: "Dolu araba.", why: "Tersi: yük arttıkça arabayı hızlandırmak zorlaşır. Neden olduğunu birazdan göreceksin." },
         { t: "İkisi de aynı.", why: "Aynı güçle iterken yük farklıysa hızlanma da farklı olur." }
       ],
-      explain: "Hiç fizik bilmeden de doğru tahmin ettin. Bu derste sezgini bir kurala çevireceğiz." },
+      explain: "Kural: aynı kuvvette kütle büyüdükçe ivme küçülür. Bu derste bu ilişkiyi tek bir formüle çevireceğiz." },
 
     { type: "text", title: "Sözlük 1: Kuvvet nedir?",
       say: "Kuvvet, bir cismi itme ya da çekmedir. Birimi newton, yazılışı N. Bir newton, yaklaşık yüz gramlık bir cismin ağırlığı kadardır.",

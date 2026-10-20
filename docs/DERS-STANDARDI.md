@@ -16,3 +16,8 @@ Kurallar
 - Hesaplı konularda birimi ve sonucun makul olup olmadığını kontrol ettir.
 - Ton: yargılamayan, meraklı. "Bunu bilmiyorsan sorun yok, buradan başlıyoruz."
 - Her ders `node tools/dogrula.js dis --dersler` ile Opus'a doğrulatılır.
+
+## Geri bildirim kuralı (kullanıcı geri bildirimi, 2026-10-20)
+- Övgü, motivasyon cümlesi ve sistem bilgisi yok ("harika", "doğru tahmin ettin", "tekrar kutusuna eklendi" gibi).
+- Her cevabın (doğru de yanlış da) altında **neden** açıklaması olur: doğru cevap neden doğru, hangi bilgi/kural bunu belirler; yanlış seçenek hangi düşünce hatasından geliyor.
+- `explain` alanı bir kuralı ya da bir sonraki adıma geçişi söyler, öğrenciyi alkışlamaz.

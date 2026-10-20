@@ -75,7 +75,7 @@
 <div class="grid" style="margin-top:22px">`;
     if (pending) html += `<article class="card pick"><span class="tag">${esc(K.subjects[pending.subject].name)}</span><span class="tag">≈ ${pending.minutes} dk</span>
 <h3>${esc(pending.title)}</h3><p class="muted small">${esc(pending.hook)}</p>
-<a class="btn" href="#/ders/${pending.id}/${S.done[pending.id] ? 0 : (S.notes["p_" + pending.id] || 0)}">${S.done[pending.id] ? "Tekrar keşfet" : (S.notes["p_" + pending.id] ? "Kaldığın yerden devam" : "Keşfe başla")}</a></article>`;
+<a class="btn" href="#/ders/${pending.id}/${S.done[pending.id] ? 0 : (S.notes["p_" + pending.id] || 0)}">${S.done[pending.id] ? "Konuyu tekrar et" : (S.notes["p_" + pending.id] ? "Kaldığın yerden devam" : "Konuya başla")}</a></article>`;
     html += `<article class="card"><div class="row"><div class="ring" style="--p:${pct}"><b>${r.n}/${goal}</b></div>
 <div><h3>Günlük sorular</h3><p class="muted small" style="margin:0">Hedef: ${goal} soru${r.n ? " · doğru: " + r.ok : ""}</p></div></div>
 <p style="margin-top:14px"><a class="btn ${r.n >= goal ? "ghost" : ""}" href="#/gunluk">${r.n >= goal ? "Bir tur daha" : "Soruları çöz"}</a></p></article>`;
@@ -321,7 +321,7 @@
   const topicDone = p => !!(p.lesson && S.done[p.lesson]);
   function s11Next() { const t = s11Topics().find(p => !topicDone(p)); return t || null; }
   function s11NextLesson() { const t = s11Topics().find(p => p.lesson && !S.done[p.lesson]); return t ? t.lesson : null; }
-  function lessonLink(id, label) { const l = K.lessons[id]; return `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${label || (S.done[id] ? "Tekrar" : S.notes["p_" + id] ? "Devam" : "Keşfe başla")}</a>`; }
+  function lessonLink(id, label) { const l = K.lessons[id]; return `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${label || (S.done[id] ? "Tekrar" : S.notes["p_" + id] ? "Devam" : "Konuya başla")}</a>`; }
   function renderDersler(tab) {
     if (tab === "hedef") return renderGoals();
     if (tab === "tum") return renderAllSubjects();
@@ -979,7 +979,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
         answered = true; const right = opts.find(x => x.ok);
         host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
         hb.style.display = "none"; hp.innerHTML = "";
-        host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}${Array.isArray(q.solution) ? solHtml(q, true) : typeof q.solution === "string" ? "<br>" + esc(q.solution) : ""}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}<br><br><span class="muted small">Çözümü gördüğün için bu soru tekrar kutusuna eklendi; sonra kendin çözmeyi dene.</span></div>`;
+        host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}${Array.isArray(q.solution) ? solHtml(q, true) : typeof q.solution === "string" ? "<br>" + esc(q.solution) : ""}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}</div>`;
         done(false);
       }
     });
@@ -1057,7 +1057,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
     const onlyReview = location.hash.indexOf("tekrar") > -1;
     const wasCustom = !!customSet, set = customSet || pickDaily(onlyReview), back = customBack; customSet = null; customBack = "#/";
     renderHome();
-    if (!set.length) { $app.insertAdjacentHTML("afterbegin", `<p class="callout">Tekrar kutusu boş. Harika.</p>`); return; }
+    if (!set.length) { $app.insertAdjacentHTML("afterbegin", `<p class="callout">Tekrar kutusu boş.</p>`); return; }
     document.body.style.overflow = "hidden";
     fs = el("div", { class: "fs", role: "dialog", "aria-modal": "true", "aria-label": "Günlük sorular" }); document.body.appendChild(fs);
     let i = 0, ok = 0;
