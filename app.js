@@ -123,7 +123,7 @@
     $("#tbs").onchange = e => {
       setSubject(e.target.value);
       const to = S.pickSubj === "all" ? "#/" : "#/dersler/k:" + S.pickSubj;
-      if (/^#\/(banka|deneme|mufredat)/.test(location.hash)) route(); /* bu sayfalar seçilen derse göre kendini süzer */
+      if (/^#\/(banka|deneme|mufredat|dersler\/okul)/.test(location.hash)) route(); /* bu sayfalar seçilen derse göre kendini süzer */
       else if (location.hash === to || (to === "#/" && /^(#\/?)?$/.test(location.hash))) route();
       else location.hash = to;
     };
@@ -153,13 +153,15 @@
   const SCH = { grade: "11", exam: 1, scen: 0 };
   function renderSchool() {
     if (!K.okul) { $app.innerHTML = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p>Tablo yüklenemedi.</p>`; return; }
+    const sk = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "mat";
+    if (sk !== "mat") { $app.innerHTML = `<h1>${esc(K.subjects[sk].name)} · Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">Bu ders için MEB ortak yazılı sınav tablosu uygulamaya henüz eklenmedi. Şimdilik konu anlatımları ve soru bankasıyla çalışabilirsin; okul sınavı çalışması matematikte hazır. Yukarıdaki listeden dersi değiştirebilirsin.</p><p><a class="btn" href="#/dersler/k:${sk}">${esc(K.subjects[sk].name)} konularına git</a></p>`; return; }
     const G = K.okul.grades, g = G[SCH.grade], nS = SCH.exam === 1 ? g.n1 : g.n2, key = SCH.exam === 1 ? "e1" : "e2";
     if (SCH.scen >= nS) SCH.scen = 0;
     const rows = g.rows.map(r => ({ r, n: (r[key] || [])[SCH.scen] || 0 })).filter(x => x.n > 0);
     const total = rows.reduce((a, x) => a + x.n, 0);
     const s11id = r => r.code.indexOf("MAT.11.") === 0 ? r.code.slice(7) : null;
     const have = r => { const id = s11id(r); return id ? K.daily.filter(q => (qmeta(q).s11 || "") === id).length : 0; };
-    let html = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">MEB'in yayımladığı ${esc(K.okul.term)} <b>ortak yazılı sınav</b> konu-soru dağılım tablosu. Okul zümresi senaryolardan birini seçer; sınav <b>açık uçlu / kısa cevaplı</b> yapılır. Hangi senaryonun kullanılacağını matematik öğretmeninden öğren, sonra o senaryoyu burada dene.</p>
+    let html = `<h1>Matematik · Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">MEB'in yayımladığı ${esc(K.okul.term)} <b>ortak yazılı sınav</b> konu-soru dağılım tablosu. Okul zümresi senaryolardan birini seçer; sınav <b>açık uçlu / kısa cevaplı</b> yapılır. Hangi senaryonun kullanılacağını matematik öğretmeninden öğren, sonra o senaryoyu burada dene.</p>
 <div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><span class="muted small">Sınıf:</span>${["9", "10", "11", "12"].map(x => `<button class="btn ${SCH.grade === x ? "" : "ghost"}" data-g="${x}" type="button">${x}. sınıf</button>`).join("")}<span class="muted small" style="margin-left:12px">Sınav:</span><button class="btn ${SCH.exam === 1 ? "" : "ghost"}" data-e="1" type="button">1. yazılı</button><button class="btn ${SCH.exam === 2 ? "" : "ghost"}" data-e="2" type="button">2. yazılı</button></div>`;
     if (!nS) html += `<p class="callout">Bu sınıf için ${SCH.exam}. yazılının senaryo tablosu ayrıca yayımlanacak (MEB notu).</p>`;
     else {
@@ -279,11 +281,11 @@
     const avail = SINAV_OF[k] || ["tyt", "ayt"], view = avail.includes(parts[1]) ? parts[1] : "konu", cv = covCounts();
     const qk = {}; K.daily.filter(q => q.subject === k).forEach(q => { const key = konuKey(q); qk[key] = (qk[key] || 0) + 1; });
     const nq = K.daily.filter(q => q.subject === k).length;
-    const tabs = [["konu", "Konular"]].concat(avail.map(a => [a, a.toUpperCase()]));
+    const tabs = SEC_TABS(k);
     const les = id => K.lessons[id] ? `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${S.done[id] ? "Anlatım ✓" : S.notes["p_" + id] ? "Devam" : "Anlatım"}</a>` : "";
     const row = (code, text, ls, qn, link) => `<div class="row subjrow" style="align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0">${code ? `<span class="muted small" style="min-width:60px">${esc(code)}</span>` : ""}<span style="flex:1 1 130px;line-height:1.35">${esc(text)}</span>${ls.filter((x, i, a) => a.indexOf(x) === i).map(les).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : ""}</div>`;
     let html = `<p class="small" style="margin:0 0 4px"><a href="#/dersler/tum">← Tüm dersler</a></p><h1>${esc(sb.name)}</h1>
-<nav class="tabs" role="tablist" aria-label="${esc(sb.name)} bölümleri">${tabs.map(t => `<a role="tab" href="#/dersler/k:${k}${t[0] === "konu" ? "" : ":" + t[0]}" ${t[0] === view ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
+<nav class="tabs" role="tablist" aria-label="${esc(sb.name)} bölümleri">${tabs.map(t => `<a role="tab" href="${secHref(k, t[0])}" ${t[0] === view ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
     const kzList = open => (KZ_OF[k] || []).map(key => {
       const sub = K.kz && K.kz[key]; if (!sub) return "";
       let h = `<details class="subj" ${open ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center">${esc(sub.name)}</summary>`;
@@ -323,8 +325,9 @@
   }
 
   /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
-  const TABS = [["tum", "Tüm dersler"], ["s11", "11. Sınıf (mat.)"], ["okul", "Okul sınavı"], ["tyt", "TYT"], ["ayt", "AYT"], ["hedef", "Hedeflerim"]];
-  const tabsHtml = cur => `<nav class="tabs" role="tablist" aria-label="Ders bölümleri">${TABS.map(t => `<a role="tab" href="#/dersler/${t[0]}" ${t[0] === cur ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
+  const SEC_TABS = k => { const av = SINAV_OF[k] || ["tyt", "ayt"]; return [["konu", "Konular"]].concat(av.map(a => [a, a.toUpperCase()]), [["okul", "Okul sınavı"]]); };
+  const secHref = (k, t) => t === "okul" ? "#/dersler/okul" : "#/dersler/k:" + k + (t === "konu" ? "" : ":" + t);
+  const tabsHtml = cur => { const k = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "mat", on = cur === "okul" ? "okul" : "konu"; return `<nav class="tabs" role="tablist" aria-label="${esc(K.subjects[k].name)} bölümleri">${SEC_TABS(k).map(t => `<a role="tab" href="${secHref(k, t[0])}" ${t[0] === on ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`; };
   const s11Topics = () => K.s11 ? K.s11.themes.flatMap(t => t.topics.map(p => Object.assign({ theme: t }, p))) : [];
   const topicDone = p => !!(p.lesson && S.done[p.lesson]);
   function s11Next() { const t = s11Topics().find(p => !topicDone(p)); return t || null; }
