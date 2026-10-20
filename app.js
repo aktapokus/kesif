@@ -465,20 +465,35 @@ ${list.length ? `<div class="card klist">${Object.keys(groups).sort().map(k => `
     else if (preset && K.subjects[preset]) EXC.sel = new Set(keys.filter(k => keySubj[k] === preset));
     else if (!preset && EXC._ps !== (S.pickSubj || "all")) { EXC._ps = S.pickSubj || "all"; EXC.sel = EXC._ps === "all" ? new Set(keys) : new Set(keys.filter(k => keySubj[k] === EXC._ps)); }
     if (!EXC.sel) EXC.sel = new Set(keys);
+    const sjs = Object.keys(K.subjects).filter(k => keys.some(x => keySubj[x] === k));
+    if (!EXC.view || !sjs.includes(EXC.view)) EXC.view = preset && sjs.includes(preset) ? preset : sjs.includes(S.pickSubj) ? S.pickSubj : sjs[0];
+    else if (preset && sjs.includes(preset)) EXC.view = preset;
     const hist = (S.exams || []).slice(-6).reverse();
     $app.innerHTML = `<h1>Sınav hazırlık modu</h1><p class="lede">Konularını seç; süreli ve puanlı bir mini deneme çöz. Sorular tek tek geri bildirim vermez, sınav gibi: bitirince puanını, konu bazlı sonucunu ve çözümlerini görürsün.</p>
-<div class="subj on"><h3 style="margin:0 0 6px">1. Konular</h3><div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap">${Object.keys(K.subjects).filter(k => keys.some(x => keySubj[x] === k)).map(k => `<button class="btn ghost" data-sj="${k}" type="button">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</button>`).join("")}<button class="btn ghost" id="xa" type="button">Hepsini seç</button><button class="btn ghost" id="xc" type="button">Temizle</button></div>
-<div class="lst">${keys.map(k => `<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" data-k="${esc(k)}" ${EXC.sel.has(k) ? "checked" : ""} style="width:22px;height:22px"><span style="flex:1">${esc(konuLabel(k))}</span><span class="muted small">${counts[k]} soru</span></label>`).join("")}</div></div>
+<div class="subj on"><h3 style="margin:0 0 6px">1. Konular</h3>
+<div class="setrow"><label class="muted small" for="xs">Ders</label><select id="xs">${sjs.map(k => `<option value="${k}" ${k === EXC.view ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select><label class="muted small" for="xf2">Ara</label><input id="xf2" type="search" placeholder="konu ara" value="${esc(EXC.q || "")}" style="width:160px"></div>
+<div class="row" style="gap:8px;margin:8px 0;flex-wrap:wrap"><button class="btn ghost" id="xa" type="button">Bu dersin hepsi</button><button class="btn ghost" id="xd" type="button">Bu dersi temizle</button><button class="btn ghost" id="xc" type="button">Tümünü temizle</button></div>
+<div class="lst" id="xl"></div><p class="small" id="xsum" role="status" style="margin:10px 0 0"></p></div>
 <div class="subj on"><h3 style="margin:0 0 6px">2. Deneme ayarı</h3><div class="setrow"><label class="muted small" for="xn">Soru sayısı</label><select id="xn">${[5, 8, 10, 15, 20].map(n => `<option value="${n}" ${EXC.n === n ? "selected" : ""}>${n}</option>`).join("")}</select>
 <label class="muted small" for="xm">Süre (dk)</label><select id="xm">${[10, 15, 20, 30, 45, 60].map(n => `<option value="${n}" ${EXC.min === n ? "selected" : ""}>${n}</option>`).join("")}</select><label class="muted small" for="xc2">veya kendi süren</label><input id="xc2" type="number" min="1" max="180" placeholder="dk" style="width:90px"></div>
 <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="xo" ${EXC.open ? "checked" : ""} style="width:22px;height:22px"> Açık uçlu soruları da ekle (yaklaşık üçte biri)</label>
 <p class="muted small">Puanlama: çoktan seçmeli doğru = 1 puan, yanlış ve boş = 0 (eksi puan yok). Açık uçlu soru puanlama anahtarındaki puan kadar; kısa cevabın doğruysa sonuç puanı otomatik verilir, işlem basamaklarını kendin işaretlersin.</p></div>
 <p><button class="btn" id="xgo" type="button">Denemeyi başlat</button> <span id="xmsg" class="muted small" role="status"></span></p>
 <h2 style="margin-top:28px">Geçmiş denemelerin</h2>${hist.length ? `<div class="card"><table class="tbl"><thead><tr><th>Tarih</th><th>Puan</th><th>%</th><th>Süre</th></tr></thead><tbody>${hist.map(h => `<tr><td>${esc(new Date(h.t).toLocaleDateString("tr-TR"))}</td><td class="num">${h.score}/${h.max}</td><td class="num">%${h.pct}</td><td class="num">${fmtT(h.secs)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">Henüz deneme yok.</p>`}`;
-    $app.querySelectorAll("[data-k]").forEach(c => c.onchange = () => { c.checked ? EXC.sel.add(c.dataset.k) : EXC.sel.delete(c.dataset.k); });
-    $app.querySelectorAll("[data-sj]").forEach(b => b.onclick = () => { EXC.sel = new Set(keys.filter(x => keySubj[x] === b.dataset.sj)); renderExamSetup(); });
-    $app.querySelector("#xa").onclick = () => { EXC.sel = new Set(keys); renderExamSetup(); };
-    $app.querySelector("#xc").onclick = () => { EXC.sel = new Set(); renderExamSetup(); };
+    const short = k => konuLabel(k).replace(/^[^·]*·\s*/, "").replace(/^\d+\. sınıf [^·]*·\s*/, "");
+    const drawList = () => {
+      const q = (EXC.q || "").toLocaleLowerCase("tr"), vk = keys.filter(k => keySubj[k] === EXC.view && (!q || short(k).toLocaleLowerCase("tr").includes(q)));
+      $app.querySelector("#xl").innerHTML = vk.length ? vk.map(k => `<label style="display:flex;gap:10px;align-items:center;min-height:40px"><input type="checkbox" data-k="${esc(k)}" ${EXC.sel.has(k) ? "checked" : ""} style="width:20px;height:20px"><span style="flex:1">${esc(short(k))}</span><span class="muted small">${counts[k]} soru</span></label>`).join("") : `<p class="muted small">Eşleşen konu yok.</p>`;
+      $app.querySelectorAll("[data-k]").forEach(c => c.onchange = () => { c.checked ? EXC.sel.add(c.dataset.k) : EXC.sel.delete(c.dataset.k); sum(); });
+      sum();
+    };
+    const sum = () => { const by = {}; let nq = 0; EXC.sel.forEach(k => { by[keySubj[k]] = (by[keySubj[k]] || 0) + 1; nq += counts[k] || 0; }); const parts = Object.keys(by).map(j => esc(K.subjects[j].name) + ": " + by[j] + " konu").join(" · "); $app.querySelector("#xsum").innerHTML = EXC.sel.size ? `<b>Seçili:</b> ${parts} · ${nq} soru` : `<span class="muted">Henüz konu seçilmedi.</span>`; };
+    $app.querySelector("#xs").onchange = e => { EXC.view = e.target.value; drawList(); };
+    $app.querySelector("#xf2").oninput = e => { EXC.q = e.target.value; drawList(); };
+    $app.querySelector("#xa").onclick = () => { keys.filter(k => keySubj[k] === EXC.view).forEach(k => EXC.sel.add(k)); drawList(); };
+    $app.querySelector("#xd").onclick = () => { keys.filter(k => keySubj[k] === EXC.view).forEach(k => EXC.sel.delete(k)); drawList(); };
+    $app.querySelector("#xc").onclick = () => { EXC.sel = new Set(); drawList(); };
+    drawList();
     $app.querySelector("#xn").onchange = e => { EXC.n = +e.target.value; };
     $app.querySelector("#xm").onchange = e => { EXC.min = +e.target.value; };
     $app.querySelector("#xo").onchange = e => { EXC.open = e.target.checked; };
