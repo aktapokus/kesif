@@ -37,7 +37,7 @@ KESIF.tracks = {
   "mat-veri-inceleme": ["s11"],
   "mat-cokgen": ["s11"],
   "fiz-hareket": ["tyt"],
-  "fiz11-serbest-dusme": ["tyt"], "fiz11-iki-boyut": ["tyt"], "fiz11-newton-yasalari": ["tyt"], "fiz11-surtunme": ["tyt"], "fiz11-limit-hiz": ["tyt"], "fiz11-cembersel": ["tyt"],
+  "fiz11-serbest-dusme": ["tyt"], "fiz11-iki-boyut": ["tyt"], "fiz11-elektriksel-kuvvet": ["tyt", "ayt"], "fiz11-manyetik-alan": ["tyt", "ayt"], "fiz11-induksiyon": ["tyt", "ayt"], "fiz11-transformator": ["tyt", "ayt"], "fiz11-isik-sayilari": ["tyt", "ayt"], "fiz11-duzlem-ayna": ["tyt", "ayt"], "fiz11-kuresel-ayna": ["tyt", "ayt"], "fiz11-kirilma": ["tyt", "ayt"], "fiz11-prizma-mercek": ["tyt", "ayt"], "fiz11-newton-yasalari": ["tyt"], "fiz11-surtunme": ["tyt"], "fiz11-limit-hiz": ["tyt"], "fiz11-cembersel": ["tyt"],
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
