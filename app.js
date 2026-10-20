@@ -1192,7 +1192,7 @@ ${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p c
   }
 
   document.documentElement.setAttribute("data-pal", S.pal || "turuncu");
-{ const hd = document.querySelector(".top"), tg = document.getElementById("navtog"); const setOpen = o => { hd.classList.toggle("open", o); tg.setAttribute("aria-expanded", String(o)); tg.setAttribute("aria-label", o ? "Menüyü kapat" : "Menüyü aç"); tg.textContent = o ? "✕" : "☰"; }; tg.onclick = () => setOpen(!hd.classList.contains("open")); window.addEventListener("hashchange", () => setOpen(false)); document.querySelectorAll("#mainnav a").forEach(a => a.addEventListener("click", () => setOpen(false))); }
+{ const hd = document.querySelector(".top"), tg = document.getElementById("navtog"); if (hd && tg) { const setOpen = o => { hd.classList.toggle("open", o); tg.setAttribute("aria-expanded", String(o)); tg.setAttribute("aria-label", o ? "Menüyü kapat" : "Menüyü aç"); tg.textContent = o ? "✕" : "☰"; }; tg.onclick = () => setOpen(!hd.classList.contains("open")); window.addEventListener("hashchange", () => setOpen(false)); document.querySelectorAll("#mainnav a").forEach(a => a.addEventListener("click", () => setOpen(false))); } }
   buildBar(); setUser();
   if (K.sync && K.sync.user()) K.sync.pull().then(r => {
     if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); setUser(); }
