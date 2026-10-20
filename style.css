@@ -161,7 +161,7 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .opt.sel{border-color:var(--accent);background:var(--card2)}
 
 .errbox{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
-@media (max-width:640px){.top nav{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none}.top nav::-webkit-scrollbar{display:none}.top nav a{white-space:nowrap;flex:none}}
+@media (max-width:640px){.top nav{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:100%}.top nav a{white-space:nowrap;justify-content:center;padding:8px 4px;font-size:14px;min-height:38px}}
 
 .klist{padding:6px 14px}
 .krow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid var(--line)}
@@ -200,3 +200,8 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 
 .subjrow .btn{width:92px;flex:none;text-align:center;padding-left:6px;padding-right:6px}
 
+
+/* konu satırları: okunaklı aralık ve ayraç */
+.subjrow{padding:8px 0;margin:0!important;border-bottom:1px solid var(--line);gap:10px!important}
+.subjrow:last-child{border-bottom:0}
+.subjrow>span:not(.muted){line-height:1.45!important}

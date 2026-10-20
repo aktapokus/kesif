@@ -1,6 +1,6 @@
 /* Fizik keşfi: Newton'un ikinci yasası — sıfırdan. Standart: docs/DERS-STANDARDI.md. Metinler özgündür (CC BY-NC-SA 4.0). */
 KESIF.lessons["fiz-newton"] = {
-  id: "fiz-newton", subject: "fiz", title: "Kuvvet, kütle ve ivme (sıfırdan)", minutes: 25,
+  id: "fiz-newton", subject: "fiz", title: "Kuvvet, kütle ve ivme", minutes: 25,
   grade: "TYT Fizik — Newton'un hareket yasaları (F = m·a)",
   hook: "Market arabasını boşken ve doluyken aynı gücle itersen ne olur?",
   steps: [

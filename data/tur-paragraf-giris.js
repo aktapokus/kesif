@@ -1,6 +1,6 @@
 /* Türkçe keşfi: Paragrafa sıfırdan giriş — konu, ana düşünce, yardımcı düşünce. Standart: docs/DERS-STANDARDI.md. Metinler özgündür (CC BY-NC-SA 4.0). */
 KESIF.lessons["tur-paragraf-giris"] = {
-  id: "tur-paragraf-giris", subject: "tur", title: "Paragraf nedir? (sıfırdan başlıyoruz)", minutes: 25,
+  id: "tur-paragraf-giris", subject: "tur", title: "Paragraf nedir?", minutes: 25,
   grade: "TYT Türkçe — paragraf: konu, ana düşünce, yardımcı düşünce",
   hook: "Arkadaşın sana 'dün çok kötü bir gün geçirdim, önce telefonum bozuldu, sonra otobüsü kaçırdım' dedi. Sence asıl derdi ne?",
   steps: [

@@ -14,7 +14,7 @@
         ],
         explain: "Günlük hayattaki farkın nedeni havadır. Havayı çıkarınca ne olduğunu, bu derste ölçümlerle kendimiz çıkaracağız." },
 
-      { type: "text", title: "Önce üç kavramı sıfırdan hatırlayalım",
+      { type: "text", title: "Önce üç kavramı hatırlayalım",
         say: "Hız, bir cismin her saniyede kaç metre gittiğidir. İvme, hızın her saniyede ne kadar arttığıdır. Serbest düşmede ivme yaklaşık on metre bölü saniye karedir.",
         html: `<div class="grid"><div class="card"><h3>Hız (v)</h3><p class="small">Her saniyede kaç metre gidiyor? <b>20 m/s</b> = her saniye 20 m.</p></div>
 <div class="card"><h3>İvme (a)</h3><p class="small">Hız her saniyede <b>ne kadar artıyor</b>? <b>10 m/s²</b> = her saniye hız 10 m/s artıyor.</p></div>
