@@ -41,6 +41,7 @@ KESIF.tracks = {
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
+  "tar11-mucadele": ["tyt", "ayt"], "kim11-enerji": ["tyt", "ayt"], "biy11-tepki": ["tyt", "ayt"], "fel11-cevre": ["tyt", "ayt"],
   "m11-1-1": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
   "tur-paragraf": ["tyt"],
   "tar-malazgirt": ["tyt", "ayt"],
