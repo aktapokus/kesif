@@ -1,5 +1,5 @@
 /* 11. sınıf Fizik, 1. Ünite: Kuvvet ve Hareket — Serbest düşme (FİZ.11.1.1, FİZ.11.1.2). Maarif: tümevarımsal akıl yürütme + kanıt kullanma.
-   Standart: docs/DERS-STANDARDI.md. Özgün içerik (CC BY-NC-SA 4.0). g = 10 m/s² alınır (sınav ve ders kitabı kullanımı). */
+   Standart: docs/DERS-STANDARDI.md. Özgün içerik (CC BY-NC-SA 4.0). g = 10 m/s² alınır (hesap kolaylığı; programda g sabit kabul edilir, hava direnci ihmal edilir). Terminoloji: programın isteğine uygun olarak 'düşey/yatay/eğik atış' adları kullanılmaz. */
 (function () {
   KESIF.lessons["fiz11-serbest-dusme"] = {
     id: "fiz11-serbest-dusme", subject: "fiz", title: "Serbest düşme: her şey aynı hızla mı düşer?", minutes: 25,
@@ -19,7 +19,7 @@
         html: `<div class="grid"><div class="card"><h3>Hız (v)</h3><p class="small">Her saniyede kaç metre gidiyor? <b>20 m/s</b> = her saniye 20 m.</p></div>
 <div class="card"><h3>İvme (a)</h3><p class="small">Hız her saniyede <b>ne kadar artıyor</b>? <b>10 m/s²</b> = her saniye hız 10 m/s artıyor.</p></div>
 <div class="card pick"><h3>Serbest düşme</h3><p class="small">Yalnızca <b>yer çekimi</b> etkisinde, <b>ilk hızsız</b> bırakılan cismin hareketi. Hava direnci ihmal edilir.</p></div></div>
-<p class="callout why" style="margin-top:12px"><b>Yer çekimi ivmesi g ≈ 10 m/s².</b> (Gerçek değeri 9,8; derste ve sınavda 10 alınır.) Anlamı: serbest düşen cismin hızı <b>her saniye 10 m/s artar</b>: 1 s'de 10, 2 s'de 20, 3 s'de 30 m/s.</p>` },
+<p class="callout why" style="margin-top:12px"><b>Yer çekimi ivmesi g ≈ 10 m/s².</b> (Gerçek değeri yaklaşık 9,8'dir. Sorularda g çoğunlukla verilir; bu derste hesabı kolaylaştırmak için 10 alıyoruz.) Anlamı: serbest düşen cismin hızı <b>her saniye 10 m/s artar</b>: 1 s'de 10, 2 s'de 20, 3 s'de 30 m/s.</p>` },
 
       { type: "sim", title: "Cismi bırak, her saniyede nerede olduğuna bak",
         say: "Süreyi değiştir. Cismin düştüğü yüksekliğe ve hızına bak. Her saniyede alınan yol artıyor mu?",
