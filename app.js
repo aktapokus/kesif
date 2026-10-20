@@ -989,7 +989,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
       host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
       if (!ok) b.classList.add("no");
       const right = opts.find(x => x.ok);
-      host.querySelector("#fb").innerHTML = `<div class="fb">${ok ? `<b class="t-ok">Doğru.</b> ` : `<b class="t-no">Düşünce burada kaymış olabilir:</b> `}${esc(o.why)}${ok ? "" : `<br><br><b>Doğru yol:</b> ${esc(right.t)} — ${esc(right.why)}`}
+      host.querySelector("#fb").innerHTML = `<div class="fb">${ok ? `<b class="t-ok">Doğru, çünkü:</b> ` : `<b class="t-no">Bu seçenek birçok kişinin ilk aklına gelen yol. Neden tutmadığına bakalım:</b> `}${esc(o.why)}${ok ? "" : `<br><br><b>Doğru cevap:</b> ${esc(right.t)} — ${esc(right.why)}`}
 ${solHtml(q, !ok)}${ok ? "" : errChips(q.id || "")}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
       done(ok);
     });

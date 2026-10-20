@@ -21,3 +21,10 @@ Kurallar
 - Övgü, motivasyon cümlesi ve sistem bilgisi yok ("harika", "doğru tahmin ettin", "tekrar kutusuna eklendi" gibi).
 - Her cevabın (doğru de yanlış da) altında **neden** açıklaması olur: doğru cevap neden doğru, hangi bilgi/kural bunu belirler; yanlış seçenek hangi düşünce hatasından geliyor.
 - `explain` alanı bir kuralı ya da bir sonraki adıma geçişi söyler, öğrenciyi alkışlamaz.
+
+### Ton: öğrenciyi iyi hissettiren, boş övgü içermeyen geri bildirim (kullanıcı notu, 2026-10-20)
+Bu yaştaki çocuklar kendilerini eleştirmeye yatkındır; geri bildirim onları suçlamamalı, yılgınlaştırmamalı.
+- Yanlış cevap "yanlış yaptın" değil, "birçok kişi buraya gelir; şu yüzden olmuyor" diye açıklanır (hata = yaygın bir düşünce yolu, kişi değil).
+- Övgü kişiye değil, **yapılan düşünme adımına** ve somut ilerlemeye yönelir ("bağlacı fark etmen işe yaradı"). "Harika, süpersin" gibi boş övgü yok.
+- Her açıklama önce neden doğru olduğunu söyler; sonra gerekiyorsa küçük, yapılabilir bir sonraki adım verir.
+- Ceza ya da puan kaybı dili yok.
