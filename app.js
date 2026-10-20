@@ -35,6 +35,7 @@
     let page = "home";
     if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
+    { let sj = h[0] === "ders" && K.lessons[h[1]] ? K.lessons[h[1]].subject : h[0] === "dersler" && /^k:/.test(h[1] || "") ? h[1].slice(2).split(":")[0] : S.pickSubj; const de = document.documentElement; if (sj && K.subjects[sj]) de.dataset.subj = sj; else delete de.dataset.subj; }
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
@@ -272,7 +273,7 @@
     const nq = K.daily.filter(q => q.subject === k).length;
     const tabs = [["konu", "Konular"]].concat(avail.map(a => [a, a.toUpperCase()]));
     const les = id => K.lessons[id] ? `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${S.done[id] ? "Keşif ✓" : S.notes["p_" + id] ? "Devam" : "Keşif"}</a>` : "";
-    const row = (code, text, ls, qn, link) => `<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0">${code ? `<span class="muted small" style="min-width:60px">${esc(code)}</span>` : ""}<span style="flex:1 1 200px">${esc(text)}</span>${ls.filter((x, i, a) => a.indexOf(x) === i).map(les).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : ""}</div>`;
+    const row = (code, text, ls, qn, link) => `<div class="row subjrow" style="align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0">${code ? `<span class="muted small" style="min-width:60px">${esc(code)}</span>` : ""}<span style="flex:1 1 130px;line-height:1.35">${esc(text)}</span>${ls.filter((x, i, a) => a.indexOf(x) === i).map(les).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : ""}</div>`;
     let html = `<p class="small" style="margin:0 0 4px"><a href="#/dersler/tum">← Tüm dersler</a></p><h1>${esc(sb.name)}</h1>
 <nav class="tabs" role="tablist" aria-label="${esc(sb.name)} bölümleri">${tabs.map(t => `<a role="tab" href="#/dersler/k:${k}${t[0] === "konu" ? "" : ":" + t[0]}" ${t[0] === view ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
     const kzList = open => (KZ_OF[k] || []).map(key => {
