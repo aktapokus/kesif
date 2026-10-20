@@ -42,7 +42,7 @@ KESIF.tracks = {
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
   "tur-sozcuk-anlam": ["tyt"],"tur-cumle-anlam": ["tyt"],"tur-paragraf-yapi": ["tyt"],"tur-ses-bilgisi": ["tyt"],"tur-yazim": ["tyt"],"tur-noktalama": ["tyt"],"tur-sozcuk-turleri": ["tyt"],"tur-fiil": ["tyt"],"tur-cumle-ogeleri": ["tyt"],"tur-cumle-turleri": ["tyt"],"tur-anlatim-bozuklugu": ["tyt"],
-  "tar11-mucadele": ["tyt", "ayt"], "kim11-enerji": ["tyt", "ayt"], "kim11-enerji-kaynagi": ["tyt", "ayt"], "kim11-bag-enerjisi": ["tyt", "ayt"], "kim11-olusum-entalpisi": ["tyt", "ayt"], "kim11-carpisma": ["tyt", "ayt"], "kim11-ortalama-hiz": ["tyt", "ayt"], "kim11-hiz-faktorler": ["tyt", "ayt"], "kim11-hiz-denklemi": ["tyt", "ayt"], "biy11-tepki": ["tyt", "ayt"], "fel11-cevre": ["tyt", "ayt"],
+  "tar11-mucadele": ["tyt", "ayt"], "kim11-enerji": ["tyt", "ayt"], "kim11-enerji-kaynagi": ["tyt", "ayt"], "kim11-bag-enerjisi": ["tyt", "ayt"], "kim11-olusum-entalpisi": ["tyt", "ayt"], "kim11-carpisma": ["tyt", "ayt"], "kim11-ortalama-hiz": ["tyt", "ayt"], "kim11-hiz-faktorler": ["tyt", "ayt"], "kim11-hiz-denklemi": ["tyt", "ayt"], "biy11-tepki": ["tyt", "ayt"], "biy11-hormon": ["tyt", "ayt"], "biy11-tropizma": ["tyt", "ayt"], "biy11-duyu": ["tyt", "ayt"], "biy11-hayvan-sinir": ["tyt", "ayt"], "biy11-insan-sinir": ["tyt", "ayt"], "biy11-refleks": ["tyt", "ayt"], "biy11-kas": ["tyt", "ayt"], "biy11-bagisiklik": ["tyt", "ayt"], "fel11-cevre": ["tyt", "ayt"],
   "m11-1-1": ["s11"], "m11-1-2": ["s11"], "m11-2-2": ["s11"], "m11-2-3": ["s11"], "m11-2-4": ["s11"], "m11-2-5": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
   "tur-paragraf": ["tyt"],
   "tar-malazgirt": ["tyt", "ayt"],
