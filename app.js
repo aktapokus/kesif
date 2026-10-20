@@ -426,24 +426,21 @@
     if (param && /^ders:/.test(param)) { BF.ders = param.slice(5); BF.konu = "all"; BF.sinav = "all"; BF.zor = 0; }
     const all = K.daily.slice(), list = all.filter(bankMatch);
     const groups = {}; list.forEach(q => { (groups[konuKey(q)] = groups[konuKey(q)] || []).push(q); });
-    const konular = [...new Set(all.map(konuKey))].sort();
+    const konular = [...new Set(all.filter(q => BF.ders === "all" || q.subject === BF.ders).map(konuKey))].sort();
     const subs = [...new Set(all.map(q => q.subject))];
     const solved = list.filter(q => qStat(q.id).n > 0).length;
-    $app.innerHTML = `<h1>Soru bankası</h1><p class="lede">Her soru bir konuya bağlı; her soruda <b>ipucu</b>, <b>konu anlatımı</b> ve <b>adım adım çözüm</b> var. Filtreyi seç, çözmeye başla.</p>
+    $app.innerHTML = `<h1>Soru bankası${BF.ders !== "all" && K.subjects[BF.ders] ? " · " + esc(K.subjects[BF.ders].name) : ""}</h1><p class="lede">${BF.ders === "all" ? "Üstteki listeden bir ders seç. " : ""}Her soru bir konuya bağlı; her soruda <b>ipucu</b>, <b>konu anlatımı</b> ve <b>adım adım çözüm</b> var. Filtreyi seç, çözmeye başla.</p>
 ${BF.keys ? `<p class="callout">Ünite süzgeci açık: ${BF.keys.size} konu. <button class="btn ghost" id="bkc" type="button">Süzgeci kaldır</button></p>` : ""}<div class="subj on"><div class="setrow"><span class="muted small">Sınav:</span><span class="chips" style="display:flex;gap:6px;flex-wrap:wrap">${SINAV.map(s => `<button class="btn ${BF.sinav === s[0] ? "" : "ghost"}" data-f="sinav:${s[0]}" type="button">${s[1]}</button>`).join("")}</span></div>
-<div class="setrow"><label class="muted small" for="fd">Ders</label><select id="fd"><option value="all">Hepsi</option>${subs.map(k => `<option value="${k}" ${BF.ders === k ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select>
-<label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
+<div class="setrow"><label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
 <label class="muted small" for="fz">Zorluk</label><select id="fz"><option value="0">Hepsi</option>${[1, 2, 3].map(z => `<option value="${z}" ${BF.zor === z ? "selected" : ""}>${ZOR[z]}</option>`).join("")}</select></div></div>
-<div class="card" style="margin:14px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Soru</th><th>Anlatım</th></tr></thead><tbody>${Object.keys(K.subjects).map(k => { const nq = all.filter(q => q.subject === k).length, nl = LES().filter(l => l.subject === k).length; return `<tr><td><a href="#/banka/ders:${k}">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</a></td><td class="num">${nq}</td><td class="num">${nl}</td></tr>`; }).join("")}</tbody></table></div>
 <div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/deneme">Deneme sınavı</a><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
 ${list.length ? `<div class="card klist">${Object.keys(groups).sort().map(k => `<div class="krow"><span class="kl">${esc(konuLabel(k).length > 110 ? konuLabel(k).slice(0, 107) + "…" : konuLabel(k))}</span><span class="kc muted small">${groups[k].length} soru · ${groups[k].filter(q => qStat(q.id).n > 0).length} çözülen</span><button class="btn ghost" data-go="${k}" type="button">Çöz</button></div>`).join("")}</div>` : `<p class="callout">Bu filtreyle soru yok. Soru bankası her hafta genişliyor; filtreyi gevşet.</p>`}
 <p class="muted small" style="margin-top:14px">Kaynak: tüm sorular bu proje için özgün yazılmıştır ("çıkmış soru" değildir). ÖSYM çıkmış soruları telif nedeniyle burada değil, ÖSYM'nin sayfasındadır.</p>`;
     $app.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { BF.sinav = b.dataset.f.split(":")[1]; renderBank(); });
     const bkc = $app.querySelector("#bkc"); if (bkc) bkc.onclick = () => { BF.keys = null; renderBank(); };
-    $app.querySelector("#fd").onchange = e => { BF.ders = e.target.value; BF.keys = null; renderBank(); };
     $app.querySelector("#fk").onchange = e => { BF.konu = e.target.value; BF.keys = null; renderBank(); };
     $app.querySelector("#fz").onchange = e => { BF.zor = +e.target.value; renderBank(); };
-    const go = set => { if (!set.length) return; customSet = shuffle(set); customBack = "#/banka"; location.hash = "#/gunluk/ozel"; };
+    const go = set => { if (!set.length) return; customSet = shuffle(set); const sj = [...new Set(set.map(q => q.subject))]; customBack = sj.length === 1 ? "#/dersler/k:" + sj[0] : "#/"; location.hash = "#/gunluk/ozel"; };
     $app.querySelector("#bgo").onclick = () => go(list);
     $app.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(groups[b.dataset.go]));
   }
