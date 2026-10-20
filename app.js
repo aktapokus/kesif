@@ -1137,7 +1137,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
 <div class="row">${[5, 10, 15, 20].map(n => `<button class="btn ${S.goal === n ? "" : "ghost"}" data-g="${n}" type="button">${n}</button>`).join("")}</div></div>
 <div class="card" style="margin-top:16px"><h3>Sınav modu</h3><p class="muted small">Açıkken her sorunun sonunda harcadığın süre görünür. Geri sayım ve baskı yok; yalnızca bilgi.</p>
 <button class="btn ${S.exam ? "" : "ghost"}" id="ex" type="button">${S.exam ? "Açık" : "Kapalı"}</button></div>
-<div class="card" style="margin-top:16px"><h3>Görünüm (renk)</h3><p class="muted small">Sana yakışan rengi seç; yalnızca bu cihazda kalır.</p><div class="row">${[["mavi", "Mavi"], ["yesil", "Yeşil"], ["mor", "Mor"]].map(x => `<button class="btn ${(S.pal || "mavi") === x[0] ? "" : "ghost"}" data-pal="${x[0]}" type="button">${x[1]}</button>`).join("")}</div></div>
+<div class="card" style="margin-top:16px"><h3>Görünüm (renk)</h3><p class="muted small">Sana yakışan rengi seç; yalnızca bu cihazda kalır.</p><div class="row">${[["turuncu", "Turuncu"], ["sari", "Sarı"], ["acik-yesil", "Açık yeşil"], ["ucuk-mavi", "Uçuk mavi"]].map(x => `<button class="btn ${(S.pal || "turuncu") === x[0] ? "" : "ghost"}" data-pal="${x[0]}" type="button">${x[1]}</button>`).join("")}</div></div>
 ${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p class="muted small">İlerleme ve notların bu tarayıcıda durur; giriş yaptıysan ayrıca hesabına eşitlenir. Bu düğme yalnızca bu cihazdaki verileri siler (sunucudakini yukarıdaki hesap kartından silersin):</p><button class="btn ghost" id="wipe" type="button">Tüm verileri sil</button></div>`;
     bindAccount();
     $app.querySelectorAll("[data-pal]").forEach(b => b.onclick = () => { S.pal = b.dataset.pal; document.documentElement.setAttribute("data-pal", S.pal); save(); renderSettings(); });
@@ -1146,7 +1146,7 @@ ${accountCard()}<div class="card" style="margin-top:16px"><h3>Verilerim</h3><p c
     $app.querySelector("#wipe").onclick = () => { if (confirm("Tüm ilerleme ve notlar silinsin mi?")) { S = blank(); save(); renderSettings(); } };
   }
 
-  document.documentElement.setAttribute("data-pal", S.pal || "mavi");
+  document.documentElement.setAttribute("data-pal", S.pal || "turuncu");
   buildBar(); setUser();
   if (K.sync && K.sync.user()) K.sync.pull().then(r => {
     if (r) { S = Object.assign(blank(), K.sync.merge(S, r)); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} K.sync.push(S); buildBar(); setUser(); }

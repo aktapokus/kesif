@@ -13,13 +13,16 @@
 :root[data-theme="light"]{
   --bg:#F6F5F2; --card:#FFFFFF; --card2:#EFEDE8; --ink:#1C1E21; --muted:#5F625F; --line:#DAD8D2;
   --accent:#E2540F; --accent-ink:#FFFFFF; --cyan:#B8420B; --good:#1F7A4D; --bad:#B0293A; --warn:#5F625F}
-/* renk paletleri (Ayarlar > Görünüm) */
-:root[data-pal="yesil"]{--accent:#4ADE80;--accent-ink:#06210f;--cyan:#7DD3FC}
-:root[data-pal="mor"]{--accent:#B79CFF;--accent-ink:#1a0b3a;--cyan:#F0A6D8}
-@media (prefers-color-scheme:light){:root[data-pal="yesil"]:not([data-theme="dark"]){--accent:#15803D;--accent-ink:#fff;--cyan:#0369A1}
-:root[data-pal="mor"]:not([data-theme="dark"]){--accent:#6D3FD1;--accent-ink:#fff;--cyan:#B02A8F}}
-:root[data-theme="light"][data-pal="yesil"]{--accent:#15803D;--accent-ink:#fff;--cyan:#0369A1}
-:root[data-theme="light"][data-pal="mor"]{--accent:#6D3FD1;--accent-ink:#fff;--cyan:#B02A8F}
+/* renk paletleri (Ayarlar > Görünüm); varsayılan turuncu */
+:root[data-pal="sari"]{--accent:#F2C230;--accent-ink:#1A1A1A;--cyan:#F5D460}
+@media (prefers-color-scheme:light){:root[data-pal="sari"]:not([data-theme="dark"]){--accent:#E0A800;--accent-ink:#1A1A1A;--cyan:#7A5C00}}
+:root[data-theme="light"][data-pal="sari"]{--accent:#E0A800;--accent-ink:#1A1A1A;--cyan:#7A5C00}
+:root[data-pal="acik-yesil"]{--accent:#7FD99A;--accent-ink:#1A1A1A;--cyan:#9BE5B0}
+@media (prefers-color-scheme:light){:root[data-pal="acik-yesil"]:not([data-theme="dark"]){--accent:#6BCB86;--accent-ink:#1A1A1A;--cyan:#1F6B3A}}
+:root[data-theme="light"][data-pal="acik-yesil"]{--accent:#6BCB86;--accent-ink:#1A1A1A;--cyan:#1F6B3A}
+:root[data-pal="ucuk-mavi"]{--accent:#8CCBF2;--accent-ink:#1A1A1A;--cyan:#A6D8F5}
+@media (prefers-color-scheme:light){:root[data-pal="ucuk-mavi"]:not([data-theme="dark"]){--accent:#74BDEB;--accent-ink:#1A1A1A;--cyan:#1F5C85}}
+:root[data-theme="light"][data-pal="ucuk-mavi"]{--accent:#74BDEB;--accent-ink:#1A1A1A;--cyan:#1F5C85}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);min-height:100vh;display:flex;flex-direction:column}
