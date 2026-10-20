@@ -263,17 +263,54 @@
     });
     return h + `</details>`;
   }
-  function renderSubjectPage(k) {
-    const sb = K.subjects[k]; if (!sb) return renderAllSubjects();
-    const ls = Object.values(K.lessons).filter(l => l.subject === k), nq = K.daily.filter(q => q.subject === k).length, cnt = {};
-    K.daily.forEach(q => { const m = qmeta(q); if (m.yks && m.yks.indexOf(":") > -1) cnt[m.yks] = (cnt[m.yks] || 0) + 1; });
-    let html = `<h1>${esc(sb.icon)} ${esc(sb.name)}</h1>${tabsHtml("tum")}<p class="lede">${esc(sb.note)}</p>
-<div class="row" style="gap:10px;flex-wrap:wrap;margin:10px 0"><a class="btn" href="#/banka/ders:${k}">Soru bankası (${nq})</a><a class="btn ghost" href="#/deneme/${k}">Deneme çöz</a><button class="btn ghost" id="pkb" type="button">Bugün bu dersi çalış</button>${k === "mat" ? '<a class="btn ghost" href="#/dersler/s11">11. sınıf sırası</a><a class="btn ghost" href="#/dersler/tyt">TYT konuları</a><a class="btn ghost" href="#/dersler/ayt">AYT konuları</a>' : ""}</div>
-<h2>Keşifler</h2>${ls.length ? `<div class="grid">${ls.map(l => `<a class="card" style="text-decoration:none;color:inherit" href="#/ders/${l.id}/0"><h3>${esc(l.title)}</h3><p class="muted small">${S.done[l.id] ? "✓ tamamlandı · " : ""}≈ ${l.minutes} dk</p></a>`).join("")}</div>` : `<p class="muted">Bu ders için keşif hazırlanıyor. Şimdilik soru bankasından çalışabilirsin.</p>`}`;
-    const keys = KZ_OF[k] || [];
-    if (keys.length && K.kz) html += `<h2 style="margin-top:28px">Resmî konu ve kazanım listesi</h2><p class="muted small">MEB–ÖSYM 2026 kazanım belgesi (eski program kodları).</p>` + keys.map(key => kzHtml(key, cnt)).join("");
+  const SINAV_OF = { mat: ["tyt", "ayt"], tur: ["tyt"], edeb: ["ayt"], tar: ["tyt", "ayt"], cog: ["tyt", "ayt"], fel: ["tyt", "ayt"], fiz: ["tyt", "ayt"], kim: ["tyt", "ayt"], biy: ["tyt", "ayt"] };
+  function renderSubjectPage(spec) {
+    const parts = String(spec).split(":"), k = parts[0], sb = K.subjects[k]; if (!sb) return renderAllSubjects();
+    if (S.pickSubj !== k) setSubject(k);
+    const avail = SINAV_OF[k] || ["tyt", "ayt"], view = avail.includes(parts[1]) ? parts[1] : "konu", cv = covCounts();
+    const qk = {}; K.daily.filter(q => q.subject === k).forEach(q => { const key = konuKey(q); qk[key] = (qk[key] || 0) + 1; });
+    const nq = K.daily.filter(q => q.subject === k).length;
+    const tabs = [["konu", "Konular"]].concat(avail.map(a => [a, a.toUpperCase()]));
+    const les = id => K.lessons[id] ? `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${S.done[id] ? "Keşif ✓" : S.notes["p_" + id] ? "Devam" : "Keşif"}</a>` : "";
+    const row = (code, text, ls, qn, link) => `<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0">${code ? `<span class="muted small" style="min-width:60px">${esc(code)}</span>` : ""}<span style="flex:1 1 200px">${esc(text)}</span>${ls.filter((x, i, a) => a.indexOf(x) === i).map(les).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : ""}</div>`;
+    let html = `<p class="small" style="margin:0 0 4px"><a href="#/dersler/tum">← Tüm dersler</a></p><h1>${esc(sb.name)}</h1>
+<nav class="tabs" role="tablist" aria-label="${esc(sb.name)} bölümleri">${tabs.map(t => `<a role="tab" href="#/dersler/k:${k}${t[0] === "konu" ? "" : ":" + t[0]}" ${t[0] === view ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
+    const kzList = open => (KZ_OF[k] || []).map(key => {
+      const sub = K.kz && K.kz[key]; if (!sub) return "";
+      let h = `<details class="subj" ${open ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center">${esc(sub.name)}</summary>`;
+      sub.items.forEach(i => { if (i.u) h += `<h3 style="margin:14px 0 6px">${esc(i.u)}</h3>`; else { const id = key + ":" + i.c; h += row(i.c, i.t, (cv.les[id] || []).filter(x => K.lessons[x]), cv.cnt[id] || 0, "#/banka/" + encodeURIComponent("y:" + id)); } });
+      return h + `</details>`;
+    }).join("");
+    if (view === "konu") {
+      /* ders işleme: konuları sırayla öğren */
+      const mine = Object.values(K.lessons).filter(l => l.subject === k);
+      if (k === "mat") {
+        const all = s11Topics(), done = all.filter(topicDone).length, nx = s11Next();
+        html += `<p class="lede">11. sınıf matematiği, ders kitabındaki sırayla. ${done}/${all.length} konu tamam.</p>`;
+        K.s11.themes.forEach(th => {
+          html += `<h2 style="margin:22px 0 4px">${th.n}. Tema: ${esc(th.title)}</h2>`;
+          th.topics.forEach(p => { const isNext = nx && nx.id === p.id; html += `<div ${isNext ? 'style="border-left:4px solid var(--accent);padding-left:10px"' : ""}>${row(p.id, p.title, p.lesson ? [p.lesson] : [], qk["s:" + p.id] || 0, "#/banka/" + encodeURIComponent("s:" + p.id))}</div>`; });
+        });
+      } else {
+        html += `<p class="lede">${esc(sb.note)}</p>`;
+        if (mine.length) html += `<h2 style="margin:18px 0 4px">Keşifler</h2>` + mine.map(l => row("", l.title + " · ≈" + l.minutes + " dk", [l.id], 0, "")).join("");
+        const kn = Object.keys(qk).filter(x => x.indexOf("n:" + k + "|") === 0);
+        if (kn.length) html += `<h2 style="margin:22px 0 4px">Konulara göre sorular</h2>` + kn.map(x => row("", x.split("|")[1], [], qk[x], "#/banka/" + encodeURIComponent(x))).join("");
+        if ((KZ_OF[k] || []).length && K.kz) html += `<h2 style="margin:22px 0 4px">Resmî konu ve kazanım listesi</h2>` + kzList(false);
+      }
+    } else {
+      /* sınav çalışması: TYT / AYT konuları */
+      html += `<p class="lede">${esc(sb.note)}</p>`;
+      if (k === "mat") {
+        K.yks.levels.filter(lv => K.yks[view].includes(lv.id)).forEach(lv => {
+          html += `<details class="subj" open><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center">${esc(lv.title)}</summary>`;
+          lv.areas.forEach(ar => { html += `<h3 style="margin:14px 0 6px">${esc(ar.title)}</h3>`; ar.topics.forEach(t => { html += row(t[0], t[1], Object.keys(K.lessonYks || {}).filter(id => K.lessonYks[id].includes(t[0])), qk["y:" + t[0]] || 0, "#/banka/y:" + t[0]); }); });
+          html += `</details>`;
+        });
+      } else if (K.kz && (KZ_OF[k] || []).length) html += kzList((KZ_OF[k] || []).length === 1);
+      html += `<div class="row" style="gap:10px;flex-wrap:wrap;margin:22px 0 0"><a class="btn" href="#/deneme/${k}">${view.toUpperCase()} denemesi çöz</a>${nq ? `<a class="btn ghost" href="#/banka/ders:${k}">Tüm sorular (${nq})</a>` : ""}</div>`;
+    }
     $app.innerHTML = html;
-    $app.querySelector("#pkb").onclick = () => { setSubject(k); location.hash = "#/"; };
   }
 
   /* ---------- Dersler: 11. sınıf sırası, TYT, AYT, hedeflerim ---------- */
