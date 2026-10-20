@@ -37,7 +37,7 @@ KESIF.tracks = {
   "mat-veri-inceleme": ["s11"],
   "mat-cokgen": ["s11"],
   "fiz-hareket": ["tyt"],
-  "fiz11-serbest-dusme": ["tyt"],
+  "fiz11-serbest-dusme": ["tyt"], "fiz11-iki-boyut": ["tyt"], "fiz11-newton-yasalari": ["tyt"], "fiz11-surtunme": ["tyt"], "fiz11-limit-hiz": ["tyt"], "fiz11-cembersel": ["tyt"],
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
