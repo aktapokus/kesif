@@ -161,7 +161,8 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .opt.sel{border-color:var(--accent);background:var(--card2)}
 
 .errbox{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
-@media (max-width:640px){.top nav{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:100%}.top nav a{white-space:nowrap;justify-content:center;padding:8px 4px;font-size:14px;min-height:38px}}
+.navtog{display:none;margin-left:auto;min-width:44px;min-height:44px;border:1.5px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:700 22px/1 var(--f-body);cursor:pointer}
+@media (max-width:640px){.navtog{display:inline-flex;align-items:center;justify-content:center}.top{flex-wrap:wrap}.top nav{display:none;width:100%;grid-template-columns:1fr 1fr;gap:4px;padding:6px 0 4px}.top.open nav{display:grid}.top nav a{white-space:nowrap;justify-content:flex-start;padding:10px 12px;font-size:15px;min-height:44px;border:1px solid var(--line);background:var(--card)}}
 
 .klist{padding:6px 14px}
 .krow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid var(--line)}
