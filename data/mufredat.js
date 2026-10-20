@@ -41,6 +41,7 @@ KESIF.tracks = {
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
+  "tur-sozcuk-anlam": ["tyt"],"tur-cumle-anlam": ["tyt"],"tur-paragraf-yapi": ["tyt"],"tur-ses-bilgisi": ["tyt"],"tur-yazim": ["tyt"],"tur-noktalama": ["tyt"],"tur-sozcuk-turleri": ["tyt"],"tur-fiil": ["tyt"],"tur-cumle-ogeleri": ["tyt"],"tur-cumle-turleri": ["tyt"],"tur-anlatim-bozuklugu": ["tyt"],
   "tar11-mucadele": ["tyt", "ayt"], "kim11-enerji": ["tyt", "ayt"], "biy11-tepki": ["tyt", "ayt"], "fel11-cevre": ["tyt", "ayt"],
   "m11-1-1": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
   "tur-paragraf": ["tyt"],
