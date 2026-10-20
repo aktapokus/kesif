@@ -1,4 +1,4 @@
-/* Aktapokus Keşif — sunucusuz, hesapsız. Tüm ilerleme yalnızca bu tarayıcıda (localStorage). */
+/* Aktapokus Anlatım — sunucusuz, hesapsız. Tüm ilerleme yalnızca bu tarayıcıda (localStorage). */
 (function () {
   "use strict";
   const K = window.KESIF, $app = document.getElementById("app");
@@ -82,7 +82,7 @@
     if (K.s11) { const all = s11Topics(), dn = all.filter(topicDone).length, nx = s11Next(); html += `<article class="card"><h3>11. sınıf yolculuğu</h3><p class="muted small" style="margin:0 0 8px">${dn}/${all.length} konu tamam${nx ? ` · sıradaki: <b>${esc(nx.id)} ${esc(nx.title)}</b>` : ""}</p><a class="btn ghost" href="#/dersler/s11">Sırayı gör</a></article>`; }
     if (S.review.length) html += `<article class="card"><h3>Tekrar kutusu</h3><p class="muted small">Düşünceyi yeniden kurmak istediğin ${S.review.length} soru var. Cezası yok; sadece ikinci şans.</p><a class="btn ghost" href="#/gunluk/tekrar">Tekrar et</a></article>`;
     html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
-    if (!pending) html += `<article class="card pick"><h3>${esc(K.subjects[S.pickSubj] ? K.subjects[S.pickSubj].name : "Bu ders")}</h3><p class="muted small">Bu ders için henüz keşif yok; soru bankasından çalışabilirsin.</p><a class="btn" href="#/banka/ders:${esc(S.pickSubj)}">Sorulara git</a> <a class="btn ghost" href="#/dersler/k:${esc(S.pickSubj)}">Ders sayfası</a></article>`;
+    if (!pending) html += `<article class="card pick"><h3>${esc(K.subjects[S.pickSubj] ? K.subjects[S.pickSubj].name : "Bu ders")}</h3><p class="muted small">Bu ders için henüz konu anlatımı yok; soru bankasından çalışabilirsin.</p><a class="btn" href="#/banka/ders:${esc(S.pickSubj)}">Sorulara git</a> <a class="btn ghost" href="#/dersler/k:${esc(S.pickSubj)}">Ders sayfası</a></article>`;
     $app.innerHTML = html + "</div>";
   }
 
@@ -199,9 +199,9 @@
   }
   function renderCurriculum() {
     const cv = covCounts(), cur = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "all";
-    let html = `<h1>Müfredat</h1><p class="lede">Resmî konu ve kazanım listesi, her kazanımın yanında uygulamada <b>keşif</b> ve <b>soru</b> olup olmadığı. Boş görünenler henüz hazırlanmadı: açık sözlü olmak için bunu gösteriyorum.</p>`;
+    let html = `<h1>Müfredat</h1><p class="lede">Resmî konu ve kazanım listesi, her kazanımın yanında uygulamada <b>konu anlatımı</b> ve <b>soru</b> olup olmadığı. Boş görünenler henüz hazırlanmadı: açık sözlü olmak için bunu gösteriyorum.</p>`;
     if (cur === "all") {
-      html += `<p class="muted small">Bir dersin ayrıntısı için üstteki ders listesinden dersi seç ya da aşağıdan bir derse dokun.</p><div class="card klist">${Object.keys(K.subjects).map(k => { const c = subjCoverage(k, cv), nl = Object.values(K.lessons).filter(l => l.subject === k).length; return `<div class="krow"><span class="kl"><b>${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</b><br><span class="muted small">${c.total} konu/kazanım · soru olan: ${c.withQ} (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}) · ${nl} keşif</span></span><button class="btn ghost" data-ms="${k}" type="button">Aç</button></div>`; }).join("")}</div>
+      html += `<p class="muted small">Bir dersin ayrıntısı için üstteki ders listesinden dersi seç ya da aşağıdan bir derse dokun.</p><div class="card klist">${Object.keys(K.subjects).map(k => { const c = subjCoverage(k, cv), nl = Object.values(K.lessons).filter(l => l.subject === k).length; return `<div class="krow"><span class="kl"><b>${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</b><br><span class="muted small">${c.total} konu/kazanım · soru olan: ${c.withQ} (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}) · ${nl} konu anlatımı</span></span><button class="btn ghost" data-ms="${k}" type="button">Aç</button></div>`; }).join("")}</div>
 <p class="muted small" style="margin-top:12px">Kaynak: MEB 11. sınıf matematik kitabı ve MEB–ÖSYM 2026 kazanım belgesi (eski program kodları). Mantık, Sosyoloji, Psikoloji kodları belgede yok (ünite.kazanım sırası). Yabancı diller henüz yok.</p>`;
       $app.innerHTML = html; $app.querySelectorAll("[data-ms]").forEach(b => b.onclick = () => { setSubject(b.dataset.ms); renderCurriculum(); }); return;
     }
@@ -220,16 +220,16 @@
           u.lo.forEach(x => {
             const t = s11byCode[x.c], qn = t ? (cv.cnt["s:" + t.id] || 0) : 0, ls = t && t.lesson ? [t.lesson] : [];
             if (MUF.gaps && (qn || ls.length) && cur === "mat") return;
-            html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
+            html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
           });
           html += `</details>`;
         });
-        if (cur !== "mat") html += `<p class="muted small">Bu derste uygulamadaki soru ve keşifler henüz okul müfredatı kodlarına bağlanmadı; "Sınav (TYT/AYT)" görünümünde kazanım bazlı doluluk görünür.</p>`;
+        if (cur !== "mat") html += `<p class="muted small">Bu derste uygulamadaki soru ve konu anlatımları henüz okul müfredatı kodlarına bağlanmadı; "Sınav (TYT/AYT)" görünümünde kazanım bazlı doluluk görünür.</p>`;
       }
     } else {
-    html += `<p class="callout"><b>Doluluk:</b> ${c.total} konu/kazanımdan <b>${c.withQ}</b>'inde soru var (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}); keşif/ders anlatımı bağlı olan: <b>${c.withL}</b>.</p>
+    html += `<p class="callout"><b>Doluluk:</b> ${c.total} konu/kazanımdan <b>${c.withQ}</b>'inde soru var (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}); konu anlatımı bağlı olan: <b>${c.withL}</b>.</p>
 <label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="mg" ${MUF.gaps ? "checked" : ""} style="width:22px;height:22px"> Yalnızca henüz içeriği olmayanları göster</label>`;
-    const row = (code, text, qn, ls, link) => `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:76px">${esc(code)}</span><span style="flex:1 1 220px">${esc(text)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : '<span class="muted small">içerik hazırlanıyor</span>'}</div>`;
+    const row = (code, text, qn, ls, link) => `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:76px">${esc(code)}</span><span style="flex:1 1 220px">${esc(text)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : '<span class="muted small">içerik hazırlanıyor</span>'}</div>`;
     if (cur === "mat") {
       html += `<h3 style="margin-top:20px">11. sınıf (kitap sırası)</h3>`;
       K.s11.themes.forEach(th => { html += `<h4 style="margin:12px 0 4px">${th.n}. Tema: ${esc(th.title)}</h4>`; th.topics.forEach(p => { const qn = cv.cnt["s:" + p.id] || 0, ls = p.lesson ? [p.lesson] : []; if (MUF.gaps && (qn || ls.length)) return; html += row(p.mat || p.id, p.title, qn, ls, "#/banka/" + encodeURIComponent("s:" + p.id)); }); });
@@ -248,10 +248,10 @@
   /* ---------- tüm dersler: ders kartları ve ders sayfası ---------- */
   const KZ_OF = { mat: [], tur: ["edeb"], edeb: ["edeb"], tar: ["tar", "ink"], cog: ["cog"], fel: ["fel", "man", "sos", "psi", "din"], fiz: ["fiz"], kim: ["kim"], biy: ["biy"] };
   function renderAllSubjects() {
-    let html = `<h1>Dersler</h1>${tabsHtml("tum")}<p class="lede">Bir ders seç: keşifleri, soru bankası ve resmî konu/kazanım listesi tek yerde. (Matematik için 11. sınıf sırası ve TYT/AYT konuları ayrı sekmelerde.)</p><div class="grid">`;
+    let html = `<h1>Dersler</h1>${tabsHtml("tum")}<p class="lede">Bir ders seç: konu anlatımları, soru bankası ve resmî konu/kazanım listesi tek yerde. (Matematik için 11. sınıf sırası ve TYT/AYT konuları ayrı sekmelerde.)</p><div class="grid">`;
     Object.keys(K.subjects).forEach(k => {
       const sb = K.subjects[k], ls = Object.values(K.lessons).filter(l => l.subject === k), dn = ls.filter(l => S.done[l.id]).length, nq = K.daily.filter(q => q.subject === k).length;
-      html += `<a class="card" style="text-decoration:none;color:inherit" href="#/dersler/k:${k}"><span class="tag">${esc(sb.icon)} ${esc(sb.name)}</span><h3>${ls.length} keşif · ${nq} soru</h3><p class="muted small">${dn}/${ls.length} keşif tamam · ${esc(sb.note)}</p></a>`;
+      html += `<a class="card" style="text-decoration:none;color:inherit" href="#/dersler/k:${k}"><span class="tag">${esc(sb.icon)} ${esc(sb.name)}</span><h3>${ls.length} konu anlatımı · ${nq} soru</h3><p class="muted small">${dn}/${ls.length} konu anlatımı tamam · ${esc(sb.note)}</p></a>`;
     });
     $app.innerHTML = html + "</div>";
   }
@@ -272,7 +272,7 @@
     const qk = {}; K.daily.filter(q => q.subject === k).forEach(q => { const key = konuKey(q); qk[key] = (qk[key] || 0) + 1; });
     const nq = K.daily.filter(q => q.subject === k).length;
     const tabs = [["konu", "Konular"]].concat(avail.map(a => [a, a.toUpperCase()]));
-    const les = id => K.lessons[id] ? `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${S.done[id] ? "Keşif ✓" : S.notes["p_" + id] ? "Devam" : "Keşif"}</a>` : "";
+    const les = id => K.lessons[id] ? `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/${S.done[id] ? 0 : (S.notes["p_" + id] || 0)}">${S.done[id] ? "Anlatım ✓" : S.notes["p_" + id] ? "Devam" : "Anlatım"}</a>` : "";
     const row = (code, text, ls, qn, link) => `<div class="row subjrow" style="align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0">${code ? `<span class="muted small" style="min-width:60px">${esc(code)}</span>` : ""}<span style="flex:1 1 130px;line-height:1.35">${esc(text)}</span>${ls.filter((x, i, a) => a.indexOf(x) === i).map(les).join("")}${qn ? `<a class="btn ghost" href="${link}">Soru (${qn})</a>` : ""}</div>`;
     let html = `<p class="small" style="margin:0 0 4px"><a href="#/dersler/tum">← Tüm dersler</a></p><h1>${esc(sb.name)}</h1>
 <nav class="tabs" role="tablist" aria-label="${esc(sb.name)} bölümleri">${tabs.map(t => `<a role="tab" href="#/dersler/k:${k}${t[0] === "konu" ? "" : ":" + t[0]}" ${t[0] === view ? 'aria-selected="true" aria-current="page"' : 'aria-selected="false"'}>${t[1]}</a>`).join("")}</nav>`;
@@ -294,7 +294,7 @@
         });
       } else {
         html += `<p class="lede">${esc(sb.note)}</p>`;
-        if (mine.length) html += `<h2 style="margin:18px 0 4px">Keşifler</h2>` + mine.map(l => row("", l.title + " · ≈" + l.minutes + " dk", [l.id], 0, "")).join("");
+        if (mine.length) html += `<h2 style="margin:18px 0 4px">Konu anlatımları</h2>` + mine.map(l => row("", l.title + " · ≈" + l.minutes + " dk", [l.id], 0, "")).join("");
         const kn = Object.keys(qk).filter(x => x.indexOf("n:" + k + "|") === 0);
         if (kn.length) html += `<h2 style="margin:22px 0 4px">Konulara göre sorular</h2>` + kn.map(x => row("", x.split("|")[1], [], qk[x], "#/banka/" + encodeURIComponent(x))).join("");
         if ((KZ_OF[k] || []).length && K.kz) html += `<h2 style="margin:22px 0 4px">Resmî konu ve kazanım listesi</h2>` + kzList(false);
@@ -337,7 +337,7 @@
         html += `<section class="subj on"><h2 style="margin:0 0 4px">${th.n}. Tema: ${esc(th.title)}</h2><div class="lst" style="gap:10px;margin-top:10px">`;
         th.topics.forEach(p => {
           const isNext = nx && nx.id === p.id, has = !!p.lesson && !!K.lessons[p.lesson];
-          html += `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;${isNext ? "border-left:4px solid var(--accent);padding-left:10px" : ""}"><span style="font-weight:700;min-width:34px">${p.id}</span>${p.mat ? `<span class="tag" title="Resmî kazanım kodu (MEB ODSGM tablosu)">${esc(p.mat)}</span>` : ""}<span style="flex:1 1 220px">${esc(p.title)}${isNext ? ' <span class="tag">sıradaki</span>' : ""}${p.partial ? ' <span class="muted small">(bir bölümü)</span>' : ""}</span>${has ? `${S.done[p.lesson] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(p.lesson)}` : '<span class="muted small">keşif hazırlanıyor</span>'}</div>`;
+          html += `<div class="row" style="align-items:center;gap:12px;flex-wrap:wrap;${isNext ? "border-left:4px solid var(--accent);padding-left:10px" : ""}"><span style="font-weight:700;min-width:34px">${p.id}</span>${p.mat ? `<span class="tag" title="Resmî kazanım kodu (MEB ODSGM tablosu)">${esc(p.mat)}</span>` : ""}<span style="flex:1 1 220px">${esc(p.title)}${isNext ? ' <span class="tag">sıradaki</span>' : ""}${p.partial ? ' <span class="muted small">(bir bölümü)</span>' : ""}</span>${has ? `${S.done[p.lesson] ? '<b class="t-ok">✓</b>' : ""} ${lessonLink(p.lesson)}` : '<span class="muted small">konu anlatımı hazırlanıyor</span>'}</div>`;
         });
         html += `</div></section>`;
       });
@@ -373,7 +373,7 @@
 <div class="setrow"><label class="muted small" for="fd">Ders</label><select id="fd"><option value="all">Hepsi</option>${subs.map(k => `<option value="${k}" ${BF.ders === k ? "selected" : ""}>${esc(K.subjects[k].name)}</option>`).join("")}</select>
 <label class="muted small" for="fk">Konu</label><select id="fk" style="max-width:100%"><option value="all">Hepsi</option>${konular.map(k => `<option value="${k}" ${BF.konu === k ? "selected" : ""}>${esc(konuLabel(k))}</option>`).join("")}</select>
 <label class="muted small" for="fz">Zorluk</label><select id="fz"><option value="0">Hepsi</option>${[1, 2, 3].map(z => `<option value="${z}" ${BF.zor === z ? "selected" : ""}>${ZOR[z]}</option>`).join("")}</select></div></div>
-<div class="card" style="margin:14px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Soru</th><th>Keşif</th></tr></thead><tbody>${Object.keys(K.subjects).map(k => { const nq = all.filter(q => q.subject === k).length, nl = Object.values(K.lessons).filter(l => l.subject === k).length; return `<tr><td><a href="#/banka/ders:${k}">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</a></td><td class="num">${nq}</td><td class="num">${nl}</td></tr>`; }).join("")}</tbody></table></div>
+<div class="card" style="margin:14px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Soru</th><th>Anlatım</th></tr></thead><tbody>${Object.keys(K.subjects).map(k => { const nq = all.filter(q => q.subject === k).length, nl = Object.values(K.lessons).filter(l => l.subject === k).length; return `<tr><td><a href="#/banka/ders:${k}">${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</a></td><td class="num">${nq}</td><td class="num">${nl}</td></tr>`; }).join("")}</tbody></table></div>
 <div class="row" style="align-items:center;gap:14px;margin:14px 0"><b>${list.length} soru</b><span class="muted small">çözülen: ${solved}</span><button class="btn" id="bgo" type="button" ${list.length ? "" : "disabled"}>Bu filtreyi çöz</button><a class="btn ghost" href="#/deneme">Deneme sınavı</a><a class="btn ghost" href="#/cikmis">Çıkmış sorular</a></div>
 ${list.length ? `<div class="card klist">${Object.keys(groups).sort().map(k => `<div class="krow"><span class="kl">${esc(konuLabel(k).length > 110 ? konuLabel(k).slice(0, 107) + "…" : konuLabel(k))}</span><span class="kc muted small">${groups[k].length} soru · ${groups[k].filter(q => qStat(q.id).n > 0).length} çözülen</span><button class="btn ghost" data-go="${k}" type="button">Çöz</button></div>`).join("")}</div>` : `<p class="callout">Bu filtreyle soru yok. Soru bankası her hafta genişliyor; filtreyi gevşet.</p>`}
 <p class="muted small" style="margin-top:14px">Kaynak: tüm sorular bu proje için özgün yazılmıştır ("çıkmış soru" değildir). ÖSYM çıkmış soruları telif nedeniyle burada değil, ÖSYM'nin sayfasındadır.</p>`;
@@ -407,7 +407,7 @@ ${list.length ? `<div class="card klist">${Object.keys(groups).sort().map(k => `
           html += `<h3 style="margin:14px 0 6px">${esc(ar.title)}</h3><div class="lst" style="gap:8px">`;
           ar.topics.forEach(t => {
             const qs = K.daily.filter(q => (qmeta(q).yks || "") === t[0]), ls = Object.keys(K.lessonYks || {}).filter(id => K.lessonYks[id].includes(t[0]) && K.lessons[id]);
-            html += `<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><span class="muted small" style="min-width:64px">${esc(t[0])}</span><span style="flex:1 1 220px">${esc(t[1])}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Keşif${S.done[id] ? " ✓" : ""}</a>`).join("")}${qs.length ? `<a class="btn ghost" href="#/banka/y:${t[0]}">Soru (${qs.length})</a>` : '<span class="muted small">soru hazırlanıyor</span>'}</div>`;
+            html += `<div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><span class="muted small" style="min-width:64px">${esc(t[0])}</span><span style="flex:1 1 220px">${esc(t[1])}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qs.length ? `<a class="btn ghost" href="#/banka/y:${t[0]}">Soru (${qs.length})</a>` : '<span class="muted small">soru hazırlanıyor</span>'}</div>`;
           });
           html += `</div>`;
         });
@@ -551,7 +551,7 @@ ${q.type === "open" ? `<p class="small">Kısa cevap: ${e.auto ? '<b class="t-ok"
 <p class="muted small" style="margin:0">${esc(sb.note)}</p>
 <div class="setrow"><label class="muted small" for="g_${k}">Günlük hedefim</label><select id="g_${k}" data-sg="${k}">${[0, 10, 15, 20, 30, 45, 60, 90, 120].map(n => `<option value="${n}" ${n === g ? "selected" : ""}>${n ? n + " dk" : "hedef yok"}</option>`).join("")}</select>
 <span class="small">Bugün: <b>${mins} dk</b></span>${g ? `<div class="minibar" aria-hidden="true"><i style="width:${Math.min(100, mins / g * 100)}%"></i></div>${mins >= g ? "<b class='t-ok'>✓</b>" : ""}` : ""}</div>
-<div class="lst">${ls.length ? ls.map(l => `<a href="#/ders/${l.id}/0">${S.done[l.id] ? "✓ " : "› "}${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></a>`).join("") : `<span class="muted small">Bu ders için keşif hazırlanıyor.</span>`}</div></section>`;
+<div class="lst">${ls.length ? ls.map(l => `<a href="#/ders/${l.id}/0">${S.done[l.id] ? "✓ " : "› "}${esc(l.title)} <span class="muted small">≈ ${l.minutes} dk</span></a>`).join("") : `<span class="muted small">Bu ders için konu anlatımı hazırlanıyor.</span>`}</div></section>`;
     }
     $app.innerHTML = `<h1>Dersler</h1>` + html;
     $app.querySelectorAll("[data-sel]").forEach(c => c.onchange = () => { const cur = selSet(); c.checked ? cur.add(c.dataset.sel) : cur.delete(c.dataset.sel); S.sel = [...cur]; save(); updateBar(true); keepScroll(renderGoals); });
@@ -583,7 +583,7 @@ ${q.type === "open" ? `<p class="small">Kısa cevap: ${e.auto ? '<b class="t-ok"
     $app.innerHTML = `<div class="row" style="align-items:center;gap:16px"><span class="avatar big" aria-hidden="true">${esc(userLabel().charAt(0).toUpperCase())}</span><div><span class="eyebrow">Profilim</span><h1 style="margin:0">Merhaba, ${esc(userLabel())}</h1><p class="muted small" style="margin:4px 0 0">${esc(u.email || "")} · ${esc(K.sync.status() || "bekleniyor")}</p></div></div>
 <div class="grid" style="margin-top:22px">
 <article class="card"><h3>Çalışma süresi</h3><p class="stat">${mins(totSec)} dk</p><p class="muted small" style="margin:0">Bu hafta: ${mins(week)} dk · Seri: <b>${streak()} gün</b></p></article>
-<article class="card"><h3>Keşifler</h3><p class="stat">${Object.keys(S.done).length}</p><p class="muted small" style="margin:0">tamamlanan keşif · 11. sınıf: ${dn}/${all.length} konu</p></article>
+<article class="card"><h3>Konu anlatımları</h3><p class="stat">${Object.keys(S.done).length}</p><p class="muted small" style="margin:0">tamamlanan konu anlatımı · 11. sınıf: ${dn}/${all.length} konu</p></article>
 <article class="card"><h3>Sorular</h3><p class="stat">${qok}/${qn}</p><p class="muted small" style="margin:0">ilk denemede doğru / çözülen · tekrar kutusunda ${S.review.length}</p></article></div>
 ${(() => { const E = S.errs || {}, tot = Object.values(E).reduce((a, b) => a + b, 0); if (!tot) return `<div class="card" style="margin-top:16px"><h3>Hata türlerin</h3><p class="muted small">Yanlış yaptığında "Düşünce nerede kaydı?" düğmelerinden birini seç; burada hangi tür hatayı sık yaptığını göreceksin. Hatanın türünü bilmek, onu düzeltmenin ilk adımıdır.</p></div>`; const top = Object.keys(E).sort((a, b) => E[b] - E[a])[0]; return `<div class="card" style="margin-top:16px"><h3>Hata türlerin</h3>${Object.keys(ERR).map(k => `<div class="row" style="align-items:center;gap:10px;margin:6px 0"><span style="min-width:200px">${ERR[k][0]}</span><div class="minibar"><i style="width:${Math.round((E[k] || 0) / tot * 100)}%"></i></div><b>${E[k] || 0}</b></div>`).join("")}<p class="callout small">En sık: <b>${ERR[top][0]}</b>. ${ERR[top][1]}</p></div>`; })()}
 <div class="card" style="margin-top:16px"><h3>Görünen ad</h3><p class="muted small">İstersen takma ad yaz; başkaları görmez, yalnızca bu ekranda ve üst çubukta görünür.</p><div class="row"><input id="pn" type="text" maxlength="30" value="${esc((S.profile && S.profile.name) || "")}" placeholder="adın" style="flex:1 1 200px;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);padding:0 10px;font:inherit"><button class="btn" id="pns" type="button">Kaydet</button></div><p class="small" id="pnm" role="status"></p></div>
@@ -617,7 +617,7 @@ ${(() => { const E = S.errs || {}, tot = Object.values(E).reduce((a, b) => a + b
     };
   }
 
-  /* ---------- keşif grafiği ---------- */
+  /* ---------- konu anlatımı grafiği ---------- */
   function explorer(step, host) {
     const c = step.cfg, W = 600, H = 320, P = 34;
     const X = x => P + (x - c.xmin) / (c.xmax - c.xmin) * (W - 2 * P);
@@ -931,7 +931,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
     }
     window.scrollTo(0, 0);
   }
-  function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca keşif akışıdır */ }
+  function dayRecordLesson(st, ok) { /* ders içi sorular günlük hedefe sayılmaz; yalnızca konu anlatımı akışıdır */ }
 
   /* ---------- soru bileşenleri ---------- */
   /* Öğrenmeyi öğrenmek: yanlıştan sonra öğrenci hatasının TÜRÜNÜ seçer; profilde hangi tür hatayı sık yaptığı görünür. */
@@ -947,7 +947,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
   const THINK = ["Anla: Ne soruluyor? Neler verilmiş? Soruyu kendi cümlenle anlat.", "Planla: Buna benzer bir şey çözdün mü? Şekil ya da tablo çizebilir misin? Küçük bir örnek dene.", "Uygula: Adımları sırayla ve yazarak ilerle.", "Kontrol et: Sonuç mantıklı mı? Başka bir yoldan da bulur muydun?"];
   const solHtml = (q, open) => (q.think ? `<p class="callout" style="margin-top:12px"><b>🧭 Nasıl düşünmeliyiz?</b> ${esc(q.think)}</p>` : "") + (Array.isArray(q.solution) && q.solution.length ? `<details class="sol" ${open ? "open" : ""}><summary><b>🧩 Adım adım çözüm</b></summary><ol class="body">${q.solution.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>` : "");
   const thinkGuide = () => `<details class="sol"><summary>🧭 Takıldığında kendine sor</summary><ol class="body">${THINK.map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>`;
-  /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/keşif adımından. */
+  /* Konu anlatımı: soruya bağlı ders adımı. Günlük sorularda K.help'ten, ders içi sorularda en yakın önceki anlatım/konu anlatımı adımından. */
   function topicOf(q, hlp, extra) {
     if (hlp && hlp.topic && K.lessons[hlp.topic.lesson]) return { L: K.lessons[hlp.topic.lesson], i: hlp.topic.step };
     const mt = K.meta && K.meta[q.id]; if (mt && mt.s11 && K.topicNotes && K.topicNotes[mt.s11]) return { note: K.topicNotes[mt.s11], title: "11. sınıf " + mt.s11 + " " + (s11Title(mt.s11) || "") };
@@ -1090,7 +1090,7 @@ ${ans.map((a, i) => `<div class="setrow" style="margin-top:8px"><label class="mu
     $app.innerHTML = `<h1>Yol haritası</h1><p class="lede">Dokuz dersin tamamı var; ağırlık, sınavda en çok net getiren derslerde (matematik, Türkçe, edebiyat, sosyal). Rakamlar 2026-YKS kılavuzunun soru dağılımından (TYT 120 + AYT-EA 80 soru) çıkarılmıştır; kılavuz değişirse güncellenir.</p>
 <div class="card" style="margin:18px 0"><table class="tbl"><thead><tr><th>Ders</th><th>Çalışma payı</th><th>Dayanak</th></tr></thead><tbody>${rows}</tbody></table></div>
 <h2>Haftalık ritim</h2><div class="card"><table class="tbl"><tbody>${week}</tbody></table></div>
-<p class="muted small" style="margin-top:14px">Her gün: bir ana keşif (≈25 dk) + günlük sorular. Yorgun günde yalnızca sorular da yeterli.</p>`;
+<p class="muted small" style="margin-top:14px">Her gün: bir ana konu anlatımı (≈25 dk) + günlük sorular. Yorgun günde yalnızca sorular da yeterli.</p>`;
   }
   function renderSettings() {
     $app.innerHTML = `<h1>Ayarlar</h1><div class="card"><h3>Günlük soru hedefi</h3><p class="muted small">Küçük hedef, düzenli devam eder.</p>
