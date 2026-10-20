@@ -8,13 +8,13 @@ KESIF.s11 = {
   themes: [
     { n: 1, title: "İstatistiksel Araştırma Süreci", topics: [
       { id: "1.1", mat: "MAT.11.1.1", title: "İki niceliksel değişkenli veriler", lesson: "m11-1-1" },
-      { id: "1.2", mat: "MAT.11.1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: "mat-veri-inceleme" } ] },
+      { id: "1.2", mat: "MAT.11.1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: "m11-1-2" } ] },
     { n: 2, title: "Geometrik Şekiller", topics: [
       { id: "2.1", mat: "MAT.11.2.1", title: "Dörtgenlerin özellikleri", lesson: "m11-2-1" },
-      { id: "2.2", mat: "MAT.11.2.2", partial: true, title: "Özel dörtgenler arasındaki ilişkiler", lesson: "mat-cokgen" },
-      { id: "2.3", mat: "MAT.11.2.3", partial: true, title: "Çokgenlerin sınıflandırılması", lesson: "mat-cokgen" },
-      { id: "2.4", mat: "MAT.11.2.4", partial: true, title: "Dışbükey çokgenlerin özellikleri", lesson: "mat-cokgen" },
-      { id: "2.5", mat: "MAT.11.2.5", title: "Çokgenlerle ilgili problemler", lesson: null } ] },
+      { id: "2.2", mat: "MAT.11.2.2", partial: true, title: "Özel dörtgenler arasındaki ilişkiler", lesson: "m11-2-2" },
+      { id: "2.3", mat: "MAT.11.2.3", partial: true, title: "Çokgenlerin sınıflandırılması", lesson: "m11-2-3" },
+      { id: "2.4", mat: "MAT.11.2.4", partial: true, title: "Dışbükey çokgenlerin özellikleri", lesson: "m11-2-4" },
+      { id: "2.5", mat: "MAT.11.2.5", title: "Çokgenlerle ilgili problemler", lesson: "m11-2-5" } ] },
     { n: 3, title: "Nicelikler ve Değişimler (1)", topics: [
       { id: "3.1", mat: "MAT.11.3.1", title: "Trigonometrik fonksiyonlar ve nitel özellikleri", lesson: "m11-3-1", partial: true },
       { id: "3.2", mat: "MAT.11.3.2", title: "Trigonometrik fonksiyonlarla ifade edilebilen denklemler içeren problemler", lesson: null } ] },
@@ -43,7 +43,7 @@ KESIF.tracks = {
   "tur-paragraf-giris": ["tyt"],
   "tur-sozcuk-anlam": ["tyt"],"tur-cumle-anlam": ["tyt"],"tur-paragraf-yapi": ["tyt"],"tur-ses-bilgisi": ["tyt"],"tur-yazim": ["tyt"],"tur-noktalama": ["tyt"],"tur-sozcuk-turleri": ["tyt"],"tur-fiil": ["tyt"],"tur-cumle-ogeleri": ["tyt"],"tur-cumle-turleri": ["tyt"],"tur-anlatim-bozuklugu": ["tyt"],
   "tar11-mucadele": ["tyt", "ayt"], "kim11-enerji": ["tyt", "ayt"], "biy11-tepki": ["tyt", "ayt"], "fel11-cevre": ["tyt", "ayt"],
-  "m11-1-1": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
+  "m11-1-1": ["s11"], "m11-1-2": ["s11"], "m11-2-2": ["s11"], "m11-2-3": ["s11"], "m11-2-4": ["s11"], "m11-2-5": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
   "tur-paragraf": ["tyt"],
   "tar-malazgirt": ["tyt", "ayt"],
   "edeb-soz-sanatlari": ["ayt"],
