@@ -1,7 +1,7 @@
 /* Günlük soru havuzu için yardım: ipucu (cevabı vermez) ve "konu anlatımı" için ilgili ders adımı.
    Uygulama dışına çıkmadan: soru çözülürken öğrenci ipucu, konu anlatımı ya da adım adım çözüm isteyebilir. */
 window.KESIF = window.KESIF || { lessons: {}, daily: [] };
-KESIF.help = {
+KESIF.help = Object.assign(KESIF.help || {}, {
   m1: { hint: "x³ − 1 ifadesini küp farkı özdeşliğiyle çarpanlarına ayır, sonra (x − 1)'i sadeleştir.", topic: { lesson: "mat-limit", step: 5 } },
   m2: { hint: "Doğrusal bir fonksiyonda önce yerine koymayı dene. 0 ÷ 0 çıkıyor mu?", topic: { lesson: "mat-limit", step: 5 } },
   m3: { hint: "Pay ve paydada 0 ÷ 0 çıkıyor. Köklü ifadeyi eşleniğiyle (√(x+4) + 2) çarp.", topic: { lesson: "mat-limit", step: 5 } },
@@ -43,4 +43,4 @@ KESIF.help = {
   ms8: { hint: "Eğilimden uzak bir nokta nokta bulutunu daha mı sıkı yapar, daha mı dağınık?", topic: { lesson: "mat-iki-degisken", step: 4 } },
   ms9: { hint: "Her gözlem için iki SAYI gerektiğini düşün; renk ya da şehir sayı mı?", topic: { lesson: "mat-iki-degisken", step: 0 } },
   ms10: { hint: "Sağa gittikçe noktalar yukarı çıkıyorsa y x ile aynı yönde mi değişiyor?", topic: { lesson: "mat-iki-degisken", step: 3 } }
-};
+});

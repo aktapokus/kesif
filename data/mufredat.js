@@ -7,24 +7,24 @@ KESIF.s11 = {
   source: "MEB 11. sınıf Matematik ders kitabı, içindekiler (2025 baskı)",
   themes: [
     { n: 1, title: "İstatistiksel Araştırma Süreci", topics: [
-      { id: "1.1", mat: "MAT.11.1.1", title: "İki niceliksel değişkenli veriler", lesson: "mat-iki-degisken" },
+      { id: "1.1", mat: "MAT.11.1.1", title: "İki niceliksel değişkenli veriler", lesson: "m11-1-1" },
       { id: "1.2", mat: "MAT.11.1.2", title: "Başkaları tarafından oluşturulan iki niceliksel değişkenli verileri inceleme", lesson: "mat-veri-inceleme" } ] },
     { n: 2, title: "Geometrik Şekiller", topics: [
-      { id: "2.1", mat: "MAT.11.2.1", partial: true, title: "Dörtgenlerin özellikleri", lesson: "mat-cokgen" },
+      { id: "2.1", mat: "MAT.11.2.1", title: "Dörtgenlerin özellikleri", lesson: "m11-2-1" },
       { id: "2.2", mat: "MAT.11.2.2", partial: true, title: "Özel dörtgenler arasındaki ilişkiler", lesson: "mat-cokgen" },
       { id: "2.3", mat: "MAT.11.2.3", partial: true, title: "Çokgenlerin sınıflandırılması", lesson: "mat-cokgen" },
       { id: "2.4", mat: "MAT.11.2.4", partial: true, title: "Dışbükey çokgenlerin özellikleri", lesson: "mat-cokgen" },
       { id: "2.5", mat: "MAT.11.2.5", title: "Çokgenlerle ilgili problemler", lesson: null } ] },
     { n: 3, title: "Nicelikler ve Değişimler (1)", topics: [
-      { id: "3.1", mat: "MAT.11.3.1", title: "Trigonometrik fonksiyonlar ve nitel özellikleri", lesson: "mat-trig-cember", partial: true },
+      { id: "3.1", mat: "MAT.11.3.1", title: "Trigonometrik fonksiyonlar ve nitel özellikleri", lesson: "m11-3-1", partial: true },
       { id: "3.2", mat: "MAT.11.3.2", title: "Trigonometrik fonksiyonlarla ifade edilebilen denklemler içeren problemler", lesson: null } ] },
     { n: 4, title: "Nicelikler ve Değişimler (2)", topics: [
-      { id: "4.1", mat: "MAT.11.3.3", title: "Üstel fonksiyonlar ve nitel özellikleri", lesson: "mat-ustel-log", partial: true },
+      { id: "4.1", mat: "MAT.11.3.3", title: "Üstel fonksiyonlar ve nitel özellikleri", lesson: "m11-4-1" },
       { id: "4.2", mat: "MAT.11.3.4", title: "Üstel fonksiyonların ters fonksiyonları", lesson: "mat-ustel-log", partial: true },
       { id: "4.3", mat: "MAT.11.3.5", title: "Logaritmik fonksiyonlar ve nitel özellikleri", lesson: "mat-ustel-log", partial: true },
       { id: "4.4", mat: "MAT.11.3.6", title: "Üstel ve logaritmik fonksiyonlarla ifade edilebilen denklem ve eşitsizlikler içeren problemler", lesson: null } ] },
     { n: 5, title: "Nicelikler ve Değişimler (3)", topics: [
-      { id: "5.1", mat: "MAT.11.3.7", title: "Fonksiyonların bileşkesi", lesson: null },
+      { id: "5.1", mat: "MAT.11.3.7", title: "Fonksiyonların bileşkesi", lesson: "m11-5-1" },
       { id: "5.2", mat: "MAT.11.3.8", title: "Fonksiyonlarda dört işlem", lesson: null } ] }
   ]
 };
@@ -41,6 +41,7 @@ KESIF.tracks = {
   "cog-boylam": ["tyt", "ayt"],
   "kim-periyodik": ["tyt"],
   "tur-paragraf-giris": ["tyt"],
+  "m11-1-1": ["s11"], "m11-2-1": ["s11"], "m11-3-1": ["s11", "ayt"], "m11-4-1": ["s11", "ayt"], "m11-5-1": ["s11"],
   "tur-paragraf": ["tyt"],
   "tar-malazgirt": ["tyt", "ayt"],
   "edeb-soz-sanatlari": ["ayt"],
