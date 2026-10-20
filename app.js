@@ -184,6 +184,7 @@
   }
 
   /* ---------- müfredat: her ders için resmî konu/kazanım listesi + içerik doluluğu ---------- */
+  const LESSON_MAARIF = { "fiz11-serbest-dusme": ["FİZ.11.1.1", "FİZ.11.1.2"] };
   const LESSON_KZ = { "fiz-hareket": ["fiz:9.3.1.2", "fiz:9.3.1.3", "fiz:9.3.1.4", "fiz:9.3.1.5"], "cog-boylam": ["cog:9.1.4", "cog:9.1.5"], "kim-periyodik": ["kim:9.2.3.1", "kim:9.2.3.2", "kim:9.2.3.3"], "tur-paragraf": ["edeb:A.4.4"] };
   const MUF = { gaps: false, view: "okul", grade: "11" };
   function covCounts() {
@@ -218,7 +219,7 @@
           html += `<details class="subj" ${mf.grades[MUF.grade].length <= 3 ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(u.title)} <span class="muted small">${esc(u.hours ? u.hours + " ders saati" : "")}${cur === "mat" && MUF.grade === "11" ? " · içerik: " + covered + "/" + u.lo.length : ""}</span></summary>`;
           if (u.konu.length) html += `<p class="muted small" style="margin:4px 0">Konular: ${u.konu.map(x => esc(x.replace(/^•\s*/, ""))).join(" · ")}</p>`;
           u.lo.forEach(x => {
-            const t = s11byCode[x.c], qn = t ? (cv.cnt["s:" + t.id] || 0) : 0, ls = t && t.lesson ? [t.lesson] : [];
+            const t = s11byCode[x.c], qn = t ? (cv.cnt["s:" + t.id] || 0) : 0, ls = (t && t.lesson ? [t.lesson] : []).concat(Object.keys(LESSON_MAARIF).filter(id => LESSON_MAARIF[id].includes(x.c)));
             if (MUF.gaps && (qn || ls.length) && cur === "mat") return;
             html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
           });
