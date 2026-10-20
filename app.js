@@ -96,17 +96,64 @@
 <p class="cal-legend small muted">Az <i class="cal-c l0"></i><i class="cal-c l1"></i><i class="cal-c l2"></i><i class="cal-c l3"></i><i class="cal-c l4"></i> Çok · ✓ = günlük hedef (${goalMin} dk) tamam</p><p class="small" id="cal-info" role="status">Bir güne dokun; o gün ne kadar çalıştığını göster.</p>`;
   }
   function bindCalendar(root) {
-    root.querySelectorAll(".cal-c[data-d]").forEach(b => b.onclick = () => {
+    root.querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
       const k = b.dataset.d, inf = dayInfo(k), sub = Object.keys(inf.st).filter(x => inf.st[x] >= 60).map(x => esc(subjName(x)) + " " + Math.round(inf.st[x] / 60) + " dk").join(" · ");
       const dt = new Date(k + "T12:00:00");
       root.querySelector("#cal-info").innerHTML = `<b>${dt.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][dt.getMonth()]}</b>: ${inf.min || inf.n ? inf.min + " dk çalışma, " + inf.n + " soru" + (inf.n ? " (" + inf.ok + " doğru)" : "") + (sub ? " · " + sub : "") : "çalışma yok"}`;
     });
   }
+  const CAL = { v: "zincir", m: 0 };
+  const MON = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  const dayAt = off => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + off); return d; };
+  const mondayOf = d => { const m = new Date(d); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m; };
+  const infoLine = '<p class="small" id="cal-info" role="status" style="margin-top:12px">Bir güne dokun; o gün ne kadar çalıştığını göster.</p>';
+  const WD7 = "<span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>";
+  function calZincir() {
+    const goal = S.goalMin || 15, mon = mondayOf(dayAt(-63)); let h = '<div class="zc-h">' + WD7 + "</div>";
+    for (let w = 0; w < 10; w++) {
+      h += '<div class="zc-r">';
+      for (let r = 0; r < 7; r++) {
+        const d = new Date(mon); d.setDate(d.getDate() + w * 7 + r); const k = fmtD(d);
+        if (d > dayAt(0)) { h += '<span class="zc fut"></span>'; continue; }
+        const i = dayInfo(k), nx = new Date(d); nx.setDate(nx.getDate() + 1);
+        const nxOn = r < 6 && nx <= dayAt(0) && dayInfo(fmtD(nx)).eff >= 1;
+        h += `<button type="button" class="zc ${i.eff >= 1 ? "on" : ""} ${i.eff >= 1 && nxOn ? "link" : ""} ${k === today() ? "now" : ""}" data-d="${k}" aria-label="${k}">${i.min >= goal ? "✓" : ""}</button>`;
+      }
+      h += "</div>";
+    }
+    return `<div class="zc-wrap">${h}</div><p class="small muted">Ardışık çalışılan günler birbirine bağlanır. ✓ = günlük hedef (${goal} dk).</p>`;
+  }
+  function calAylik() {
+    const base = new Date(); base.setDate(1); base.setMonth(base.getMonth() + CAL.m);
+    const y = base.getFullYear(), mo = base.getMonth(), goal = S.goalMin || 15;
+    const first = (base.getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate(); let cells = "";
+    for (let i = 0; i < first; i++) cells += "<span></span>";
+    for (let d = 1; d <= days; d++) {
+      const dt = new Date(y, mo, d, 12), k = fmtD(dt), i = dayInfo(k);
+      cells += dt > dayAt(0) ? `<span class="am fut">${d}</span>` : `<button type="button" class="am ${i.eff >= 1 ? "on" : ""} ${i.min >= goal ? "hit" : ""} ${k === today() ? "now" : ""}" data-d="${k}" aria-label="${k}">${i.min >= goal ? "✓" : d}</button>`;
+    }
+    return `<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px"><button class="btn ghost" id="cm-p" type="button" style="min-width:44px">‹</button><b>${MON[mo]} ${y}</b><button class="btn ghost" id="cm-n" type="button" style="min-width:44px" ${CAL.m >= 0 ? "disabled" : ""}>›</button></div><div class="am-h">${WD7}</div><div class="am-g">${cells}</div><p class="small muted">Açık dolgu = çalışılan gün, koyu ✓ = günlük hedef (${goal} dk).</p>`;
+  }
+  function calHaftalik() {
+    const rows = []; let max = 1;
+    for (let w = 11; w >= 0; w--) {
+      const mon = mondayOf(dayAt(-w * 7)), ds = []; let tot = 0;
+      for (let r = 0; r < 7; r++) { const d = new Date(mon); d.setDate(d.getDate() + r); const k = fmtD(d), fut = d > dayAt(0), i = fut ? null : dayInfo(k); if (i) tot += i.min; ds.push({ k, i, fut }); }
+      max = Math.max(max, tot); rows.push({ mon, ds, tot });
+    }
+    return rows.map(r => `<div class="wk"><span class="wk-l">${r.mon.getDate()} ${MON[r.mon.getMonth()].slice(0, 3)}</span><span class="wk-d">${r.ds.map(x => x.fut ? '<i class="wd fut"></i>' : `<button type="button" class="wd ${x.i.eff >= 1 ? "on" : ""}" data-d="${x.k}" aria-label="${x.k}"></button>`).join("")}</span><span class="wk-b"><i style="width:${Math.round(r.tot / max * 100)}%"></i></span><span class="wk-t">${r.tot} dk</span></div>`).join("") + '<p class="small muted">Her satır bir hafta; dolu nokta = çalışılan gün, çubuk = haftalık süre.</p>';
+  }
   function renderCalendar() {
-    const c = chainStats();
-    $app.innerHTML = `<span class="eyebrow">Takvim</span><h1>Çalışma zincirin</h1><p class="lede">Her çalıştığın gün bir kare boyanır. Amaç mükemmel olmak değil; zinciri kopmadan sürdürmek. Bir gün kaçırırsan ertesi gün yeniden başlarsın.</p>
+    const c = chainStats(), V = [["zincir", "Zincir"], ["aylik", "Aylık"], ["haftalik", "Haftalık"], ["klasik", "Klasik"]];
+    const body = CAL.v === "zincir" ? calZincir() : CAL.v === "aylik" ? calAylik() : CAL.v === "haftalik" ? calHaftalik() : calendarHtml(Math.min(53, Math.max(12, Math.floor((document.documentElement.clientWidth - 110) / 17))));
+    $app.innerHTML = `<span class="eyebrow">Takvim</span><h1>Çalışma zincirin</h1><p class="lede">Her çalıştığın gün işaretlenir. Amaç mükemmel olmak değil; zinciri sürdürmek. Bir gün kaçırırsan ertesi gün yeniden başlarsın.</p>
 <div class="grid" style="margin:14px 0;grid-template-columns:repeat(3,1fr)"><article class="card"><h3 class="small">Şimdiki zincir</h3><p class="stat" style="font-size:24px">${c.cur} gün</p></article><article class="card"><h3 class="small">En uzun zincir</h3><p class="stat" style="font-size:24px">${c.best} gün</p></article><article class="card"><h3 class="small">Çalıştığın gün</h3><p class="stat" style="font-size:24px">${c.days}</p></article></div>
-<div class="card">${calendarHtml(Math.min(53, Math.max(12, Math.floor((document.documentElement.clientWidth - 110) / 17))))}</div>`;
+<nav class="tabs" role="tablist" aria-label="Görünüm">${V.map(v => `<a role="tab" href="#/takvim" data-cv="${v[0]}" aria-selected="${CAL.v === v[0]}" ${CAL.v === v[0] ? 'aria-current="page"' : ""}>${v[1]}</a>`).join("")}</nav>
+<div class="card" style="margin-top:12px">${body}${CAL.v === "klasik" ? "" : infoLine}</div>`;
+    $app.querySelectorAll("[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); CAL.v = a.dataset.cv; renderCalendar(); });
+    const p = $app.querySelector("#cm-p"), n = $app.querySelector("#cm-n");
+    if (p) p.onclick = () => { CAL.m--; renderCalendar(); };
+    if (n) n.onclick = () => { CAL.m++; renderCalendar(); };
     bindCalendar($app);
   }
 
