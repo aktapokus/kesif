@@ -33,12 +33,13 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "takvim") page = "takvim"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     { let sj = h[0] === "ders" && K.lessons[h[1]] ? K.lessons[h[1]].subject : h[0] === "dersler" && /^k:/.test(h[1] || "") ? h[1].slice(2).split(":")[0] : S.pickSubj; const de = document.documentElement; if (sj && K.subjects[sj]) de.dataset.subj = sj; else delete de.dataset.subj; }
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
+    if (h[0] === "takvim") return renderCalendar();
     if (h[0] === "plan") return renderPlan();
     if (h[0] === "dersler") return renderDersler(h[1] || (S.pickSubj && K.subjects[S.pickSubj] ? "k:" + S.pickSubj : "tum"));
     if (h[0] === "mufredat") return renderCurriculum();
@@ -63,6 +64,52 @@
     if (!list.length) list = LES();
     return { list, want };
   }
+  /* ---------- çalışma takvimi (GitHub tarzı zincir) ---------- */
+  const fmtD = dt => dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+  function dayInfo(k) {
+    const st = S.study[k] || {}, secs = Object.values(st).reduce((a, b) => a + b, 0), n = (S.days[k] && S.days[k].n) || 0, ok = (S.days[k] && S.days[k].ok) || 0;
+    const min = Math.round(secs / 60), eff = Math.max(min, n);
+    return { st, min, n, ok, eff, lvl: eff >= 45 ? 4 : eff >= 25 ? 3 : eff >= 10 ? 2 : eff >= 1 ? 1 : 0 };
+  }
+  function chainStats() {
+    const act = new Set(); const keys = new Set(Object.keys(S.study).concat(Object.keys(S.days))); keys.forEach(k => { if (dayInfo(k).eff >= 1) act.add(k); });
+    let best = 0, run = 0; const arr = [...act].sort();
+    arr.forEach((k, i) => { const p = i ? new Date(arr[i - 1] + "T12:00:00") : null; if (p) p.setDate(p.getDate() + 1); run = p && fmtD(p) === k ? run + 1 : 1; if (run > best) best = run; });
+    return { days: act.size, best, cur: streak() };
+  }
+  function calendarHtml(weeks) {
+    const end = new Date(); end.setHours(12, 0, 0, 0);
+    const start = new Date(end); start.setDate(start.getDate() - ((end.getDay() + 6) % 7) - (weeks - 1) * 7);
+    const goalMin = S.goalMin || 15, mon = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+    let cells = "", labels = "", last = -1;
+    for (let w = 0; w < weeks; w++) {
+      const d0 = new Date(start); d0.setDate(d0.getDate() + w * 7);
+      labels += `<span class="cal-m">${d0.getMonth() !== last ? mon[d0.getMonth()] : ""}</span>`; last = d0.getMonth();
+      for (let r = 0; r < 7; r++) {
+        const d = new Date(d0); d.setDate(d.getDate() + r); const k = fmtD(d);
+        if (d > end) { cells += `<i class="cal-c fut"></i>`; continue; }
+        const inf = dayInfo(k), hit = inf.min >= goalMin;
+        cells += `<button type="button" class="cal-c l${inf.lvl}${k === today() ? " now" : ""}" data-d="${k}" aria-label="${k}: ${inf.min} dk, ${inf.n} soru">${hit ? "✓" : ""}</button>`;
+      }
+    }
+    return `<div class="cal-wrap"><div class="cal-days" aria-hidden="true"><span>Pzt</span><span></span><span>Çar</span><span></span><span>Cum</span><span></span><span></span></div><div><div class="cal-ms" style="grid-template-columns:repeat(${weeks},1fr)">${labels}</div><div class="cal" style="grid-template-columns:repeat(${weeks},1fr)">${cells}</div></div></div>
+<p class="cal-legend small muted">Az <i class="cal-c l0"></i><i class="cal-c l1"></i><i class="cal-c l2"></i><i class="cal-c l3"></i><i class="cal-c l4"></i> Çok · ✓ = günlük hedef (${goalMin} dk) tamam</p><p class="small" id="cal-info" role="status">Bir güne dokun; o gün ne kadar çalıştığını göster.</p>`;
+  }
+  function bindCalendar(root) {
+    root.querySelectorAll(".cal-c[data-d]").forEach(b => b.onclick = () => {
+      const k = b.dataset.d, inf = dayInfo(k), sub = Object.keys(inf.st).filter(x => inf.st[x] >= 60).map(x => esc(subjName(x)) + " " + Math.round(inf.st[x] / 60) + " dk").join(" · ");
+      const dt = new Date(k + "T12:00:00");
+      root.querySelector("#cal-info").innerHTML = `<b>${dt.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][dt.getMonth()]}</b>: ${inf.min || inf.n ? inf.min + " dk çalışma, " + inf.n + " soru" + (inf.n ? " (" + inf.ok + " doğru)" : "") + (sub ? " · " + sub : "") : "çalışma yok"}`;
+    });
+  }
+  function renderCalendar() {
+    const c = chainStats();
+    $app.innerHTML = `<span class="eyebrow">Takvim</span><h1>Çalışma zincirin</h1><p class="lede">Her çalıştığın gün bir kare boyanır. Amaç mükemmel olmak değil; zinciri kopmadan sürdürmek. Bir gün kaçırırsan ertesi gün yeniden başlarsın.</p>
+<div class="grid" style="margin:14px 0;grid-template-columns:repeat(3,1fr)"><article class="card"><h3 class="small">Şimdiki zincir</h3><p class="stat" style="font-size:24px">${c.cur} gün</p></article><article class="card"><h3 class="small">En uzun zincir</h3><p class="stat" style="font-size:24px">${c.best} gün</p></article><article class="card"><h3 class="small">Çalıştığın gün</h3><p class="stat" style="font-size:24px">${c.days}</p></article></div>
+<div class="card">${calendarHtml(Math.min(53, Math.max(12, Math.floor((document.documentElement.clientWidth - 110) / 17))))}</div>`;
+    bindCalendar($app);
+  }
+
   function renderHome() {
     const r = dayRec(), goal = S.goal, pct = Math.min(100, Math.round(r.n / goal * 100));
     const { list, want } = todaysLessons();
@@ -80,10 +127,11 @@
 <div><h3>Günlük sorular</h3><p class="muted small" style="margin:0">Hedef: ${goal} soru${r.n ? " · doğru: " + r.ok : ""}</p></div></div>
 <p style="margin-top:14px"><a class="btn ${r.n >= goal ? "ghost" : ""}" href="#/gunluk">${r.n >= goal ? "Bir tur daha" : "Soruları çöz"}</a></p></article>`;
     if (K.s11) { const all = s11Topics(), dn = all.filter(topicDone).length, nx = s11Next(); html += `<article class="card"><h3>11. sınıf yolculuğu</h3><p class="muted small" style="margin:0 0 8px">${dn}/${all.length} konu tamam${nx ? ` · sıradaki: <b>${esc(nx.id)} ${esc(nx.title)}</b>` : ""}</p><a class="btn ghost" href="#/dersler/s11">Sırayı gör</a></article>`; }
+    { const c = chainStats(); html += `<article class="card" style="grid-column:1/-1"><div class="row" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">Çalışma zincirin</h3><span class="small muted">Zincir: <b>${c.cur} gün</b> · En uzun: ${c.best}</span></div>${calendarHtml(Math.min(26, Math.max(12, Math.floor((document.documentElement.clientWidth - 60) / 15))))}<a class="small" href="#/takvim">Tüm takvim →</a></article>`; }
     if (S.review.length) html += `<article class="card"><h3>Tekrar kutusu</h3><p class="muted small">Düşünceyi yeniden kurmak istediğin ${S.review.length} soru var. Cezası yok; sadece ikinci şans.</p><a class="btn ghost" href="#/gunluk/tekrar">Tekrar et</a></article>`;
     html += `</div><p style="margin-top:28px"><a class="btn ghost" href="#/dersler">Tüm dersler ve hedeflerim →</a></p><div>`;
     if (!pending) html += `<article class="card pick"><h3>${esc(K.subjects[S.pickSubj] ? K.subjects[S.pickSubj].name : "Bu ders")}</h3><p class="muted small">Bu ders için henüz konu anlatımı yok; soru bankasından çalışabilirsin.</p><a class="btn" href="#/banka/ders:${esc(S.pickSubj)}">Sorulara git</a> <a class="btn ghost" href="#/dersler/k:${esc(S.pickSubj)}">Ders sayfası</a></article>`;
-    $app.innerHTML = html + "</div>";
+    $app.innerHTML = html + "</div>"; bindCalendar($app);
   }
 
   /* ---------- ders seçimi ve çalışma süresi ---------- */
