@@ -6,7 +6,7 @@ KESIF.lessons["tur-paragraf-giris"] = {
   steps: [
     { type: "mcq", predict: true, q: "Arkadaşın şöyle anlatıyor: 'Dün çok kötü bir gün geçirdim. Sabah telefonum bozuldu, sonra otobüsü kaçırdım, akşam da şemsiyem yoktu, sırılsıklam oldum.' Arkadaşın sana ne söylemek istiyor?",
       opts: [
-        { t: "Dün her şey ters gitti, üzgün.", ok: true, why: "Telefon, otobüs ve yağmur tek bir sonuca işaret ediyor: "her şey ters gitti". Ayrıntılar bu sonucu destekler; asıl söylenen o ortak sonuçtur." },
+        { t: "Dün her şey ters gitti, üzgün.", ok: true, why: "Telefon, otobüs ve yağmur tek bir sonuca işaret ediyor: “her şey ters gitti”. Ayrıntılar bu sonucu destekler; asıl söylenen o ortak sonuçtur." },
         { t: "Telefonu bozuldu.", why: "Bu üç olaydan sadece biri. Asıl söylemek istediği, hepsinin toplamı." },
         { t: "Şemsiyesi yok.", why: "Bu da yalnızca bir ayrıntı." }
       ],
