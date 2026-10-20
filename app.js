@@ -119,7 +119,13 @@
 <div id="tbdone" hidden><span></span><button class="btn ghost" id="tbx" type="button">Tamam</button></div>`;
     const $ = id => bar.querySelector(id);
     $("#tbr").onclick = () => { S.run.on = !S.run.on; lastTick = Date.now(); save(); updateBar(true); };
-    $("#tbs").onchange = e => { setSubject(e.target.value); if (/^(#\/?)?$|^#\/(banka|deneme|dersler|plan|mufredat)/.test(location.hash)) route(); };
+    $("#tbs").onchange = e => {
+      setSubject(e.target.value);
+      const to = S.pickSubj === "all" ? "#/" : "#/dersler/k:" + S.pickSubj;
+      if (/^#\/(banka|deneme|mufredat)/.test(location.hash)) route(); /* bu sayfalar seçilen derse göre kendini süzer */
+      else if (location.hash === to || (to === "#/" && /^(#\/?)?$/.test(location.hash))) route();
+      else location.hash = to;
+    };
     $("#tbo").onclick = () => { const p = $("#tbpanel"); p.hidden = !p.hidden; $("#tbo").setAttribute("aria-expanded", String(!p.hidden)); };
     bar.querySelectorAll("[data-gm]").forEach(b => b.onclick = () => { S.goalMin = +b.dataset.gm; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); });
     $("#tbcs").onclick = () => { const n = Math.round(+$("#tbc").value); if (n >= 1 && n <= 600) { S.goalMin = n; delete S.goalDone[today()]; checkGoals(); save(); updateBar(true); $("#tbc").value = ""; } };
