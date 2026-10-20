@@ -40,7 +40,7 @@
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "plan") return renderPlan();
-    if (h[0] === "dersler") return renderDersler(h[1] || "tum");
+    if (h[0] === "dersler") return renderDersler(h[1] || (S.pickSubj && K.subjects[S.pickSubj] ? "k:" + S.pickSubj : "tum"));
     if (h[0] === "mufredat") return renderCurriculum();
     if (h[0] === "profil") return renderProfile();
     if (h[0] === "banka") return renderBank(h[1] ? decodeURIComponent(h[1]) : "");
@@ -218,11 +218,14 @@
           const covered = cur === "mat" && MUF.grade === "11" ? u.lo.filter(x => { const t = s11byCode[x.c]; return t && (cv.cnt["s:" + t.id] || t.lesson); }).length : 0;
           html += `<details class="subj" ${mf.grades[MUF.grade].length <= 3 ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(u.title)} <span class="muted small">${esc(u.hours ? u.hours + " ders saati" : "")}${cur === "mat" && MUF.grade === "11" ? " · içerik: " + covered + "/" + u.lo.length : ""}</span></summary>`;
           if (u.konu.length) html += `<p class="muted small" style="margin:4px 0">Konular: ${u.konu.map(x => esc(x.replace(/^•\s*/, ""))).join(" · ")}</p>`;
+          const ulessons = [];
           u.lo.forEach(x => {
             const t = s11byCode[x.c], qn = t ? (cv.cnt["s:" + t.id] || 0) : 0, ls = (t && t.lesson ? [t.lesson] : []).concat(Object.keys(LESSON_MAARIF).filter(id => LESSON_MAARIF[id].includes(x.c)));
+            ls.forEach(id => { if (!ulessons.includes(id)) ulessons.push(id); });
             if (MUF.gaps && (qn || ls.length) && cur === "mat") return;
             html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
           });
+          html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:14px 0 4px;padding-top:12px;border-top:1px dashed var(--line)"><a class="btn" href="${ulessons[0] ? "#/ders/" + ulessons[0] + "/0" : "#/dersler/k:" + cur}">Konu anlatımı</a><a class="btn ghost" href="#/banka/ders:${cur}">Örnek sorular</a><a class="btn ghost" href="#/dersler/okul">Okul sınavı denemeleri ve çözümleri</a><a class="btn ghost" href="#/deneme/${cur}">Deneme sınavı</a></div>`;
           html += `</details>`;
         });
         if (cur !== "mat") html += `<p class="muted small">Bu derste uygulamadaki soru ve konu anlatımları henüz okul müfredatı kodlarına bağlanmadı; "Sınav (TYT/AYT)" görünümünde kazanım bazlı doluluk görünür.</p>`;
