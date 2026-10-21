@@ -198,6 +198,9 @@
   }
 
   /* ---------- okul sınavı: MEB ODSGM konu-soru dağılım tablosu (senaryolar) + deneme ---------- */
+  /* Okul sınavı tabloları: kazanım kodu olmayan derslerde (Edebiyat) tablo satırı anahtarı → ders eşlemesi */
+  const LESSON_OKUL = { "edeb11-karagoz": ["TDE2.1/1", "TDE2.2/1", "TDE2.3/1", "TDE2.4/1"], "edeb11-mektup-dilekce": ["TDE2.2/1", "TDE2.3/1", "TDE2.4/1"], "edeb11-fiilimsi": ["TDE2.3/1"], "edeb11-eposta": ["TDE4.3/1"], "edeb11-hikaye-ani": ["TDE2.2/2", "TDE2.3/2", "TDE2.4/2"], "edeb11-orhun-dlt": ["TDE2.2/2", "TDE2.3/2", "TDE2.4/2"] };
+  const okulKey = r => { const m = /^(TDE\d\.\d)/.exec(r.text || ""); if (!m) return ""; return m[1] + "/" + (/Kültür Yolculuğu/.test(r.text) ? "2" : /Bir Diyeceğim|e-posta/.test(r.text + " " + (r.konu || "")) ? "1" : "0"); };
   const SCH = { grade: "11", exam: 1, scen: 0, din: false };
   function renderSchool() {
     if (!K.okul) { $app.innerHTML = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p>Tablo yüklenemedi.</p>`; return; }
@@ -214,8 +217,8 @@
     const norm = c => String(c || "").replace(/\.+$/, "");
     const poolOf = r => {
       if (tk === "mat") { const id = r.code.indexOf("MAT.11.") === 0 ? r.code.slice(7) : null; return id ? K.daily.filter(q => (qmeta(q).s11 || "") === id) : []; }
-      const c = norm(r.code); if (!c) return [];
-      const ls = Object.keys(LESSON_MAARIF).filter(l => LESSON_MAARIF[l].some(x => norm(x) === c));
+      const c = norm(r.code) || okulKey(r); if (!c) return [];
+      const ls = Object.keys(LESSON_MAARIF).filter(l => LESSON_MAARIF[l].some(x => norm(x) === c)).concat(Object.keys(LESSON_OKUL).filter(l => LESSON_OKUL[l].includes(c)));
       return ls.length ? K.daily.filter(q => { const h = K.help && K.help[q.id]; return h && h.topic && ls.includes(h.topic.lesson); }) : [];
     };
     const have = r => poolOf(r).length;
