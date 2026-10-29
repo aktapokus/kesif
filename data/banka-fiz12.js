@@ -1,0 +1,38 @@
+/* Soru bankası: 12. sınıf Fizik, 1. Ünite Çembersel Hareket. Her konu 4 çoktan seçmeli + 1 kısa cevaplı (açık uçlu, sayısal). g = 10 m/s², π = 3 (belirtilmedikçe). Özgün (CC BY-NC-SA 4.0). Öğretmen/Opus doğrulaması bekler. */
+(function () {
+  var QB = KESIF.dsl.QB, P = "12. sınıf Fizik · ";
+  var a = QB("fiz", P + "Düzgün çembersel hareket", null, "fiz12-cembersel", [1, 3, 5], ["s11"], "fz12a");
+  a.Q(1, "Düzgün çembersel hareket yapan bir cismin ivmesinin yönü nedir?", "Çemberin merkezine doğrudur.", "Merkezcil ivme.", [["Hız yönündedir.", "Teğet."], ["Merkezden dışa doğrudur.", "Hayır."], ["Sıfırdır.", "Yön değişiyor."]], "Yön değişimi.", "Merkezcil.", ["Merkeze doğru."]);
+  a.Q(2, "Periyodu 2 s olan çembersel hareketin frekansı kaç Hz’dir?", "0,5", "f = 1/T.", [["2", "T."], ["4", "Hatalı."], ["1", "Hatalı."]], "f = 1/T.", "Tur/saniye.", ["1/2 = 0,5."]);
+  a.Q(2, "Yarıçap ve kütle sabitken sürat 3 katına çıkarılırsa merkezcil kuvvet kaç katına çıkar?", "9", "F ∝ v².", [["3", "Kare unutulmuş."], ["6", "Hatalı."], ["1/9", "Tersi."]], "v² ile orantılı.", "3² = 9.", ["9 katı."]);
+  a.Q(3, "Kütlesi 1 kg olan bir cisim r = 2 m yarıçaplı çemberde 4 m/s süratle dönüyor. Merkezcil kuvvet kaç N’dur?", "8", "F = mv²/r = 16/2.", [["2", "v/r."], ["16", "v²."], ["4", "Hatalı."]], "F = mv²/r.", "Sayıları yerleştir.", ["16/2 = 8."]);
+  a.A(2, "Yarıçapı 5 m olan çembersel yolda 10 m/s süratle giden 2 kg’lık cisim için (a) merkezcil ivme kaç m/s²? (b) merkezcil kuvvet kaç N?", [{ label: "a (m/s²)", v: "20" }, { label: "F (N)", v: "40" }], "a = v²/r; F = ma.", "Önce a.", ["a = 100/5 = 20.", "F = 2·20 = 40."], [[1, "a = 20"], [1, "F = 40"]]);
+
+  var b = QB("fiz", P + "Emniyetli dönüş", null, "fiz12-viraj", [1, 3, 5], ["s11"], "fz12b");
+  b.Q(1, "Yatay bir virajda araç yoldan çıkmadan dönüyorsa merkezcil kuvveti hangisi sağlar?", "Sürtünme kuvveti", "Yatayda başka kuvvet yok.", [["Ağırlık", "Düşey."], ["Normal tepki", "Düşey."], ["Motor kuvveti", "İleri."]], "Yatay merkeze kuvvet.", "Sürtünme.", ["Sürtünme."]);
+  b.Q(2, "Yatay virajda μ = 0,4, r = 25 m ise en büyük emniyetli hız kaç m/s’dir? (g = 10)", "10", "√(0,4·10·25) = √100.", [["5", "Karekök sonrası hatalı."], ["25", "Hatalı."], ["100", "v²."]], "v = √(μ g r).", "Çarp ve karekök al.", ["√100 = 10."]);
+  b.Q(2, "Aynı virajda yol ıslanıp μ küçülürse en büyük emniyetli hız nasıl değişir?", "Azalır.", "v ∝ √μ.", [["Artar.", "Tersi."], ["Değişmez.", "Değişir."], ["Sıfır olur.", "Hayır."]], "v = √(μgr).", "μ küçük.", ["v azalır."]);
+  b.Q(3, "Sürtünmesiz eğimli virajda tan θ = v²/(g r) olduğuna göre hız iki katına çıkarsa tan θ kaç katına çıkar?", "4", "v² ile orantılı.", [["2", "Kare unutulmuş."], ["8", "Hatalı."], ["1/4", "Tersi."]], "tan θ ∝ v².", "2² = 4.", ["4 katı."]);
+  b.A(2, "Yarıçapı 0,9 m olan düşey çemberin en üst noktasından cismin düşmeden geçebilmesi için gereken en küçük hız kaç m/s’dir? (g = 10)", [{ label: "v (m/s)", v: "3" }], "En üstte N = 0; mg = mv²/r.", "v = √(g r).", ["v = √(10·0,9) = √9 = 3."], [[1, "v = 3"]]);
+
+  var c = QB("fiz", P + "Dönerek öteleme hareketi", null, "fiz12-donerek-oteleme", [1, 3, 5], ["s11"], "fz12c");
+  c.Q(1, "Öteleme hareketindeki ‘kuvvet’ kavramının dönme hareketindeki karşılığı hangisidir?", "Tork", "F ↔ τ.", [["Açısal hız", "v ↔ ω."], ["Eylemsizlik momenti", "m ↔ I."], ["Açısal ivme", "a ↔ α."]], "Tablo.", "Karşılık.", ["Tork."]);
+  c.Q(2, "Eylemsizlik momenti I = Σmr² bağıntısına göre kütlesi sabit bir cismin I’sı hangisine bağlı olarak artar?", "Kütlenin dönme eksenine uzaklığı arttıkça", "r² ile orantılı.", [["Hız arttıkça", "I hıza bağlı değil."], ["Açısal ivme arttıkça", "Bağlı değil."], ["Sıcaklık arttıkça", "Bağlı değil."]], "I = Σmr².", "r.", ["r arttıkça I artar."]);
+  c.Q(2, "Aynı yükseklikten kaymadan yuvarlanarak bırakılan dolu silindir ve boş (ince cidarlı) silindir için hangisi doğrudur?", "Dolu silindir daha önce iner.", "I küçük, öteleme enerjisi büyük.", [["Boş silindir daha önce iner.", "Tersi."], ["Aynı anda inerler.", "I farklı."], ["İkisi de inmez.", "Hayır."]], "I farkı.", "Küçük I hızlı.", ["Dolu silindir."]);
+  c.Q(3, "Eylemsizlik momenti 4 kg·m², açısal hızı 2 rad/s olan cismin dönme kinetik enerjisi kaç J’dür?", "8", "½·4·4 = 8.", [["16", "½ unutuldu."], ["4", "Hatalı."], ["2", "Hatalı."]], "½Iω².", "Kare.", ["8 J."]);
+  c.A(2, "Kütlesi 2 kg, yarıçapı 0,5 m olan bir halka (I = mr² alınız) 4 rad/s açısal hızla dönüyor. (a) I kaç kg·m²? (b) dönme kinetik enerjisi kaç J?", [{ label: "I (kg·m²)", v: "0,5", accept: ["0.5", "1/2"] }, { label: "K (J)", v: "4" }], "I = mr²; K = ½Iω².", "Önce I.", ["I = 2·0,25 = 0,5.", "K = ½·0,5·16 = 4."], [[1, "I = 0,5"], [1, "K = 4"]]);
+
+  var d = QB("fiz", P + "Açısal momentum", null, "fiz12-acisal-momentum", [1, 3, 5], ["s11"], "fz12d");
+  d.Q(1, "Net dış torkun sıfır olduğu bir sistemde hangi nicelik korunur?", "Açısal momentum", "τ = ΔL/Δt = 0.", [["Kinetik enerji", "Her zaman değil."], ["Açısal hız", "Değişebilir."], ["Hız", "Değişebilir."]], "Tork 0.", "L.", ["Açısal momentum."]);
+  d.Q(2, "Dönen bir patenci kollarını kapatınca açısal hızı artar. Bunun nedeni hangisidir?", "I azalır, L = Iω korunduğu için ω artar.", "Korunum.", [["L artar.", "Korunuyor."], ["Dış tork uygulanır.", "Yok."], ["Kütlesi artar.", "Değişmez."]], "L = Iω.", "I küçüldü.", ["ω artar."]);
+  d.Q(2, "L = mvr bağıntısına göre kütle ve hız sabitken yarıçap yarıya inerse açısal momentum nasıl olur?", "Yarıya iner.", "L ∝ r.", [["Değişmez.", "r değişti."], ["2 katına çıkar.", "Tersi."], ["4 katına çıkar.", "Hayır."]], "Doğru orantı.", "r yarı.", ["L yarıya iner."]);
+  d.Q(3, "Aşağıdakilerden hangisinde açısal momentumun korunumu görülmez?", "Sabit hızla düz yolda giden araba", "Dönme yok.", [["Takla atan dalgıç", "Korunum."], ["Dönen patenci", "Korunum."], ["Dönen helikopter pervanesi", "Dönme var."]], "Dönme var mı?", "Düz hareket.", ["Düz hareket."]);
+  d.A(2, "Kütlesi 3 kg olan cisim 2 m yarıçaplı çemberde 5 m/s süratle dönüyor. (a) Açısal momentumu kaç kg·m²/s? (b) Yarıçap 1 m’ye inerse (L korunur) hızı kaç m/s olur?", [{ label: "L", v: "30" }, { label: "v (m/s)", v: "10" }], "L = mvr; korunum.", "Önce L.", ["L = 3·5·2 = 30.", "30 = 3·v·1 ⇒ v = 10."], [[1, "L = 30"], [1, "v = 10"]]);
+
+  var e = QB("fiz", P + "Kütle çekim ve Kepler kanunları", null, "fiz12-kutle-cekim", [1, 3, 5], ["s11"], "fz12e");
+  e.Q(1, "İki cisim arasındaki uzaklık 3 katına çıkarsa aralarındaki çekim kuvveti kaç katı olur?", "1/9", "F ∝ 1/r².", [["1/3", "Kare unutulmuş."], ["3", "Tersi."], ["9", "Tersi."]], "r² ile ters.", "3² = 9.", ["1/9."]);
+  e.Q(2, "Kepler’in ikinci kanunu (eşit alanlar) gezegenin yörüngesinde hangi sonuca yol açar?", "Güneş’e yakınken hızlı, uzakken yavaş hareket eder.", "Eşit sürede eşit alan.", [["Hızı sabittir.", "Hayır."], ["Güneş’e yakınken yavaştır.", "Tersi."], ["Hızı sıfırdır.", "Hayır."]], "Alan.", "Yakın hızlı.", ["Yakınken hızlı."]);
+  e.Q(2, "Kepler’in üçüncü kanununa göre yörünge yarıçapı arttıkça gezegenin periyodu nasıl değişir?", "Artar.", "T² ∝ r³.", [["Azalır.", "Tersi."], ["Değişmez.", "Değişir."], ["Önce artar sonra azalır.", "Hatalı."]], "T²/r³ sabit.", "r↑ T↑.", ["Artar."]);
+  e.Q(3, "Çekim potansiyel enerjisi U = −GMm/r için hangisi doğrudur?", "Cisim M’ye yaklaştıkça U azalır (daha negatif olur).", "U = −GMm/r.", [["Yaklaştıkça artar.", "Tersi."], ["Sonsuzda en küçüktür.", "Sonsuzda 0."], ["Hep pozitiftir.", "Negatiftir."]], "Eksi işareti.", "r küçülür.", ["U azalır."]);
+  e.A(2, "Bir gezegenin yüzeyindeki çekim ivmesi 10 m/s²’dir. Gezegenin merkezinden yarıçapının 2 katı uzaklıktaki bir noktada çekim ivmesi kaç m/s²’dir? Yazınız.", [{ label: "g′ (m/s²)", v: "2,5", accept: ["2.5", "5/2"] }], "g ∝ 1/r².", "r iki katı.", ["g′ = 10/4 = 2,5."], [[2, "g′ = 2,5"]]);
+})();
