@@ -10,7 +10,8 @@ KESIF.subjects = {
   fel:   { name: "Felsefe / Din",     icon: "", w: 5,   note: "TYT Felsefe 5 + Din Kültürü 5 soru (2026 TYT kitapçığı; Din almamış adaylara ek Felsefe bölümü)" },
   fiz:   { name: "Fizik",       icon: "",  w: 3.5, note: "TYT 7 soru" },
   kim:   { name: "Kimya",       icon: "",  w: 3.5, note: "TYT 7 soru" },
-  biy:   { name: "Biyoloji",    icon: "", w: 3,   note: "TYT 6 soru" }
+  biy:   { name: "Biyoloji",    icon: "", w: 3,   note: "TYT 6 soru" },
+  ing:   { name: "İngilizce",   icon: "", w: 3,   note: "Okul yazılıları ve YDT hazırlığı" }
 };
 /* Haftalık ritim: 0=Pazar … 6=Cumartesi. Her gün tek ana keşif (≈25 dk) + günlük sorular. */
 KESIF.week = {
