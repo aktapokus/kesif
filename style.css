@@ -206,3 +206,14 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .subjrow{padding:8px 0;margin:0!important;border-bottom:1px solid var(--line);gap:10px!important}
 .subjrow:last-child{border-bottom:0}
 .subjrow>span:not(.muted){line-height:1.45!important}
+
+/* animasyonlar */
+.anim{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:10px;margin:8px 0}
+.anim canvas{width:100%;height:auto;display:block;background:var(--card2);border-radius:10px}
+.anim-ctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:10px 0}
+.anim-ctl .btn{min-height:38px;font-size:14px;padding:4px 14px}
+.anim-sl{display:flex;flex-direction:column;gap:2px;font-size:13px;min-width:150px;flex:1 1 150px}
+.anim-sl input{width:100%;height:30px;accent-color:var(--accent)}
+.anim-tg{font-size:14px;display:flex;gap:6px;align-items:center}
+.anim-cap{font-size:15px;line-height:1.5;margin:6px 0 8px}
+.anim-read{font-size:16px;line-height:1.6;margin:10px 2px 2px}

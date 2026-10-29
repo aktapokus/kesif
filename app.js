@@ -17,19 +17,34 @@
   const el = (tag, attrs, html) => { const e = document.createElement(tag); if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; };
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const LET = "ABCDE";
-  function speak(text) {
+  const TRCH = /[çğıöşüÇĞİÖŞÜ]|\b(ve|bir|için|ile|olan|değil|çünkü|gibi|daha|çok)\b/i;
+  let ttsLang = "tr-TR", ttsBtnEl = null;
+  function pickVoice(lang) { const vs = speechSynthesis.getVoices(), pre = lang.slice(0, 2).toLowerCase(); return vs.find(v => v.lang.toLowerCase() === lang.toLowerCase()) || vs.find(v => v.lang.toLowerCase().indexOf(pre) === 0); }
+  function stopSpeak() { if ("speechSynthesis" in window) speechSynthesis.cancel(); if (ttsBtnEl) { ttsBtnEl.textContent = ttsBtnEl.dataset.lbl || "🔊 Sesli dinle"; ttsBtnEl = null; } }
+  function speak(text, btn) {
     if (!("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text); u.lang = "tr-TR"; u.rate = 0.95;
-    const v = speechSynthesis.getVoices().find(v => /^tr/i.test(v.lang)); if (v) u.voice = v;
-    speechSynthesis.speak(u);
+    if (btn && ttsBtnEl === btn) { stopSpeak(); return; }
+    stopSpeak(); if (!text) return;
+    const clean = String(text).replace(/[→⇌↔≈]/g, " ").replace(/\s+/g, " ").trim();
+    const parts = (clean.match(/[^.!?…:]+[.!?…:]*/g) || [clean]).map(x => x.trim()).filter(Boolean), chunks = [];
+    parts.forEach(p => { const last = chunks[chunks.length - 1]; if (last && last.length + p.length < 180 && TRCH.test(last) === TRCH.test(p)) chunks[chunks.length - 1] = last + " " + p; else chunks.push(p); });
+    if (btn) { ttsBtnEl = btn; btn.dataset.lbl = btn.dataset.lbl || btn.textContent; btn.textContent = "⏹ Durdur"; }
+    const english = document.documentElement.dataset.subj === "ing";
+    chunks.forEach((ch, i) => {
+      const u = new SpeechSynthesisUtterance(ch), lang = english && !TRCH.test(ch) ? "en-US" : "tr-TR";
+      u.lang = lang; u.rate = lang === "tr-TR" ? 0.92 : 0.88; const v = pickVoice(lang); if (v) u.voice = v;
+      if (i === chunks.length - 1) u.onend = () => { if (ttsBtnEl === btn) stopSpeak(); };
+      speechSynthesis.speak(u);
+    });
   }
+  const plainText = h => { const d = document.createElement("div"); d.innerHTML = h; d.querySelectorAll("tr").forEach(tr => { tr.appendChild(document.createTextNode(". ")); }); d.querySelectorAll("li,p,h3").forEach(n => n.appendChild(document.createTextNode(". "))); return d.textContent.replace(/\s+/g, " ").replace(/\.\s*\./g, ".").trim(); };
   const ttsBtn = text => text && "speechSynthesis" in window ? `<button class="btn ghost tts" data-say="${esc(text)}" type="button">🔊 Sesli dinle</button>` : "";
-  document.addEventListener("click", e => { const b = e.target.closest("[data-say]"); if (b) speak(b.dataset.say); });
+  if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = () => {};
+  document.addEventListener("click", e => { const b = e.target.closest("[data-say]"); if (b) speak(b.dataset.say, b); });
 
   /* ---------- yönlendirme ---------- */
   function route() {
-    speechSynthesis && speechSynthesis.cancel && speechSynthesis.cancel();
+    stopSpeak(); if (window.__animStop) window.__animStop();
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
@@ -1060,7 +1075,33 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
 
 
   /* ---------- etkileşimli adım kaydı: yeni bir laboratuvar türü YALNIZCA buraya eklenir ---------- */
-  const LABS = { explorer: explorer, circle: circleLab, expo: expoLab, scatter: scatterLab, bar: barLab, polygon: polygonLab, sim: simLab };
+  /* ---------- animasyon laboratuvarı: canvas; her animasyon data/anim.js içinde KESIF.anim[ad] ---------- */
+  function animLab(st, c) {
+    const fn = K.anim && K.anim[st.name];
+    if (!fn) { c.innerHTML = '<p class="muted">Animasyon yüklenemedi.</p>'; return; }
+    c.innerHTML = '<div class="anim"><canvas></canvas><div class="anim-read" aria-live="off"></div><div class="anim-ctl"></div><p class="anim-cap" role="status"></p></div>';
+    const cv = c.querySelector("canvas"), ctl = c.querySelector(".anim-ctl"), capEl = c.querySelector(".anim-cap"), dpr = Math.min(2, window.devicePixelRatio || 1), W = 420, readEl = c.querySelector(".anim-read"); let H = 340;
+    const ctx = cv.getContext("2d"), setH = h => { H = h; cv.width = W * dpr; cv.height = H * dpr; cv.style.aspectRatio = W + " / " + H; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); A.H = H; }, lastRead = { v: "" };
+    let raf = 0, last = 0, drawFn = null, playing = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const cs = () => getComputedStyle(document.documentElement);
+    const A = {
+      ctx, W, H, ctl, size: h => setH(h), read: html => { if (html !== lastRead.v) { lastRead.v = html; readEl.innerHTML = html; } },
+      col: (n, fb) => (cs().getPropertyValue(n).trim() || (fb ? cs().getPropertyValue(fb).trim() : "") || "#888"),
+      cap: t => { capEl.textContent = t; const b = c.querySelector(".anim-say"); if (b) b.dataset.say = t; },
+      frame: f => { drawFn = f; },
+      slider: (label, min, max, val, step) => { const id = "an" + Math.random().toString(36).slice(2, 7), w = el("label", { class: "anim-sl", for: id }, `<span>${esc(label)}: <b></b></span><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${val}">`), inp = w.querySelector("input"), b = w.querySelector("b"); b.textContent = String(val).replace(".", ","); inp.oninput = () => { b.textContent = String(inp.value).replace(".", ","); }; ctl.appendChild(w); return { get: () => +inp.value }; },
+      button: (label, f) => { const b = el("button", { class: "btn ghost", type: "button" }, esc(label)); b.onclick = f; ctl.appendChild(b); return b; },
+      toggle: (label, on, f) => { const w = el("label", { class: "anim-tg" }, `<input type="checkbox" ${on ? "checked" : ""}> ${esc(label)}`); w.querySelector("input").onchange = e => f(e.target.checked); ctl.appendChild(w); }
+    };
+    setH(340); fn(A);
+    const pb = el("button", { class: "btn", type: "button" }, playing ? "⏸ Durdur" : "▶ Oynat"); pb.onclick = () => { playing = !playing; pb.textContent = playing ? "⏸ Durdur" : "▶ Oynat"; if (playing) { last = 0; loop(performance.now()); } }; ctl.insertBefore(pb, ctl.firstChild);
+    const sb = ttsBtn(capEl.textContent); if (sb) { capEl.insertAdjacentHTML("afterend", sb.replace('class="btn ghost tts"', 'class="btn ghost tts anim-say"')); }
+    const frame = (t) => { if (!cv.isConnected) return; const dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016; last = t; if (drawFn) drawFn(dt, t / 1000); };
+    function loop(t) { if (!cv.isConnected) return; frame(t); if (playing) raf = requestAnimationFrame(loop); }
+    window.__animStop = () => { cancelAnimationFrame(raf); playing = false; window.__animStop = null; };
+    loop(performance.now()); if (!playing) frame(performance.now() + 16);
+  }
+  const LABS = { anim: animLab, explorer: explorer, circle: circleLab, expo: expoLab, scatter: scatterLab, bar: barLab, polygon: polygonLab, sim: simLab };
   function mountStep(st, c) {
     if (st.type === "text") c.innerHTML = `<h3>${st.title}</h3><div class="body">${st.html}</div>`;
     else if (LABS[st.type]) LABS[st.type](st, c);
@@ -1081,7 +1122,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
       nav.querySelector("#nx").onclick = next;
     };
     if (st.type === "text") {
-      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div class="body" style="margin-top:12px">${st.html}</div>`; navBtns(true);
+      host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(plainText(st.html))}<div class="body" style="margin-top:12px">${st.html}</div>`; navBtns(true);
     } else if (LABS[st.type]) {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(st.say)}<div id="ex" style="margin-top:12px"></div>`; LABS[st.type](st, host.querySelector("#ex")); navBtns(true);
     } else if (st.type === "mcq") {
@@ -1125,7 +1166,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
     if (q.type === "open") return openQuestion(host, q, done, inLesson, extra);
     const opts = shuffle(q.opts), t0 = Date.now();
     host.innerHTML = `${q.predict ? '<span class="eyebrow">Tahmin et</span>' : ""}${q.passage ? `<div class="passage">${esc(q.passage)}</div>` : ""}<div class="qtext" style="font:600 clamp(21px,3vw,28px)/1.45 var(--f-display)">${esc(q.q)}</div>
-<div class="opts">${opts.map((o, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div>
+${ttsBtn(q.q + " " + opts.map((o, i) => LET[i] + ". " + o.t).join(". "))}<div class="opts">${opts.map((o, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${LET[i]}</span>${esc(o.t)}</button>`).join("")}</div>
 <div class="helpbar" id="hb"><span class="muted small">Takıldın mı?</span><button class="btn ghost" data-h="hint" type="button">💡 İpucu</button><button class="btn ghost" data-h="topic" type="button">📖 Konu anlatımı</button><button class="btn ghost" data-h="solve" type="button">🧩 Çözümü göster</button></div><div id="hp"></div><div id="fb"></div>`;
     let answered = false;
     const hlp = (K.help && K.help[q.id]) || {}, tp = topicOf(q, hlp, extra);
@@ -1147,7 +1188,7 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
         host.querySelectorAll(".opt").forEach((x, i) => { x.disabled = true; if (opts[i].ok) x.classList.add("ok"); });
         hb.style.display = "none"; hp.innerHTML = "";
         host.querySelector("#fb").innerHTML = `<div class="fb"><b>🧩 Adım adım çözüm</b><br>Doğru cevap: <b>${esc(right.t)}</b>.<br>${esc(right.why)}${Array.isArray(q.solution) ? solHtml(q, true) : typeof q.solution === "string" ? "<br>" + esc(q.solution) : ""}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}</div>`;
-        done(false);
+        fbTts(host); done(false);
       }
     });
     host.querySelector(".opts").addEventListener("click", e => {
@@ -1158,9 +1199,10 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
       const right = opts.find(x => x.ok);
       host.querySelector("#fb").innerHTML = `<div class="fb">${ok ? `<b class="t-ok">Doğru, çünkü:</b> ` : `<b class="t-no">Bu seçenek birçok kişinin ilk aklına gelen yol. Neden tutmadığına bakalım:</b> `}${esc(o.why)}${ok ? "" : `<br><br><b>Doğru cevap:</b> ${esc(right.t)} — ${esc(right.why)}`}
 ${solHtml(q, !ok)}${ok ? "" : errChips(q.id || "")}${q.explain ? `<br><br><span class="muted">${esc(q.explain)}</span>` : ""}${S.exam && !inLesson ? `<div class="time">Süre: ${secs} sn</div>` : ""}</div>`;
-      done(ok);
+      fbTts(host); done(ok);
     });
   }
+  const fbTts = host => { const f = host.querySelector("#fb"); if (f && !f.querySelector(".tts")) f.insertAdjacentHTML("beforeend", ttsBtn(f.innerText.replace(/Sesli dinle/g, ""))); };
   /* Açık uçlu / kısa cevaplı soru (Maarif okul sınavı biçimi): öğrenci çözümünü yazar, kısa cevap(lar)ı girer;
      sistem kısa cevabı kontrol eder, örnek çözümü ve puanlama anahtarını gösterir, öğrenci kendini puanlar. */
   function openQuestion(host, q, done, inLesson, extra) {

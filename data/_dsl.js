@@ -1,9 +1,10 @@
 /* Kısa ders yazım yardımcıları (KESIF.dsl): T metin adımı, M çoktan seçmeli, R yansıtma, G kart ızgarası, L ders kaydı, QB soru bankası üreticisi. Özgün içerik (CC BY-NC-SA 4.0). */
 (function () {
-  var strip = function (h) { return h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 420); };
+  var strip = function (h) { return h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1200); };
   var D = KESIF.dsl = {};
   D.T = function (title, html) { return { type: "text", title: title, say: strip(html), html: html }; };
   D.M = function (q, right, why, wr, ex, pre) { var o = [{ t: right, ok: true, why: why }]; wr.forEach(function (w) { o.push({ t: w[0], why: w[1] }); }); var s = { type: "mcq", q: q, opts: o, explain: ex }; if (pre) s.predict = true; return s; };
+  D.AN = function (name, title, say) { return { type: "anim", name: name, title: title, say: say || "" }; };
   D.R = function (q, hint) { return { type: "reflect", q: q, hint: "Örnek düşünce: " + hint }; };
   D.G = function (a) { return '<div class="grid">' + a.map(function (c) { return '<div class="card' + (c[2] ? " pick" : "") + '"><h3>' + c[0] + '</h3><p class="small">' + c[1] + '</p></div>'; }).join("") + '</div>'; };
   D.L = function (id, subject, title, grade, hook, steps) { KESIF.lessons[id] = { id: id, subject: subject, title: title, minutes: 20, grade: grade, hook: hook, steps: steps }; };

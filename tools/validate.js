@@ -20,7 +20,7 @@ for (const f of dataFiles) { try { eval(fs.readFileSync(path.join(root, f), 'utf
 
 /* 2) sorular */
 const K = KESIF, ids = new Set();
-const LAB_TYPES = ['text', 'explorer', 'circle', 'expo', 'scatter', 'bar', 'polygon', 'sim', 'mcq', 'tap', 'reflect'];
+const LAB_TYPES = ['text', 'explorer', 'circle', 'expo', 'scatter', 'bar', 'polygon', 'sim', 'anim', 'mcq', 'tap', 'reflect'];
 const s11ids = new Set(K.s11 ? K.s11.themes.flatMap(t => t.topics.map(p => p.id)) : []);
 const yksIds = new Set(K.yks ? K.yks.levels.flatMap(l => l.areas.flatMap(a => a.topics.map(t => t[0]))) : []);
 const kzHas = id => { const i = id.indexOf(':'); if (i < 0) return yksIds.has(id); const sub = K.kz && K.kz[id.slice(0, i)]; return !!(sub && sub.items.some(x => x.c === id.slice(i + 1))); };
