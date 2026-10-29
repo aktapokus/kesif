@@ -1134,11 +1134,19 @@ ${c.inverse ? `<circle cx="${X(1)}" cy="${Y(0)}" r="7" fill="var(--cyan)"/><text
     const st = L.steps[i], total = L.steps.length;
     $app.innerHTML = `<div class="stage"><div class="steps"><div class="meta"><span>${esc(K.subjects[L.subject].name)} · ${esc(L.title)}</span><span>Adım ${i + 1}/${total}</span></div><div class="bar"><i style="width:${Math.round((i + 1) / total * 100)}%"></i></div></div><section id="step"></section><div class="row" id="nav" style="margin-top:22px"></div></div>`;
     const host = document.getElementById("step"), nav = document.getElementById("nav");
+    const lessonQs = K.daily.filter(q => { const h = K.help && K.help[q.id]; return h && h.topic && h.topic.lesson === L.id; });
+    const goPractice = () => { customSet = shuffle(lessonQs.slice()); customBack = "#/ders/" + L.id + "/" + i; location.hash = "#/gunluk/ozel"; };
+    { const items = L.steps.map((x, n) => ({ x, n })).filter(o => o.x.type !== "mcq" && o.x.type !== "tap" && o.x.type !== "reflect" && (o.x.title || o.x.name));
+      const bar = $app.querySelector(".steps .bar");
+      if (bar) bar.insertAdjacentHTML("afterend", `<details class="sol toc"><summary><b>Alt konular</b> <span class="muted small">(${items.length})</span></summary><ol class="body" style="margin:8px 0">${items.map(o => `<li><a href="#/ders/${L.id}/${o.n}" ${o.n === i ? 'style="font-weight:700"' : ""}>${esc(String(o.x.title || o.x.name).replace(/<[^>]+>/g, ""))}</a></li>`).join("")}</ol>${lessonQs.length ? `<p style="margin:0 0 8px"><button class="btn ghost" id="tocq" type="button" style="min-height:40px">Bu dersin örnek soruları (${lessonQs.length})</button></p>` : ""}</details>`);
+      const tq = $app.querySelector("#tocq"); if (tq) tq.onclick = goPractice; }
     const next = () => { if (i + 1 < total) location.hash = `#/ders/${L.id}/${i + 1}`; else { S.done[L.id] = true; delete S.notes["p_" + L.id]; save(); location.hash = "#/"; } };
     const navBtns = (enabled) => {
       nav.innerHTML = (i > 0 ? `<a class="btn ghost" href="#/ders/${L.id}/${i - 1}">← Geri</a>` : `<a class="btn ghost" href="#/">Çık</a>`) +
-        `<button class="btn" id="nx" type="button" ${enabled ? "" : "disabled"}>${i + 1 < total ? "Devam →" : "Bitir ✓"}</button>`;
+        `<button class="btn" id="nx" type="button" ${enabled ? "" : "disabled"}>${i + 1 < total ? "Devam →" : "Bitir ✓"}</button>` +
+        (i + 1 >= total && lessonQs.length ? `<button class="btn" id="px" type="button">Örnek sorulara geç (${lessonQs.length}) →</button>` : "");
       nav.querySelector("#nx").onclick = next;
+      const px = nav.querySelector("#px"); if (px) px.onclick = () => { S.done[L.id] = true; delete S.notes["p_" + L.id]; save(); goPractice(); };
     };
     if (st.type === "text") {
       host.innerHTML = `<h2>${st.title}</h2>${ttsBtn(plainText(st.html))}<div class="body" style="margin-top:12px">${st.html}</div>`; navBtns(true);
