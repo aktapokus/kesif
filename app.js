@@ -387,7 +387,7 @@
     }
     const sb = K.subjects[cur], c = subjCoverage(cur, cv), mf = K.maarif && K.maarif[cur === "tur" ? "edeb" : cur];
     const gsAll = mf ? Object.keys(mf.grades) : [];
-    html += `<h1>${esc(sb.name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0 12px">${gsAll.map(g => `<button class="btn ${MUF.view === "okul" && MUF.grade === g ? "" : "ghost"}" data-g="${g}" type="button">${g}. sınıf</button>`).join("")}<button class="btn ${MUF.view === "sinav" ? "" : "ghost"}" data-v="sinav" type="button">TYT / AYT</button></div>`;
+    html += `<h1>${esc(sb.name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0 12px">${gsAll.map(g => `<button class="btn ${MUF.view === "okul" && MUF.grade === g ? "" : "ghost"}" data-g="${g}" type="button">${g}. sınıf</button>`).join("")}<button class="btn ${MUF.view === "sinav" ? "" : "ghost"}" data-v="sinav" type="button">TYT / AYT</button></div><p class="muted small" style="margin:0 0 8px">Nasıl çalışılır: konuya gir → <b>Anlatım</b> (şema, örnek, animasyon) → dersin sonunda örnek sorular. Okul yazılın için <a href="#/dersler/okul">yazılı planına</a> bak.</p>`;
     if (MUF.view === "okul") {
       if (!mf || !Object.keys(mf.grades).length) html += `<p class="callout">Bu ders için okul müfredatı (Maarif) henüz eklenmedi. "Sınav (TYT/AYT)" görünümünde resmî kazanım listesi var.</p>`;
       else {
@@ -395,7 +395,7 @@
         const s11byCode = {}; if (cur === "mat" && MUF.grade === "11") s11Topics().forEach(p => { if (p.mat) s11byCode[p.mat] = p; });
         mf.grades[MUF.grade].forEach((u, ui) => {
           const covered = cur === "mat" && MUF.grade === "11" ? u.lo.filter(x => { const t = s11byCode[x.c]; return t && (cv.cnt["s:" + t.id] || t.lesson); }).length : 0;
-          html += `<details class="subj" ${mf.grades[MUF.grade].length <= 3 ? "open" : ""}><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(u.title)} <span class="muted small">${esc(u.hours ? u.hours + " ders saati" : "")}${cur === "mat" && MUF.grade === "11" ? " · içerik: " + covered + "/" + u.lo.length : ""}</span></summary>`;
+          html += `<details class="subj" open><summary style="font:700 18px var(--f-display);cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${esc(u.title)} <span class="muted small">${esc(u.hours ? u.hours + " ders saati" : "")}${cur === "mat" && MUF.grade === "11" ? " · içerik: " + covered + "/" + u.lo.length : ""}</span></summary>`;
           if (u.konu.length) html += `<p class="muted small" style="margin:4px 0">Konular: ${u.konu.map(x => esc(x.replace(/^•\s*/, ""))).join(" · ")}</p>`;
           const ulessons = [];
           const ukeys = cur === "mat" && MUF.grade === "11" && K.s11.themes[ui] ? K.s11.themes[ui].topics.map(p => "s:" + p.id) : MUF.grade === "11" && ui === 0 && UNIT_KN[cur] ? UNIT_KN[cur] : MUF.grade === "11" && UNIT_KN2[cur] && UNIT_KN2[cur][ui] ? UNIT_KN2[cur][ui] : null;
@@ -405,7 +405,7 @@
             if (MUF.gaps && (qn || ls.length) && cur === "mat") return;
             html += `<div class="row" style="align-items:flex-start;gap:10px;flex-wrap:wrap;margin:6px 0"><span class="muted small" style="min-width:92px">${esc(x.c)}</span><span style="flex:1 1 220px">${esc(x.t)}</span>${ls.map(id => `<a class="btn ${S.done[id] ? "ghost" : ""}" href="#/ders/${id}/0">Anlatım${S.done[id] ? " ✓" : ""}</a>`).join("")}${qn ? `<a class="btn ghost" href="#/banka/${encodeURIComponent("s:" + t.id)}">Soru (${qn})</a>` : ""}</div>`;
           });
-          html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:14px 0 4px;padding-top:12px;border-top:1px dashed var(--line)"><a class="btn" href="${ulessons[0] ? "#/ders/" + ulessons[0] + "/0" : "#/dersler/k:" + cur}">Konu anlatımı</a><a class="btn ghost" href="${ukeys ? "#/banka/unit:" + encodeURIComponent(ukeys.join("~")) : "#/banka/ders:" + cur}">Örnek sorular</a><a class="btn ghost" href="#/dersler/okul">Okul sınavı denemeleri ve çözümleri</a><a class="btn ghost" href="${ukeys ? "#/deneme/unit:" + encodeURIComponent(ukeys.join("~")) : "#/deneme/" + cur}">Deneme sınavı</a></div>`;
+          html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:14px 0 4px;padding-top:12px;border-top:1px dashed var(--line)"><a class="btn ghost" href="${ukeys ? "#/banka/unit:" + encodeURIComponent(ukeys.join("~")) : "#/banka/ders:" + cur}">Bu ünitenin soruları</a><a class="btn ghost" href="${ukeys ? "#/deneme/unit:" + encodeURIComponent(ukeys.join("~")) : "#/deneme/" + cur}">Ünite denemesi</a></div>`;
           html += `</details>`;
         });
         if (cur !== "mat") html += `<p class="muted small">Bu derste uygulamadaki soru ve konu anlatımları henüz okul müfredatı kodlarına bağlanmadı; "Sınav (TYT/AYT)" görünümünde kazanım bazlı doluluk görünür.</p>`;
