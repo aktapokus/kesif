@@ -33,13 +33,14 @@
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "takvim") page = "takvim"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
+    if (h[0] === "plan") page = "plan"; else if (h[0] === "takvim") page = "takvim"; else if (h[0] === "sinavim") page = "sinavim"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     { let sj = h[0] === "ders" && K.lessons[h[1]] ? K.lessons[h[1]].subject : h[0] === "dersler" && /^k:/.test(h[1] || "") ? h[1].slice(2).split(":")[0] : S.pickSubj; const de = document.documentElement; if (sj && K.subjects[sj]) de.dataset.subj = sj; else delete de.dataset.subj; }
     closeFS();
     if (h[0] === "ders" && K.lessons[h[1]]) return renderLesson(K.lessons[h[1]], +h[2] || 0);
     if (h[0] === "gunluk") return startDaily();
     if (h[0] === "takvim") return renderCalendar();
+    if (h[0] === "sinavim") return renderSinavim();
     if (h[0] === "plan") return renderPlan();
     if (h[0] === "dersler") return renderDersler(h[1] || (S.pickSubj && K.subjects[S.pickSubj] ? "k:" + S.pickSubj : "tum"));
     if (h[0] === "mufredat") return renderCurriculum();
@@ -202,6 +203,71 @@
   const LESSON_OKUL = { "edeb12-felsefe-psikoloji": ["GIRIS/O"], "edeb12-dil-sozluk": ["GIRIS/O"], "edeb12-yazma-dil": ["GIRIS/Y"], "edeb11-karagoz": ["TDE2.1/1", "TDE2.2/1", "TDE2.3/1", "TDE2.4/1"], "edeb11-mektup-dilekce": ["TDE2.2/1", "TDE2.3/1", "TDE2.4/1"], "edeb11-fiilimsi": ["TDE2.3/1"], "edeb11-eposta": ["TDE4.3/1"], "edeb11-hikaye-ani": ["TDE2.2/2", "TDE2.3/2", "TDE2.4/2"], "edeb11-orhun-dlt": ["TDE2.2/2", "TDE2.3/2", "TDE2.4/2"] };
   const okulKey = r => { if (/Giriş/.test(r.text || "")) return "GIRIS/" + (/^YAZMA/.test(r.konu || "") ? "Y" : "O"); const m = /^(TDE\d\.\d)/.exec(r.text || ""); if (!m) return ""; return m[1] + "/" + (/Kültür Yolculuğu/.test(r.text) ? "2" : /Bir Diyeceğim|e-posta/.test(r.text + " " + (r.konu || "")) ? "1" : "0"); };
   const SCH = { grade: "11", exam: 1, scen: 0, din: false };
+  /* ---------- Sınavım: okulun senaryosuna göre küçük adımlı çalışma şablonu ---------- */
+  function schoolHelpers(tk) {
+    const norm = c => String(c || "").replace(/\.+$/, "");
+    const lessonsOf = r => {
+      if (tk === "mat" && r.code.indexOf("MAT.11.") === 0) { const id = r.code.slice(7); const p = s11Topics().find(t => t.id === id); return p && p.lesson && K.lessons[p.lesson] ? [p.lesson] : []; }
+      const c = norm(r.code) || okulKey(r); if (!c) return [];
+      const tsub = tk === "din" ? "fel" : tk, okS = l => { const sj = K.lessons[l] && K.lessons[l].subject; return sj === tsub || (tk === "edeb" && sj === "tur"); };
+      return Object.keys(LESSON_MAARIF).filter(l => LESSON_MAARIF[l].some(x => norm(x) === c)).concat(Object.keys(LESSON_OKUL).filter(l => LESSON_OKUL[l].includes(c))).filter((l, i, a) => a.indexOf(l) === i && okS(l));
+    };
+    const poolOf = r => {
+      if (tk === "mat" && r.code.indexOf("MAT.11.") === 0) { const id = r.code.slice(7); return K.daily.filter(q => (qmeta(q).s11 || "") === id); }
+      const ls = lessonsOf(r);
+      return ls.length ? K.daily.filter(q => { const h = K.help && K.help[q.id]; return h && h.topic && ls.includes(h.topic.lesson); }) : [];
+    };
+    return { norm, lessonsOf, poolOf };
+  }
+  function schoolRows(tk, grade, e, sc) {
+    const G = tk === "mat" ? K.okul.grades : K.okulX && K.okulX[tk], g = G && G[grade]; if (!g) return [];
+    const key = e === 1 ? "e1" : "e2";
+    return g.rows.map(r => ({ r, n: (r[key] || [])[sc] || 0 })).filter(x => x.n > 0);
+  }
+  function buildPaper(rows, poolOf) {
+    const paper = []; let miss = 0;
+    rows.forEach(x => { const pool = shuffle(poolOf(x.r)).sort((a, b) => (b.type === "open" ? 1 : 0) - (a.type === "open" ? 1 : 0)); const take = pool.slice(0, x.n); miss += x.n - take.length; take.forEach(q => paper.push({ q, opts: q.type === "open" ? null : shuffle(q.opts), sel: null, vals: [], text: "", rub: new Set() })); });
+    return { paper, miss };
+  }
+  const SIN_NAMES = { mat: "Matematik", fiz: "Fizik", kim: "Kimya", biy: "Biyoloji", tar: "Tarih", fel: "Felsefe", din: "Din Kültürü", edeb: "Edebiyat", ing: "İngilizce" };
+  function sinavimTasks(grade) {
+    const pick = (K.okulum && K.okulum.pick[grade]) || {}, out = [];
+    Object.keys(SIN_NAMES).filter(tk => pick[tk]).forEach(tk => {
+      const P = pick[tk], H = schoolHelpers(tk), rows = schoolRows(tk, grade, P.e, P.s);
+      const lessons = [], pool = [];
+      rows.forEach(x => { H.lessonsOf(x.r).forEach(l => { if (!lessons.includes(l)) lessons.push(l); }); H.poolOf(x.r).forEach(q => { if (!pool.includes(q)) pool.push(q); }); });
+      const ld = lessons.filter(l => S.done[l]).length, solved = pool.filter(q => qStat(q.id).n > 0), okn = solved.filter(q => qStat(q.id).ok > 0).length;
+      const next = lessons.find(l => !S.done[l]);
+      out.push({ tk, rows, H, lessons, ld, pool, solved: solved.length, acc: solved.length ? Math.round(okn / solved.length * 100) : null, next, wrong: solved.filter(q => qStat(q.id).ok === 0), left: pool.filter(q => !(qStat(q.id).n > 0)), pct: Math.round((ld + solved.length) / Math.max(1, lessons.length + pool.length) * 100), total: rows.reduce((a, x) => a + x.n, 0) });
+    });
+    return out;
+  }
+  function renderSinavim() {
+    S.sinavim = S.sinavim || { date: "", grade: "11" };
+    const grade = S.sinavim.grade === "12" ? "12" : "11", T = sinavimTasks(grade);
+    const dl = S.sinavim.date ? Math.ceil((new Date(S.sinavim.date + "T12:00:00") - new Date()) / 86400000) : null;
+    const today0 = dayInfo(today()).min;
+    const step = t => t.next ? { txt: "Anlatım: " + K.lessons[t.next].title, run: () => { location.hash = "#/ders/" + t.next + "/" + (S.notes["p_" + t.next] || 0); } }
+      : t.left.length ? { txt: "Sorular: " + Math.min(5, t.left.length) + " soruluk tur", run: () => { customSet = shuffle(t.left).slice(0, 5); customBack = "#/sinavim"; location.hash = "#/gunluk/ozel"; } }
+      : t.wrong.length ? { txt: "Tekrar zamanı: " + Math.min(5, t.wrong.length) + " soru", run: () => { customSet = shuffle(t.wrong).slice(0, 5); customBack = "#/sinavim"; location.hash = "#/gunluk/ozel"; } }
+      : { txt: "Mini deneme: okulumun senaryosu", run: () => { const b = buildPaper(t.rows, t.H.poolOf); if (b.paper.length) runExam(b.paper, 40); } };
+    const todo = T.slice().sort((a, b) => a.pct - b.pct).slice(0, 3);
+    let html = `<span class="eyebrow">Sınavım</span><h1>Küçük adımlarla hazırlık</h1><p class="lede">Okulunun yazılı senaryosuna göre her ders için üç küçük adım: önce anlatım, sonra sorular, sonra mini deneme. Bir günde yalnızca üç adım yeter.</p>
+<div class="row" style="gap:10px;flex-wrap:wrap;margin:10px 0;align-items:center"><span class="muted small">Sınıf:</span><button class="btn ${grade === "11" ? "" : "ghost"}" data-sg="11" type="button">11. sınıf</button><button class="btn ${grade === "12" ? "" : "ghost"}" data-sg="12" type="button">12. sınıf</button><label class="muted small" for="sd" style="margin-left:10px">Sınav tarihi</label><input id="sd" type="date" value="${esc(S.sinavim.date)}" style="width:auto"> ${dl !== null ? `<b>${dl > 0 ? dl + " gün kaldı" : dl === 0 ? "Bugün" : "geçti"}</b>` : ""}</div>
+<div class="card" style="margin:12px 0"><h3 style="margin-top:0">Bugünün üç küçük adımı</h3>${todo.length ? todo.map((t, i) => `<div class="row" style="gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap"><span style="flex:1 1 200px"><b>${esc(SIN_NAMES[t.tk])}</b><br><span class="muted small">${esc(step(t).txt)}</span></span><button class="btn" data-go="${i}" type="button" style="min-height:38px">Başla</button></div>`).join("") : '<p class="muted">Bu sınıf için senaryo tanımlı değil.</p>'}<p class="muted small" style="margin:8px 0 0">Bugün ${today0} dk çalıştın. ${today0 >= 20 ? "Güzel bir adım." : "Yirmi dakika bile zinciri sürdürür."} <a href="#/takvim">Takvimine bak →</a></p></div>
+<div class="grid">${T.map(t => `<article class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">${esc(SIN_NAMES[t.tk])}</h3><span class="small muted">${t.total} soruluk senaryo</span></div>
+<div class="minibar" aria-hidden="true" style="margin:8px 0"><i style="width:${t.pct}%"></i></div>
+<p class="small" style="margin:0 0 8px"><b>Anlatım</b> ${t.ld}/${t.lessons.length} · <b>Soru</b> ${t.solved}/${t.pool.length}${t.acc !== null ? " · <b>Doğru</b> %" + t.acc : ""}</p>
+<div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn" data-rn="${t.tk}" type="button" style="min-height:36px;font-size:13px">${esc(step(t).txt.length > 34 ? step(t).txt.slice(0, 33) + "…" : step(t).txt)}</button><a class="btn ghost" style="min-height:36px;font-size:13px" href="#/dersler/okul" data-ro="${t.tk}">Senaryo</a></div></article>`).join("")}</div>
+<p class="muted small" style="margin-top:14px">Soru sayıları ve konular okulunun paylaştığı senaryo tablosundan alınır. Soruların cevap açıklamaları her çözümden sonra görünür.</p>`;
+    $app.innerHTML = html;
+    $app.querySelectorAll("[data-sg]").forEach(b => b.onclick = () => { S.sinavim.grade = b.dataset.sg; save(); renderSinavim(); });
+    $app.querySelector("#sd").onchange = e => { S.sinavim.date = e.target.value; save(); renderSinavim(); };
+    $app.querySelectorAll("[data-go]").forEach(b => b.onclick = () => step(todo[+b.dataset.go]).run());
+    $app.querySelectorAll("[data-rn]").forEach(b => b.onclick = () => step(T.find(t => t.tk === b.dataset.rn)).run());
+    $app.querySelectorAll("[data-ro]").forEach(a => a.onclick = () => { const tk = a.dataset.ro, sj = tk === "din" ? "fel" : tk; if (K.subjects[sj]) setSubject(sj); SCH.din = tk === "din"; SCH._ps = tk; const o = K.okulum.pick[grade][tk]; SCH.grade = grade; SCH.exam = o.e; SCH.scen = o.s; });
+  }
+
   function renderSchool() {
     if (!K.okul) { $app.innerHTML = `<h1>Okul sınavı</h1>${tabsHtml("okul")}<p>Tablo yüklenemedi.</p>`; return; }
     const sk = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "mat";
@@ -217,19 +283,8 @@
     if (SCH.scen >= nS) SCH.scen = 0;
     const rows = g.rows.map(r => ({ r, n: (r[key] || [])[SCH.scen] || 0 })).filter(x => x.n > 0);
     const total = rows.reduce((a, x) => a + x.n, 0);
-    const norm = c => String(c || "").replace(/\.+$/, "");
-    const poolOf = r => {
-      if (tk === "mat" && r.code.indexOf("MAT.11.") === 0) { const id = r.code.slice(7); return K.daily.filter(q => (qmeta(q).s11 || "") === id); }
-      const ls = lessonsOf(r);
-      return ls.length ? K.daily.filter(q => { const h = K.help && K.help[q.id]; return h && h.topic && ls.includes(h.topic.lesson); }) : [];
-    };
+    const { norm, lessonsOf, poolOf } = schoolHelpers(tk);
     const have = r => poolOf(r).length;
-    const lessonsOf = r => {
-      if (tk === "mat" && r.code.indexOf("MAT.11.") === 0) { const id = r.code.slice(7); const p = s11Topics().find(t => t.id === id); return p && p.lesson && K.lessons[p.lesson] ? [p.lesson] : []; }
-      const c = norm(r.code) || okulKey(r); if (!c) return [];
-      const tsub = tk === "din" ? "fel" : tk, okS = l => { const sj = K.lessons[l] && K.lessons[l].subject; return sj === tsub || (tk === "edeb" && sj === "tur"); };
-      return Object.keys(LESSON_MAARIF).filter(l => LESSON_MAARIF[l].some(x => norm(x) === c)).concat(Object.keys(LESSON_OKUL).filter(l => LESSON_OKUL[l].includes(c))).filter((l, i, a) => a.indexOf(l) === i && okS(l));
-    };
     const anyHave = rows.some(x => have(x.r) > 0);
     const name = tk === "mat" ? "Matematik" : TNAME[tk];
     let html = `<h1>${esc(name)} · Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">MEB'in yayımladığı ${esc(K.okul.term)} <b>ortak yazılı sınav</b> konu-soru dağılım tablosu. Okul zümresi senaryolardan birini seçer. Hangi senaryonun kullanılacağını ${esc(name.toLowerCase())} öğretmeninden öğren, sonra o senaryoyu burada dene.</p>`;
@@ -253,8 +308,7 @@
     $app.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { SCH.scen = +b.dataset.s; renderSchool(); });
     const go = $app.querySelector("#sgo");
     if (go) go.onclick = () => {
-      const paper = []; let miss = 0;
-      rows.forEach(x => { const pool = shuffle(poolOf(x.r)).sort((a, b) => (b.type === "open" ? 1 : 0) - (a.type === "open" ? 1 : 0)); const take = pool.slice(0, x.n); miss += x.n - take.length; take.forEach(q => paper.push({ q, opts: q.type === "open" ? null : shuffle(q.opts), sel: null, vals: [], text: "", rub: new Set() })); });
+      const { paper, miss } = buildPaper(rows, poolOf);
       if (!paper.length) { $app.querySelector("#smsg").textContent = "Bu senaryo için henüz soru yok."; return; }
       if (miss && !confirm(miss + " soru eksik (bu konularda yeterli soru henüz yazılmadı). Eldeki sorularla devam edilsin mi?")) return;
       runExam(paper, 40);
