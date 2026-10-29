@@ -302,6 +302,7 @@
     if (!G) { $app.innerHTML = `<h1>${esc(K.subjects[sk].name)} · Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">Bu ders için MEB ortak yazılı sınav tablosu yayımlanmadığında sınavı okul zümresi hazırlar. Konu anlatımları ve soru bankasıyla çalışabilirsin.</p><p><a class="btn" href="#/dersler/k:${sk}">${esc(K.subjects[sk].name)} konularına git</a></p>`; return; }
     const okg = gr => K.okulum && K.okulum.pick[gr] && K.okulum.pick[gr][tk];
     if (SCH._ps !== tk) { SCH._ps = tk; const o = okg("11") || okg("12"); if (o) { SCH.grade = okg("11") ? "11" : "12"; SCH.exam = o.e; SCH.scen = o.s; } }
+    if (SCH._mg !== MUF.grade && G[MUF.grade]) { SCH._mg = MUF.grade; SCH.grade = MUF.grade; const o2 = okg(MUF.grade); if (o2) { SCH.exam = o2.e; SCH.scen = o2.s; } }
     if (!G[SCH.grade]) SCH.grade = Object.keys(G).sort()[0];
     const OK = okg(SCH.grade);
     const g = G[SCH.grade], nS = SCH.exam === 1 ? g.n1 : g.n2, key = SCH.exam === 1 ? "e1" : "e2";
@@ -312,10 +313,10 @@
     const have = r => poolOf(r).length;
     const anyHave = rows.some(x => have(x.r) > 0);
     const name = tk === "mat" ? "Matematik" : TNAME[tk];
-    let html = `<h1>${esc(name)} · Okul sınavı</h1>${tabsHtml("okul")}<p class="lede">MEB'in yayımladığı ${esc(K.okul.term)} <b>ortak yazılı sınav</b> konu-soru dağılım tablosu. Okul zümresi senaryolardan birini seçer. Hangi senaryonun kullanılacağını ${esc(name.toLowerCase())} öğretmeninden öğren, sonra o senaryoyu burada dene.</p>`;
+    let html = `<p class="small" style="margin:0 0 4px"><a href="#/dersler/k:${sk}">← ${esc(name)} konuları</a></p><h1>${esc(name)} · ${SCH.grade}. sınıf yazılı planı</h1><p class="muted small">MEB ortak yazılı sınav dağılımı. Her konunun yanındaki Anlatım ve Soruları çöz düğmeleriyle çalış; en altta senaryoyu deneme olarak çöz.</p>`;
     if (OK) html += `<p style="margin:10px 0"><button class="btn ${SCH.exam === OK.e && SCH.scen === OK.s ? "" : "ghost"}" data-ok="1" type="button">Okulumun senaryosu</button> <span class="muted small">${esc(K.okulum.name)} · ${SCH.grade}. sınıf · ${OK.e}. yazılı · ${OK.s + 1}. senaryo</span></p>`;
     if (sk === "fel") html += `<div class="row" style="gap:8px;margin:10px 0"><span class="muted small">Ders:</span><button class="btn ${SCH.din ? "ghost" : ""}" data-fd="0" type="button">Felsefe</button><button class="btn ${SCH.din ? "" : "ghost"}" data-fd="1" type="button">Din Kültürü</button></div>`;
-    html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><span class="muted small">Sınıf:</span>${["9", "10", "11", "12"].filter(x => G[x]).map(x => `<button class="btn ${SCH.grade === x ? "" : "ghost"}" data-g="${x}" type="button">${x}. sınıf</button>`).join("")}<span class="muted small" style="margin-left:12px">Sınav:</span><button class="btn ${SCH.exam === 1 ? "" : "ghost"}" data-e="1" type="button">1. yazılı</button><button class="btn ${SCH.exam === 2 ? "" : "ghost"}" data-e="2" type="button">2. yazılı</button></div>`;
+    html += `<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><span class="muted small">Sınav:</span><button class="btn ${SCH.exam === 1 ? "" : "ghost"}" data-e="1" type="button">1. yazılı</button><button class="btn ${SCH.exam === 2 ? "" : "ghost"}" data-e="2" type="button">2. yazılı</button></div>`;
     if (!nS) html += `<p class="callout">Bu sınıfta ${SCH.exam}. yazılı için senaryo tablosu yok (ülke geneli ortak sınav ya da ayrıca yayımlanacak).</p>`;
     else {
       html += `<div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0"><span class="muted small">Senaryo:</span>${Array.from({ length: nS }, (_, i) => `<button class="btn ${SCH.scen === i ? "" : "ghost"}" data-s="${i}" type="button">${i + 1}</button>`).join("")}</div>
