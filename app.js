@@ -44,13 +44,11 @@
 
   /* ---------- yönlendirme ---------- */
   function route() { route0(); learnStrip(); }
-  const LEARN = [["#/dersler", "Konular", /^(dersler|ders)$/], ["#/sinavim", "Sınavım", /^sinavim$/], ["#/mufredat", "Müfredat", /^mufredat$/], ["#/banka", "Soru bankası", /^(banka|cikmis)$/], ["#/deneme", "Deneme", /^deneme$/], ["#/plan", "Yol haritası", /^plan$/]];
+  const LEARN = [["#/dersler", "Konular", /^(dersler|ders)$/], ["#/sinavim", "Sınavım", /^sinavim$/], ["#/banka", "Soru bankası", /^(banka|cikmis)$/], ["#/deneme", "Deneme", /^deneme$/], ["#/plan", "Yol haritası", /^plan$/]];
   function learnStrip() {
     const h0 = location.hash.replace(/^#\/?/, "").split("/")[0], cur = LEARN.findIndex(x => x[2].test(h0)); if (cur < 0 || h0 === "ders") return;
-    const tb = $app.querySelector("nav.tabs"), own = tb ? Array.from(tb.querySelectorAll("a")).map(a => [a.getAttribute("href"), a.textContent, a.getAttribute("aria-selected") === "true"]) : null; if (tb) tb.remove();
-    const items = (own || [[LEARN[0][0], LEARN[0][1], cur === 0]]).concat(LEARN.slice(1).map((x, n) => [x[0], x[1], n + 1 === cur]));
-    const el = document.createElement("div"); el.className = "lstrip"; el.innerHTML = items.map(x => `<a href="${x[0]}" ${x[2] ? 'aria-current="page"' : ""}>${x[1]}</a>`).join("");
-    $app.insertBefore(el, $app.firstChild);
+    const el = document.createElement("div"); el.className = "lstrip"; el.innerHTML = LEARN.slice(1).map((x, n) => `<a href="${x[0]}" ${n + 1 === cur ? 'aria-current="page"' : ""}>${x[1]}</a>`).join("") + `<a href="#/dersler" ${cur === 0 ? 'aria-current="page"' : ""}>Tüm dersler</a>`;
+    $app.appendChild(el);
   }
   function route0() {
     stopSpeak(); if (window.__animStop) window.__animStop();
@@ -67,6 +65,8 @@
     if (h[0] === "takvim") return renderCalendar();
     if (h[0] === "sinavim") return renderSinavim();
     if (h[0] === "plan") return renderPlan();
+    if (h[0] === "dersler" && /^k:[a-z]+$/.test(h[1] || "")) { const kk = h[1].slice(2), mfk = K.maarif && K.maarif[kk === "tur" ? "edeb" : kk]; if (mfk && Object.keys(mfk.grades).length) { setSubject(kk); MUF.view = "okul"; return renderCurriculum(); } }
+    if (h[0] === "mufredat") { if (S.pickSubj && K.subjects[S.pickSubj]) { location.replace("#/dersler/k:" + S.pickSubj); return; } }
     if (h[0] === "dersler") return renderDersler(h[1] || (S.pickSubj && K.subjects[S.pickSubj] ? "k:" + S.pickSubj : "tum"));
     if (h[0] === "mufredat") return renderCurriculum();
     if (h[0] === "profil") return renderProfile();
@@ -379,19 +379,19 @@
   }
   function renderCurriculum() {
     const cv = covCounts(), cur = S.pickSubj && K.subjects[S.pickSubj] ? S.pickSubj : "all";
-    let html = `<h1>Müfredat</h1><p class="lede">Resmî konu ve kazanım listesi, her kazanımın yanında uygulamada <b>konu anlatımı</b> ve <b>soru</b> olup olmadığı. Boş görünenler henüz hazırlanmadı: açık sözlü olmak için bunu gösteriyorum.</p>`;
+    let html = cur === "all" ? `<h1>Dersler</h1><p class="lede">Bir ders seç; sınıf ve konular tek sayfada.</p>` : "";
     if (cur === "all") {
       html += `<p class="muted small">Bir dersin ayrıntısı için üstteki ders listesinden dersi seç ya da aşağıdan bir derse dokun.</p><div class="card klist">${Object.keys(K.subjects).map(k => { const c = subjCoverage(k, cv), nl = LES().filter(l => l.subject === k).length; return `<div class="krow"><span class="kl"><b>${esc(K.subjects[k].icon)} ${esc(K.subjects[k].name)}</b><br><span class="muted small">${c.total} konu/kazanım · soru olan: ${c.withQ} (%${c.total ? Math.round(c.withQ / c.total * 100) : 0}) · ${nl} konu anlatımı</span></span><button class="btn ghost" data-ms="${k}" type="button">Aç</button></div>`; }).join("")}</div>
 <p class="muted small" style="margin-top:12px">Kaynak: MEB 11. sınıf matematik kitabı ve MEB–ÖSYM 2026 kazanım belgesi (eski program kodları). Mantık, Sosyoloji, Psikoloji kodları belgede yok (ünite.kazanım sırası). Yabancı diller henüz yok.</p>`;
       $app.innerHTML = html; $app.querySelectorAll("[data-ms]").forEach(b => b.onclick = () => { setSubject(b.dataset.ms); renderCurriculum(); }); return;
     }
     const sb = K.subjects[cur], c = subjCoverage(cur, cv), mf = K.maarif && K.maarif[cur === "tur" ? "edeb" : cur];
-    html += `<h2>${esc(sb.name)}</h2><div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn ${MUF.view === "okul" ? "" : "ghost"}" data-v="okul" type="button">Okul müfredatı</button><button class="btn ${MUF.view === "sinav" ? "" : "ghost"}" data-v="sinav" type="button">Sınav (TYT/AYT)</button></div>`;
+    const gsAll = mf ? Object.keys(mf.grades) : [];
+    html += `<h1>${esc(sb.name)}</h1><div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0 12px">${gsAll.map(g => `<button class="btn ${MUF.view === "okul" && MUF.grade === g ? "" : "ghost"}" data-g="${g}" type="button">${g}. sınıf</button>`).join("")}<button class="btn ${MUF.view === "sinav" ? "" : "ghost"}" data-v="sinav" type="button">TYT / AYT</button></div>`;
     if (MUF.view === "okul") {
       if (!mf || !Object.keys(mf.grades).length) html += `<p class="callout">Bu ders için okul müfredatı (Maarif) henüz eklenmedi. "Sınav (TYT/AYT)" görünümünde resmî kazanım listesi var.</p>`;
       else {
         const gs = Object.keys(mf.grades); if (!gs.includes(MUF.grade)) MUF.grade = gs.includes("11") ? "11" : gs[0];
-        html += `<div class="row" style="gap:6px;flex-wrap:wrap;margin:4px 0 12px"><span class="muted small">Sınıf:</span>${gs.map(g => `<button class="btn ${MUF.grade === g ? "" : "ghost"}" data-g="${g}" type="button">${g}. sınıf</button>`).join("")}</div><p class="muted small">Türkiye Yüzyılı Maarif Modeli öğretim programı (MEB). Ünite/tema, ders saati, konular ve öğrenme çıktıları resmî programdandır.</p>`;
         const s11byCode = {}; if (cur === "mat" && MUF.grade === "11") s11Topics().forEach(p => { if (p.mat) s11byCode[p.mat] = p; });
         mf.grades[MUF.grade].forEach((u, ui) => {
           const covered = cur === "mat" && MUF.grade === "11" ? u.lo.filter(x => { const t = s11byCode[x.c]; return t && (cv.cnt["s:" + t.id] || t.lesson); }).length : 0;
@@ -426,7 +426,7 @@
     $app.innerHTML = html;
     const mg = $app.querySelector("#mg"); if (mg) mg.onchange = e => { MUF.gaps = e.target.checked; renderCurriculum(); };
     $app.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { MUF.view = b.dataset.v; renderCurriculum(); });
-    $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { MUF.grade = b.dataset.g; renderCurriculum(); });
+    $app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { MUF.grade = b.dataset.g; MUF.view = "okul"; renderCurriculum(); });
   }
 
   /* ---------- tüm dersler: ders kartları ve ders sayfası ---------- */
