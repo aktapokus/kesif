@@ -47,7 +47,9 @@
   const LEARN = [["#/dersler", "Konular", /^(dersler|ders)$/], ["#/sinavim", "Sınavım", /^sinavim$/], ["#/mufredat", "Müfredat", /^mufredat$/], ["#/banka", "Soru bankası", /^(banka|cikmis)$/], ["#/deneme", "Deneme", /^deneme$/], ["#/plan", "Yol haritası", /^plan$/]];
   function learnStrip() {
     const h0 = location.hash.replace(/^#\/?/, "").split("/")[0], cur = LEARN.findIndex(x => x[2].test(h0)); if (cur < 0 || h0 === "ders") return;
-    const el = document.createElement("div"); el.className = "lstrip"; el.innerHTML = LEARN.map((x, n) => `<a href="${x[0]}" ${n === cur ? 'aria-current="page"' : ""}>${x[1]}</a>`).join("");
+    const tb = $app.querySelector("nav.tabs"), own = tb ? Array.from(tb.querySelectorAll("a")).map(a => [a.getAttribute("href"), a.textContent, a.getAttribute("aria-selected") === "true"]) : null; if (tb) tb.remove();
+    const items = (own || [[LEARN[0][0], LEARN[0][1], cur === 0]]).concat(LEARN.slice(1).map((x, n) => [x[0], x[1], n + 1 === cur]));
+    const el = document.createElement("div"); el.className = "lstrip"; el.innerHTML = items.map(x => `<a href="${x[0]}" ${x[2] ? 'aria-current="page"' : ""}>${x[1]}</a>`).join("");
     $app.insertBefore(el, $app.firstChild);
   }
   function route0() {
