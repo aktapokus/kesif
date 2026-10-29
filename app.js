@@ -43,12 +43,20 @@
   document.addEventListener("click", e => { const b = e.target.closest("[data-say]"); if (b) speak(b.dataset.say, b); });
 
   /* ---------- yönlendirme ---------- */
-  function route() {
+  function route() { route0(); learnStrip(); }
+  const LEARN = [["#/dersler", "Konular", /^(dersler|ders)$/], ["#/sinavim", "Sınavım", /^sinavim$/], ["#/mufredat", "Müfredat", /^mufredat$/], ["#/banka", "Soru bankası", /^(banka|cikmis)$/], ["#/deneme", "Deneme", /^deneme$/], ["#/plan", "Yol haritası", /^plan$/]];
+  function learnStrip() {
+    const h0 = location.hash.replace(/^#\/?/, "").split("/")[0], cur = LEARN.findIndex(x => x[2].test(h0)); if (cur < 0 || h0 === "ders") return;
+    const el = document.createElement("div"); el.className = "lstrip"; el.innerHTML = LEARN.map((x, n) => `<a href="${x[0]}" ${n === cur ? 'aria-current="page"' : ""}>${x[1]}</a>`).join("");
+    $app.insertBefore(el, $app.firstChild);
+  }
+  function route0() {
     stopSpeak(); if (window.__animStop) window.__animStop();
     const h = location.hash.replace(/^#\/?/, "").split("/");
     document.querySelectorAll("[data-nav]").forEach(a => a.removeAttribute("aria-current"));
     let page = "home";
-    if (h[0] === "plan") page = "plan"; else if (h[0] === "takvim") page = "takvim"; else if (h[0] === "sinavim") page = "sinavim"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "mufredat"; else if (h[0] === "banka" || h[0] === "cikmis") page = "banka"; else if (h[0] === "deneme") page = "deneme";
+    const hh = h[0];
+    if (h[0] === "plan") page = "dersler"; else if (h[0] === "takvim") page = "takvim"; else if (h[0] === "sinavim") page = "dersler"; else if (h[0] === "ayarlar") page = "ayarlar"; else if (h[0] === "dersler") page = "dersler"; else if (h[0] === "profil") page = "profil"; else if (h[0] === "mufredat") page = "dersler"; else if (h[0] === "banka" || h[0] === "cikmis") page = "dersler"; else if (h[0] === "deneme") page = "dersler";
     const nav = document.querySelector(`[data-nav="${page}"]`); if (nav) nav.setAttribute("aria-current", "page");
     { let sj = h[0] === "ders" && K.lessons[h[1]] ? K.lessons[h[1]].subject : h[0] === "dersler" && /^k:/.test(h[1] || "") ? h[1].slice(2).split(":")[0] : S.pickSubj; const de = document.documentElement; if (sj && K.subjects[sj]) de.dataset.subj = sj; else delete de.dataset.subj; }
     closeFS();

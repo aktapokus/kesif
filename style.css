@@ -217,3 +217,19 @@ textarea#wk{width:100%;min-height:120px;border-radius:12px;border:1.5px solid va
 .anim-tg{font-size:14px;display:flex;gap:6px;align-items:center}
 .anim-cap{font-size:15px;line-height:1.5;margin:6px 0 8px}
 .anim-read{font-size:16px;line-height:1.6;margin:10px 2px 2px}
+
+/* sadeleştirme: küçük düğmeler, tek satırlık çalışma çubuğu, ders alanı sekmeleri */
+.btn{min-height:36px;padding:5px 14px;font-size:14px}
+.helpbar .btn,.tbar .btn{min-height:36px}
+.tabs a{min-height:34px;padding:5px 12px;font-size:14px}
+.lstrip{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 10px;font-size:14px}
+.lstrip a{color:var(--muted);text-decoration:none;font-weight:600;padding:4px 0;border-bottom:2px solid transparent}
+.lstrip a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+@media (max-width:640px){
+ .tbar{flex-wrap:nowrap;padding:4px 10px;gap:8px}
+ .tbar .tb-main{flex:0 0 auto}.tbar .tb-main .muted,.tbar .tb-prog{display:none}
+ .tbar .tb-time{font-size:17px}
+ .tbar .tb-act{flex:1 1 auto;width:auto;gap:6px;min-width:0}
+ .tbar select{min-height:34px;font-size:14px;max-width:none;flex:1 1 0}
+ .tbar .btn{min-height:34px;padding:0 10px;font-size:13px}
+}
